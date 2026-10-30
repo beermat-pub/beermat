@@ -1,0 +1,44 @@
+---
+beermat: 1
+---
+
+# Plots
+
+A first-order low-pass filter: its gain against frequency, on log axes.
+
+```calc
+f_c := 100 Hz
+G(f) := 1/sqrt(1 + (f/f_c)^2)
+```
+
+```plot {#p1 w=420 h=260}
+title: Low-pass filter
+x: f = 1 Hz .. 100 kHz
+x_unit: Hz
+samples: 300
+traces:
+  - y: G(f)
+    label: Gain
+axes:
+  x: { log: true }
+  y: { log: true, min: 0.001 }
+```
+
+An ellipse, as a parametric curve: each trace can have its own x.
+
+```calc
+a := 3 m
+b := 2 m
+```
+
+```plot {#p2 w=300 h=240}
+title: Ellipse
+x: t = 0 .. 2*π
+traces:
+  - x: a*cos(t)
+    y: b*sin(t)
+    label: Ellipse
+axes:
+  x: { step: 1 }
+  y: { step: 1 }
+```

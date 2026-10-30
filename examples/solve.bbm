@@ -1,0 +1,34 @@
+---
+results: c917bdf8dccf743b
+---
+# Solve blocks and roots
+
+A rectangular section of width *b* must carry the bending moment *M* at the allowed stress *σ*: the depth it needs, from a guess.
+
+```calc
+M := 30 kN*m
+b := 200 mm
+σ_all := 10 MPa
+d := 500 mm
+given
+M/(b*d^2/6) == σ_all
+d_req := find(d) = ? mm   #= 300 mm
+```
+
+Where a circle meets a line: the guesses choose which of the two points.
+
+```calc
+x := 1
+y := 1
+given
+x^2 + y^2 == 4
+x - y == 1
+P := find(x, y) = ?   #= [1.823; 0.823]
+```
+
+The same kind of question with one unknown, by `root`.
+
+```calc
+t := 1
+t_eq := root(cos(t) - t, t) = ?   #= 0.739
+```

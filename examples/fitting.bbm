@@ -1,0 +1,37 @@
+---
+beermat: 1
+---
+
+# Fitting data
+
+A spring tested at five loads.
+
+```calc
+F := [0; 50; 100; 150; 200]*1 N
+x := [0.0; 2.1; 3.9; 6.2; 7.9]*1 mm
+```
+
+The stiffness, from the least-squares line, and how straight the data is:
+
+```calc
+k := slope(x, F) = ? N/mm
+F0 := intercept(x, F) = ?
+corr(x, F) = ?
+```
+
+The load at 5 mm, read off the data three ways:
+
+```calc
+linterp(x, F, 5 mm) = ?
+interp(cspline(x, F), x, F, 5 mm) = ?
+interp(regress(x, F, 2), x, F, 5 mm) = ?
+```
+
+A fit of chosen terms, and the roots of a cubic:
+
+```calc
+f(t) := [1; t; t^2]
+linfit(x, F, f) = ?
+polyroots([-6; 11; -6; 1]) = ?
+Stdev(F) = ?
+```

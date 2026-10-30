@@ -1,0 +1,33 @@
+BEERMAT: NO WARRANTY, CHECK YOUR RESULTS
+
+Beermat is free software under the MIT licence, provided as is, without
+warranty of any kind. It is a calculation aid: you are responsible for
+checking its results and for any decisions or designs based on them. The
+authors accept no liability for any loss or damage arising from its use.
+
+Privacy: the app collects nothing. At startup it asks GitHub whether a newer
+version is out (switch this off in Help). Details: https://beermat.pub/terms
+
+------------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 Dan Carneiro
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

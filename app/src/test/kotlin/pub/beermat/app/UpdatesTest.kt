@@ -1,0 +1,44 @@
+package pub.beermat.app
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+class UpdatesTest {
+
+    @Test
+    fun `versions compare by semantic versioning`() {
+        assertTrue(Updates.newer("1.2.0", "1.1.9"))
+        assertTrue(Updates.newer("1.10.0", "1.9.0"))
+        assertTrue(Updates.newer("v2.0.0", "1.9.9"))
+        assertFalse(Updates.newer("1.2.0", "1.2.0"))
+        assertFalse(Updates.newer("1.1.0", "1.2.0"))
+    }
+
+    @Test
+    fun `a pre-release comes before its release`() {
+        assertTrue(Updates.newer("1.0.0", "1.0.0-beta.2"))
+        assertTrue(Updates.newer("1.0.0", "1.0.0-dev"))
+        assertTrue(Updates.newer("1.0.0-beta.10", "1.0.0-beta.2"))
+        assertFalse(Updates.newer("1.0.0-beta.1", "1.0.0"))
+        // A build between releases is ahead of the one before it.
+        assertFalse(Updates.newer("1.0.0", "1.1.0-dev"))
+    }
+
+    @Test
+    fun `the release is read from GitHub's JSON`() {
+        val json = """{"url":"x","html_url":"https://github.com/beermat-pub/beermat/releases/tag/v1.2.0","id":1,"tag_name":"v1.2.0","name":"1.2.0"}"""
+        assertEquals(Updates.Release("1.2.0", "https://github.com/beermat-pub/beermat/releases/tag/v1.2.0"), Updates.release(json))
+        assertNull(Updates.release("""{"message":"Not Found"}"""))
+    }
+
+    @Test
+    fun `the Store build reads the Store's version and links to its page`() {
+        val text = "# The version live on the Microsoft Store.\n\n1.2.0\n"
+        assertEquals(Updates.Release("1.2.0", "https://apps.microsoft.com/detail/9NABCDEFGH12"), Updates.storeRelease(text, "9NABCDEFGH12"))
+        assertEquals("https://apps.microsoft.com/search?query=Beermat", Updates.storeRelease(text, "pending")?.url)
+        assertNull(Updates.storeRelease("404: Not Found", null))
+    }
+}

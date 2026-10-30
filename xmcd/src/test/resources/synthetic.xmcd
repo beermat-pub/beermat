@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<worksheet version="3.0.3" xmlns="http://schemas.mathsoft.com/worksheet30" xmlns:ml="http://schemas.mathsoft.com/math30">
+	<regions>
+		<region region-id="2" left="6" top="30" width="80" height="12">
+			<math optimize="false" disable-calc="false">
+				<ml:define>
+					<ml:id xml:space="preserve" subscript="max">M</ml:id>
+					<ml:apply>
+						<ml:div/>
+						<ml:apply>
+							<ml:mult style="auto-select"/>
+							<ml:id xml:space="preserve">q</ml:id>
+							<ml:apply>
+								<ml:pow/>
+								<ml:id xml:space="preserve">L</ml:id>
+								<ml:real>2</ml:real>
+							</ml:apply>
+						</ml:apply>
+						<ml:real>8</ml:real>
+					</ml:apply>
+				</ml:define>
+			</math>
+		</region>
+		<region region-id="1" left="6" top="3" width="200" height="12">
+			<text use-page-width="false">
+				<p style="Heading 1">A <b>synthetic</b> sheet</p>
+				<p style="Normal">Inline math: <region region-id="9" left="60" top="5"><math><ml:apply><ml:greaterThan/><ml:id xml:space="preserve">η</ml:id><ml:real>0</ml:real></ml:apply></math></region> here.</p>
+			</text>
+		</region>
+		<region region-id="3" left="6" top="10" width="40" height="12">
+			<math>
+				<ml:globalDefine>
+					<ml:id xml:space="preserve">ORIGIN</ml:id>
+					<ml:real>1</ml:real>
+				</ml:globalDefine>
+			</math>
+		</region>
+		<region region-id="4" left="6" top="50" width="80" height="40">
+			<math>
+				<ml:define>
+					<ml:function>
+						<ml:id xml:space="preserve">f</ml:id>
+						<ml:boundVars>
+							<ml:id xml:space="preserve">x</ml:id>
+						</ml:boundVars>
+					</ml:function>
+					<ml:program>
+						<ml:ifThen>
+							<ml:apply><ml:lessThan/><ml:id xml:space="preserve">x</ml:id><ml:real>0</ml:real></ml:apply>
+							<ml:apply><ml:neg/><ml:id xml:space="preserve">x</ml:id></ml:apply>
+						</ml:ifThen>
+						<ml:otherwise><ml:id xml:space="preserve">x</ml:id></ml:otherwise>
+					</ml:program>
+				</ml:define>
+			</math>
+		</region>
+		<region region-id="5" left="6" top="100" width="80" height="40">
+			<math>
+				<ml:define>
+					<ml:id xml:space="preserve">K</ml:id>
+					<ml:matrix rows="2" cols="2">
+						<ml:real>1</ml:real>
+						<ml:real>3</ml:real>
+						<ml:real>2</ml:real>
+						<ml:real>4</ml:real>
+					</ml:matrix>
+				</ml:define>
+			</math>
+		</region>
+		<region region-id="6" left="6" top="150" width="80" height="12">
+			<math>
+				<ml:eval>
+					<ml:apply>
+						<ml:indexer/>
+						<ml:id xml:space="preserve">K</ml:id>
+						<ml:sequence><ml:real>1</ml:real><ml:real>2</ml:real></ml:sequence>
+					</ml:apply>
+					<result xmlns="http://schemas.mathsoft.com/math30"><ml:real>2</ml:real></result>
+				</ml:eval>
+			</math>
+		</region>
+		<region region-id="7" left="200" top="150" width="80" height="30">
+			<math disable-calc="true">
+				<ml:define>
+					<ml:id xml:space="preserve">s</ml:id>
+					<ml:apply>
+						<ml:summation/>
+						<ml:lambda>
+							<ml:boundVars><ml:id xml:space="preserve">k</ml:id></ml:boundVars>
+							<ml:apply><ml:pow/><ml:id xml:space="preserve">k</ml:id><ml:real>2</ml:real></ml:apply>
+						</ml:lambda>
+						<ml:bounds><ml:real>1</ml:real><ml:real>10</ml:real></ml:bounds>
+					</ml:apply>
+				</ml:define>
+			</math>
+		</region>
+		<region region-id="8" left="6" top="200" width="80" height="30">
+			<math>
+				<ml:define>
+					<ml:id xml:space="preserve" subscript="Ω.fo">θ*</ml:id>
+					<ml:tryCatch>
+						<ml:apply><ml:div/><ml:real>1</ml:real><ml:real>0</ml:real></ml:apply>
+						<ml:real>-1</ml:real>
+					</ml:tryCatch>
+				</ml:define>
+			</math>
+		</region>
+		<region region-id="10" left="6" top="250" width="80" height="30">
+			<math>
+				<ml:define>
+					<ml:id xml:space="preserve">p</ml:id>
+					<ml:program>
+						<ml:localDefine><ml:id xml:space="preserve">s</ml:id><ml:real>0</ml:real></ml:localDefine>
+						<ml:for>
+							<ml:id xml:space="preserve">i</ml:id>
+							<ml:range><ml:sequence><ml:real>0</ml:real><ml:real>2</ml:real></ml:sequence><ml:real>10</ml:real></ml:range>
+							<ml:localDefine>
+								<ml:id xml:space="preserve">s</ml:id>
+								<ml:apply><ml:plus/><ml:id xml:space="preserve">s</ml:id><ml:id xml:space="preserve">i</ml:id></ml:apply>
+							</ml:localDefine>
+						</ml:for>
+						<ml:id xml:space="preserve">s</ml:id>
+					</ml:program>
+				</ml:define>
+			</math>
+		</region>
+		<region region-id="11" left="6" top="300" width="80" height="30">
+			<plot/>
+		</region>
+	</regions>
+</worksheet>

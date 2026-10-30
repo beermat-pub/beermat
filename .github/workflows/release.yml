@@ -1,0 +1,139 @@
+# Installers for a new version (docs/release.md). Push a tag `v1.2.3` to publish a GitHub Release;
+# run it by hand (Actions → Release → Run workflow) to build the installers without publishing.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        # macOS packages need a first number of at least 1.
+        description: Version to stamp on a trial build (nothing is published)
+        default: 1.0.0-trial
+      only:
+        description: Build only this system (windows, macos or linux); empty for all
+        default: ""
+
+permissions:
+  contents: write
+
+env:
+  VERSION: ${{ github.ref_type == 'tag' && github.ref_name || inputs.version }}
+
+jobs:
+  windows:
+    if: ${{ !inputs.only || inputs.only == 'windows' }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: 21 }
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Version
+        shell: bash
+        run: echo "V=${VERSION#v}" >> $GITHUB_ENV
+      - run: ./gradlew :app:createDistributable :cli:distZip "-Pversion=${{ env.V }}"
+      # The bundled Python answers, in the app image and in the command line (docs/symbolic.md#bundled-sympy).
+      - name: Check Python
+        shell: pwsh
+        run: |
+          & app\build\compose\binaries\main\app\Beermat\app\resources\python\python.exe -I -c "import sympy; print(sympy.__version__)"
+          if ($LASTEXITCODE) { exit 1 }
+          New-Item -ItemType Directory -Force build\installers | Out-Null
+          Copy-Item (Get-Item cli\build\distributions\beermat-*.zip) build\installers\beermat-cli-windows.zip
+          Expand-Archive build\installers\beermat-cli-windows.zip build\cli-check
+          & (Get-Item build\cli-check\beermat-*\bin\beermat.bat).FullName eval examples\symbolic.bbm
+      - name: Installer (Inno Setup)
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          $plain = "${{ env.V }}".Split('-')[0]
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$plain" packaging\windows\beermat.iss
+          Copy-Item "build\installers\Beermat-$plain-windows-setup.exe" "build\installers\Beermat-windows-setup.exe"
+      # The same app folder zipped: unzip anywhere and run Beermat.exe, nothing installed.
+      - name: Portable zip
+        shell: pwsh
+        run: Compress-Archive -Path app\build\compose\binaries\main\app\Beermat -DestinationPath build\installers\Beermat-windows-portable.zip
+      - uses: actions/upload-artifact@v4
+        with: { name: windows, path: "build/installers/Beermat-windows-setup.exe\nbuild/installers/Beermat-windows-portable.zip\nbuild/installers/beermat-cli-windows.zip" }
+      # For the Microsoft Store, uploaded by hand to Partner Center; not on the GitHub release (unsigned,
+      # it doesn't install from a download). The identity is in the repository's Actions variables.
+      - name: Store package (MSIX)
+        shell: pwsh
+        run: |
+          $id = @{ Version = "${{ env.V }}"; StoreId = "${{ vars.MSIX_STORE_ID }}" }
+          if ("${{ vars.MSIX_NAME }}") { $id.Name = "${{ vars.MSIX_NAME }}"; $id.Publisher = "${{ vars.MSIX_PUBLISHER }}"; $id.PublisherName = "${{ vars.MSIX_PUBLISHER_NAME }}" }
+          packaging\windows\msix.ps1 @id
+      - uses: actions/upload-artifact@v4
+        with: { name: microsoft-store, path: build/installers/Beermat-windows.msix }
+
+  macos:
+    if: ${{ !inputs.only || inputs.only == 'macos' }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: 21 }
+      - uses: gradle/actions/setup-gradle@v4
+      - run: echo "V=${VERSION#v}" >> $GITHUB_ENV
+      - run: ./gradlew :app:packageDmg :cli:distZip "-Pversion=${{ env.V }}"
+      - name: jpackage logs
+        if: failure()
+        run: cat app/build/compose/logs/*/*.txt
+      - run: |
+          cp app/build/compose/binaries/main/dmg/*.dmg Beermat-macos.dmg
+          cp cli/build/distributions/beermat-*.zip beermat-cli-macos.zip
+      # The bundled Python answers inside the DMG's app, and from the unzipped command line.
+      - name: Check Python
+        run: |
+          # `yes` accepts the licence page the DMG shows before it mounts.
+          yes | hdiutil attach -nobrowse -mountpoint /tmp/dmg Beermat-macos.dmg > /dev/null
+          /tmp/dmg/Beermat.app/Contents/app/resources/python/bin/python3 -I -c "import sympy; print(sympy.__version__)"
+          hdiutil detach /tmp/dmg
+          unzip -q beermat-cli-macos.zip -d cli-check && cli-check/beermat-*/bin/beermat eval examples/symbolic.bbm
+      - uses: actions/upload-artifact@v4
+        with: { name: macos, path: "Beermat-macos.dmg\nbeermat-cli-macos.zip" }
+
+  linux:
+    if: ${{ !inputs.only || inputs.only == 'linux' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: 21 }
+      - uses: gradle/actions/setup-gradle@v4
+      - run: echo "V=${VERSION#v}" >> $GITHUB_ENV
+      - run: sudo apt-get update && sudo apt-get install -y rpm
+      - run: ./gradlew :app:packageDeb :app:packageRpm :cli:distZip "-Pversion=${{ env.V }}"
+      - run: |
+          cp app/build/compose/binaries/main/deb/*.deb beermat-linux.deb
+          cp app/build/compose/binaries/main/rpm/*.rpm beermat-linux.rpm
+          cp cli/build/distributions/beermat-*.zip beermat-cli-linux.zip
+      # The bundled Python answers from the unpacked .deb (installing it needs a desktop menu, which
+      # the runner lacks), and from the unzipped command line.
+      - name: Check Python
+        run: |
+          dpkg-deb -x beermat-linux.deb deb-check
+          deb-check/opt/beermat/lib/app/resources/python/bin/python3 -I -c "import sympy; print(sympy.__version__)"
+          unzip -q beermat-cli-linux.zip -d cli-check && cli-check/beermat-*/bin/beermat eval examples/symbolic.bbm
+      - uses: actions/upload-artifact@v4
+        with: { name: linux, path: "beermat-linux.*\nbeermat-cli-linux.zip" }
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: [windows, macos, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dist, pattern: '{windows,macos,linux}', merge-multiple: true }
+      - name: Release notes from CHANGELOG.md
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          awk -v v="$v" '$0 ~ "^## \[?"v"\]?" {on=1; next} /^## / && on {exit} on' CHANGELOG.md > notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          body_path: notes.md
+          prerelease: ${{ contains(github.ref_name, '-') }}

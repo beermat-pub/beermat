@@ -1,0 +1,57 @@
+---
+beermat: 1
+title: Beam along its span
+result:
+  significant: 3
+results: 82b51ee62f024b23
+---
+
+# Beam along its span
+
+Bending moment and deflection of a simply supported beam at tenths of the span,
+and the governing section found by a small program.
+
+```calc
+L := 6 m
+q := 12 kN/m
+EI := 210 GPa*8360 cm^4
+```
+
+## Along the span
+
+```calc
+i := 0..10
+x[i] := i*L/10
+M[i] := q*x[i]*(L - x[i])/2
+δ[i] := q*x[i]*(L^3 - 2*L*x[i]^2 + x[i]^3)/(24*EI)
+M = ? kN*m   #= [0; 19.4; 34.6; 45.4; 51.8; 54.0; 51.8; 45.4; 34.6; 19.4; 0]*kN*m
+δ = ? mm     #= [0; 3.62; 6.85; 9.38; 11.0; 11.5; 11.0; 9.38; 6.85; 3.62; 0]*mm
+```
+
+## Governing section
+
+```calc
+peak(v) :=
+  k <- 0
+  for j in 0..last(v)
+    k <- j if v[j] > v[k]
+  k
+k_max := peak(M) = ?   #= 5.00
+x[k_max] = ? m         #= 3.00 m
+max(M) = ? kN*m        #= 54.0 kN*m
+```
+
+## Diagrams
+
+```plot {#p1 w=480 h=260}
+x: 0 m .. L
+traces:
+  - y: q*x*(L - x)/2
+    unit: kN*m
+    label: Bending moment
+  - y: q*(L/2 - x)
+    unit: kN
+    label: Shear
+    axis: right
+    style: { line: dash }
+```

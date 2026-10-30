@@ -1,0 +1,23 @@
+---
+results: 729547bededca001
+---
+# Load cases in a table
+
+A beam of span *L* under three load cases. The table takes the loads as input and works out each case's bending moment; the total row sums the columns. Its name, `Loads`, makes the columns available below as vectors.
+
+```calc
+L := 6 m
+```
+
+```table {name=Loads}
+| Case    |        q [kN/m] |          M [kN*m] |
+| ------- | --------------: | ----------------: |
+| Dead    |             4.5 | = q*L^2/8 → 20.25 |
+| Imposed |             7.5 | = q*L^2/8 → 33.75 |
+| Wind    |             1.2 |   = q*L^2/8 → 5.4 |
+| Total   | = sum(q) → 13.2 |   = sum(M) → 59.4 |
+```
+
+```calc
+M_design := 1.35*M_Loads[0] + 1.5*M_Loads[1] = ? kN*m   #= 77.963 kN*m
+```

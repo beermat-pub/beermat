@@ -1,0 +1,33 @@
+---
+beermat: 1
+title: Simply supported beam
+result:
+  significant: 3
+results: 7d4621da81717985
+---
+
+# Simply supported beam
+
+A uniform load **q** over a span **L**, steel I-beam.
+
+```calc
+L := 6 m
+q := 12 kN/m
+E := 210 GPa
+I := 8360 cm^4
+```
+
+## Bending moment and shear
+
+```calc
+M_max := q*L^2/8 = ? kN*m   #= 54.0 kN*m
+V_max := q*L/2 = ? kN       #= 36.0 kN
+```
+
+## Deflection
+
+```calc
+δ := 5*q*L^4/(384*E*I) = ? mm                #= 11.5 mm
+δ_allow := L/360 = ? mm                      #= 16.7 mm
+if(δ <= δ_allow, "OK", "too flexible") = ?   #= "OK"
+```

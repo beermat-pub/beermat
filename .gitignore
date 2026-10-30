@@ -1,0 +1,31 @@
+# Gradle / Kotlin
+.gradle/
+build/
+.kotlin/
+local.properties
+
+# IDEs
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Real worksheets: private, kept local only
+samples/
+
+# Internal: the plan, the assistant's notes, accounts and launch drafts, kept local only (not for the public repository)
+SPEC.md
+CLAUDE.md
+docs/project.md
+docs/launch/
+
+# The survey of the private worksheets, and its tools (docs/survey.md, local)
+docs/survey.md
+xmcd/survey.gradle.kts
+xmcd/src/test/kotlin/pub/beermat/xmcd/XmcdSurveyTest.kt
+xmcd/src/test/kotlin/pub/beermat/xmcd/ExcelProbeTest.kt
+tools/survey-parallel.ps1
