@@ -55,6 +55,17 @@ class ArrayTest {
     }
 
     @Test
+    fun `arrays grown at the end share their elements but never see each other's`() {
+        // v and w grow from the same u: each keeps its own last element, and u stays as it was.
+        assertEquals("[1; 2; 3; 0]", text("u := [1; 2]", "v := u", "v[2] := 3", "w := u", "w[2] := 4", "w[3] := 5", "v[3] := 0", "v = ?"))
+        assertEquals("[1; 2; 4; 5]", text("u := [1; 2]", "v := u", "v[2] := 3", "w := u", "w[2] := 4", "w[3] := 5", "v[3] := 0", "w = ?"))
+        assertEquals("[1; 2]", text("u := [1; 2]", "v := u", "v[2] := 3", "u = ?"))
+        assertEquals("[1, 2; 3, 4; 0, 6]", text("M := [1, 2; 3, 4]", "M[2, 1] := 6", "M = ?"))
+        // A program's loop, element by element.
+        assertEquals("[0; 1; 19999]", text("v :=\n    for i in 0..19999\n        a[i] <- i\n    a", "[v[0]; v[1]; v[19999]] = ?"))
+    }
+
+    @Test
     fun arithmetic() {
         assertEquals("[4; 6]", text("[1; 2] + [3; 4] = ?"))
         assertEquals("[2, 4; 6, 8]", text("2*[1, 2; 3, 4] = ?"))

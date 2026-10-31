@@ -478,6 +478,13 @@ class Evaluator(
         // so `v[1] <- 0` in an array of lengths is 0 m (docs/units.md#dimension-rules).
         val kept = (old?.takeIf { r < it.rows && c < it.cols }?.get(r, c) as? Scalar)?.q?.dimension
         val placed = if (kept != null && !kept.isNone && (value as? Scalar)?.q?.let { it.value == Complex.ZERO && it.dimension.isNone } == true) Scalar(Quantity(0.0, kept)) else value
+        // Inside the array, or grown at the end (more rows, or a row vector longer): the old elements are kept,
+        // the new ones added after them, and the one element set, without copying the rest.
+        if (old != null && (cols == old.cols || rows == 1)) {
+            var elements = Elements.of(old.elements)
+            while (elements.size < rows * cols) elements = elements.with(elements.size, zero)
+            return ArrayValue(rows, cols, elements.with(r * cols + c, placed)) to value
+        }
         val array = ArrayValue.of(rows, cols) { i, j ->
             when {
                 i == r && j == c -> placed
@@ -544,7 +551,7 @@ class Evaluator(
         }
 
     private fun evalNode(e: Expr, scope: Scope): Value = when (e) {
-        is Num -> Scalar(Quantity(numberValue(e.text)))
+        is Num -> Scalar(Quantity(numberValue(e)))
         is Id -> when (val b = scope[e]) {
             // `°C` and `°F` on their own (`°C^-1`, `W/(m*°C)`) are one degree; only after a plain number are they on the scale.
             is Binding.Bound -> b.value
@@ -1210,9 +1217,9 @@ class Evaluator(
 
     private fun bool(b: Boolean) = Scalar(if (b) Quantity(1.0) else Quantity(0.0))
 
-    private fun numberValue(text: String): Complex {
-        val imaginary = text.endsWith('i') || text.endsWith('j')
-        val x = (if (imaginary) text.dropLast(1) else Num(text).decimal).toDouble()
+    private fun numberValue(e: Num): Complex {
+        val imaginary = e.text.endsWith('i') || e.text.endsWith('j')
+        val x = (if (imaginary) e.text.dropLast(1) else e.decimal).toDouble()
         return if (imaginary) Complex(0.0, x) else Complex(x)
     }
 

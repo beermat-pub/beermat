@@ -91,6 +91,12 @@ internal object MatrixMath {
     fun determinant(a: ArrayValue): Quantity {
         square(a, "the determinant")
         val s = Structure.of(a, "the determinant")
+        realValues(a)?.let { m ->
+            val sign = eliminate(m, null) ?: return Quantity(Complex.ZERO, s.determinant)
+            var det = sign.toDouble()
+            for (k in m.indices) det *= m[k][k]
+            return Quantity(Complex(det), s.determinant)
+        }
         val (lu, sign) = eliminate(values(a), null) ?: return Quantity(Complex.ZERO, s.determinant)
         var det = Complex(sign.toDouble())
         for (k in lu.indices) det *= lu[k][k]
@@ -101,6 +107,11 @@ internal object MatrixMath {
         square(a, "the inverse")
         val s = Structure.of(a, "the inverse")
         val n = a.rows
+        realValues(a)?.let { m ->
+            val rhs = Array(n) { r -> DoubleArray(n) { c -> if (r == c) 1.0 else 0.0 } }
+            eliminate(m, rhs) ?: throw EvalException("the matrix is singular: it has no inverse")
+            return ArrayValue.of(n, n) { r, c -> Scalar(Quantity(Complex(rhs[r][c]), s.inverse(r, c))) }
+        }
         val rhs = Array(n) { r -> Array(n) { c -> if (r == c) Complex.ONE else Complex.ZERO } }
         eliminate(values(a), rhs) ?: throw EvalException("the matrix is singular: it has no inverse")
         return ArrayValue.of(n, n) { r, c -> Scalar(Quantity(rhs[r][c], s.inverse(r, c))) }
@@ -142,6 +153,37 @@ internal object MatrixMath {
         return m to sign
     }
 
+    /** [eliminate] for a real matrix, on plain doubles: the same steps, much faster. Returns the sign of the row permutation. */
+    private fun eliminate(m: Array<DoubleArray>, rhs: Array<DoubleArray>?): Int? {
+        val n = m.size
+        var sign = 1
+        for (k in 0 until n) {
+            val p = (k until n).maxBy { kotlin.math.abs(m[it][k]) }
+            if (m[p][k] == 0.0) return null
+            if (p != k) {
+                swap(m, p, k)
+                rhs?.let { swap(it, p, k) }
+                sign = -sign
+            }
+            for (r in 0 until n) {
+                if (r == k || (rhs == null && r < k)) continue
+                val f = m[r][k] / m[k][k]
+                if (f == 0.0) continue
+                val mr = m[r]
+                val mk = m[k]
+                for (c in k until n) mr[c] = mr[c] - f * mk[c]
+                rhs?.let { val hr = it[r]; val hk = it[k]; for (c in 0 until n) hr[c] = hr[c] - f * hk[c] }
+            }
+        }
+        if (rhs != null) {
+            for (k in 0 until n) {
+                val d = m[k][k]
+                for (c in 0 until n) rhs[k][c] = rhs[k][c] / d
+            }
+        }
+        return sign
+    }
+
     /**
      * The units of a matrix that can be inverted: element (i, j) must have the units of
      * `rows[i] * cols[j]`, as in a stiffness matrix. Then the inverse's element (i, j) has the
@@ -174,6 +216,11 @@ internal object MatrixMath {
     }
 
     private fun values(a: ArrayValue) = Array(a.rows) { r -> Array(a.cols) { c -> q(a[r, c]).value } }
+
+    /** The numbers of [a] as doubles, or null if any is complex. */
+    private fun realValues(a: ArrayValue): Array<DoubleArray>? = Array(a.rows) { r ->
+        DoubleArray(a.cols) { c -> q(a[r, c]).value.also { if (!it.isReal) return null }.re }
+    }
 
     private fun square(a: ArrayValue, what: String) {
         if (a.rows != a.cols) throw EvalException("$what needs a square matrix, not ${a.size}")

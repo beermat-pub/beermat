@@ -30,9 +30,58 @@ data class ArrayValue(val rows: Int, val cols: Int, val elements: List<Value>) :
     override fun toString() = (0 until rows).joinToString("; ", "[", "]") { r -> (0 until cols).joinToString(", ") { c -> this[r, c].toString() } }
 
     companion object {
-        fun of(rows: Int, cols: Int, f: (Int, Int) -> Value) = ArrayValue(rows, cols, List(rows * cols) { f(it / cols, it % cols) })
+        // Inline, so the indices aren't boxed: whole arrays are built this way, one element at a time.
+        inline fun of(rows: Int, cols: Int, f: (Int, Int) -> Value): ArrayValue {
+            val elements = arrayOfNulls<Value>(rows * cols)
+            for (k in elements.indices) elements[k] = f(k / cols, k % cols)
+            @Suppress("UNCHECKED_CAST")
+            return ArrayValue(rows, cols, (elements as Array<Value>).asList())
+        }
 
         fun column(values: List<Value>) = ArrayValue(values.size, 1, values)
+    }
+}
+
+/**
+ * Elements that one can be set in, or added after, without copying the others: a persistent vector,
+ * a tree of 32-way nodes, so a change copies only the 3 or 4 nodes on its path. A program's loop
+ * that fills an array element by element (`v[i] <- …`, `M[i, j] <- …`) then takes time in
+ * proportion to the elements, not their square, and every earlier array stays as it was.
+ */
+internal class Elements private constructor(private val root: Array<Any?>, private val shift: Int, override val size: Int) : AbstractList<Value>(), RandomAccess {
+
+    override fun get(index: Int): Value {
+        java.util.Objects.checkIndex(index, size)
+        var node = root
+        var s = shift
+        while (s > 0) {
+            @Suppress("UNCHECKED_CAST")
+            node = node[(index ushr s) and 31] as Array<Any?>
+            s -= 5
+        }
+        return node[index and 31] as Value
+    }
+
+    /** These elements with the one at [index] (below [size], or [size] itself to add one) set to [value]. */
+    fun with(index: Int, value: Value): Elements {
+        java.util.Objects.checkIndex(index, size + 1)
+        if (index < 1 shl (shift + 5)) return Elements(path(root, shift, index, value), shift, maxOf(size, index + 1))
+        // Full: a new level on top.
+        return Elements(path(arrayOfNulls<Any?>(32).also { it[0] = root }, shift + 5, index, value), shift + 5, size + 1)
+    }
+
+    private fun path(node: Array<Any?>?, s: Int, index: Int, value: Value): Array<Any?> {
+        val copy = node?.copyOf() ?: arrayOfNulls(32)
+        val k = (index ushr s) and 31
+        @Suppress("UNCHECKED_CAST")
+        copy[k] = if (s == 0) value else path(copy[k] as Array<Any?>?, s - 5, index, value)
+        return copy
+    }
+
+    companion object {
+        private val EMPTY = Elements(arrayOfNulls(32), 0, 0)
+
+        fun of(values: List<Value>): Elements = values as? Elements ?: values.fold(EMPTY) { e, v -> e.with(e.size, v) }
     }
 }
 

@@ -19,7 +19,7 @@ class Dimension private constructor(private val exponents: List<Rational>) {
 
     operator fun get(base: BaseDimension): Rational = exponents[base.ordinal]
 
-    val isNone: Boolean get() = exponents.all { it.isZero }
+    val isNone: Boolean = exponents.all { it.isZero }
 
     // A pure number on either side keeps the other dimension as it is, so arrays of millions of
     // elements scaled by a number or a unit share one Dimension instead of one each.

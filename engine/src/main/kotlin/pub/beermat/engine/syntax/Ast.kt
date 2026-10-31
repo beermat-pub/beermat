@@ -18,7 +18,7 @@ data class Num(val text: String) : Expr {
     }
 
     /** The literal in decimal, exactly (`0x1F` is `31`, `0b0.1` is `0.5`); other literals as they are. */
-    val decimal: String get() = based(text) ?: text
+    val decimal: String = based(text) ?: text
 
     companion object {
         private val NUMBER = Regex("""([0-9]+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?[ij]?""")
