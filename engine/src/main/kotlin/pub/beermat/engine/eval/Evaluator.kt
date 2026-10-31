@@ -135,7 +135,7 @@ class Evaluator(
                 is ExprStatement -> {
                     // In a solve block, a comparison is a constraint, kept with the definitions above it.
                     val block = solveBlock
-                    if (block != null && !block.closed && (s.expr as? Apply)?.op in COMPARISONS) block.constraints += s.expr as Apply to scope
+                    if (block != null && !block.closed && (s.expr as? Apply)?.op in COMPARISONS) links(s.expr as Apply).forEach { block.constraints += it to scope }
                     Outcome.NotEvaluated
                 }
                 Given -> {
@@ -556,7 +556,12 @@ class Evaluator(
         is Parens -> eval(e.inner, scope)
         is Call -> call(e, scope)
         is Apply -> apply(e, scope)
-        is Matrix -> ArrayValue(e.rows.size, e.rows[0].size, e.rows.flatten().map { eval(it, scope) })
+        is Matrix -> {
+            // A bare 0 beside elements that share one unit takes it (`[0; T - T_amb]`), as in an element definition.
+            val values = e.rows.flatten().map { eval(it, scope) }
+            val shared = values.takeIf { vs -> vs.all { it is Scalar } }?.let { vs -> sameUnits(vs.map { (it as Scalar).q }) }
+            ArrayValue(e.rows.size, e.rows[0].size, shared?.map(::Scalar) ?: values)
+        }
         is Index -> index(e, scope)
         is Range -> throw EvalException("a range can only be the whole value of a definition, as in i := 0..10", e)
         is Program -> program(e, scope)
@@ -1096,6 +1101,12 @@ class Evaluator(
      * is an unparenthesised comparison). Returns the rightmost operand's value if the whole
      * chain holds, or null as soon as one link fails.
      */
+    /** A chain's links, each its own comparison: `0 < x < L` is `0 < x` and `x < L` (a constraint holds both). */
+    private fun links(e: Apply): List<Apply> {
+        val l = e.args[0]
+        return if (l is Apply && l.op in COMPARISONS) links(l) + Apply(e.op, listOf(l.args[1], e.args[1])) else listOf(e)
+    }
+
     private fun chain(e: Apply, scope: Scope): Value? {
         val l = e.args[0]
         val left = if (l is Apply && l.op in COMPARISONS) chain(l, scope) ?: return null else eval(l, scope)

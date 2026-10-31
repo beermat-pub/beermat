@@ -13,7 +13,10 @@ data class Quantity(val value: Complex, val dimension: Dimension = Dimension.NON
 
     val isReal: Boolean get() = value.isReal
 
-    /** A sum. A dimensionless zero adds to anything: `0 + 2 m` is 2 m, so an array started with zeros can collect forces. */
+    /**
+     * A sum. A zero adds to anything: `0 + 2 m` is 2 m, so an array started with zeros can collect forces, and
+     * so does a zero that picked up a unit on the way (`0/M_p + 1`), as imported sheets' saved results show †.
+     */
     operator fun plus(other: Quantity): Quantity {
         requireComparable(other)
         return Quantity(value + other.value, sumDimension(other))
@@ -24,7 +27,7 @@ data class Quantity(val value: Complex, val dimension: Dimension = Dimension.NON
         return Quantity(value - other.value, sumDimension(other))
     }
 
-    private fun sumDimension(other: Quantity) = if (isPlainZero()) other.dimension else dimension
+    private fun sumDimension(other: Quantity) = if (isPlainZero() || (value == Complex.ZERO && other.value != Complex.ZERO)) other.dimension else dimension
 
     operator fun times(other: Quantity) = Quantity(value * other.value, dimension * other.dimension)
 
@@ -90,7 +93,7 @@ data class Quantity(val value: Complex, val dimension: Dimension = Dimension.NON
         else (value - other.value).abs() <= tolerance * maxOf(value.abs(), other.value.abs())
 
     private fun requireComparable(other: Quantity) {
-        if (dimension != other.dimension && !isPlainZero() && !other.isPlainZero()) {
+        if (dimension != other.dimension && value != Complex.ZERO && other.value != Complex.ZERO) {
             throw UnitsException("units do not match: $dimension vs ${other.dimension}")
         }
     }

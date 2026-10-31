@@ -15,16 +15,26 @@ internal object Solver {
     fun leastSquares(residuals: (DoubleArray) -> DoubleArray, x0: DoubleArray): DoubleArray {
         // Work in variables scaled by the guesses, so a step of 1 means "about the guess" whatever the units.
         val s = DoubleArray(x0.size) { if (x0[it] != 0.0) abs(x0[it]) else 1.0 }
-        val u = solveScaled({ v -> residuals(DoubleArray(v.size) { v[it] * s[it] }) }, DoubleArray(x0.size) { x0[it] / s[it] })
+        val scaled = { v: DoubleArray -> residuals(DoubleArray(v.size) { v[it] * s[it] }) }
+        val u0 = DoubleArray(x0.size) { x0[it] / s[it] }
+        fun cost(u: DoubleArray) = scaled(u).sumOf { it * it }
+        // Steps within a trust region first; if that doesn't reach a solution (it can stop where the
+        // residuals have gone flat), the unbounded steps from the guesses, and the closer of the two.
+        val bounded = solveScaled(scaled, u0, bounded = true)
+        val u = if (cost(bounded) <= 1e-12 * cost(u0).let { if (it.isFinite()) it else 1.0 }) bounded else solveScaled(scaled, u0, bounded = false).takeIf { cost(it) < cost(bounded) } ?: bounded
         return DoubleArray(u.size) { u[it] * s[it] }
     }
 
-    private fun solveScaled(residuals: (DoubleArray) -> DoubleArray, x0: DoubleArray): DoubleArray {
+    private fun solveScaled(residuals: (DoubleArray) -> DoubleArray, x0: DoubleArray, bounded: Boolean): DoubleArray {
         val n = x0.size
         var x = x0.copyOf()
         var r = residuals(x)
         var cost = r.sumOf { it * it }
         var lambda = -1.0
+        // A trust region in the scaled variables: a step goes at most this far, starting at about the
+        // guesses' size and doubling while steps succeed, so a first linearised step can't fly off
+        // across a pole to another family of solutions (a Weibull fit's k from 1 to -179).
+        var radius = if (bounded) 1.0 else Double.POSITIVE_INFINITY
         repeat(500) {
             if (cost < 1e-30) return x
             val j = jacobian(residuals, x, r)
@@ -37,6 +47,8 @@ internal object Solver {
             for (attempt in 0 until 40) {
                 val m = Array(n) { p -> DoubleArray(n) { q -> a[p][q] + if (p == q) lambda else 0.0 } }
                 val delta = solveLinear(m, DoubleArray(n) { -g[it] }) ?: break
+                val length = norm(delta)
+                if (length > radius) for (k in delta.indices) delta[k] *= radius / length
                 val trial = DoubleArray(n) { x[it] + delta[it] }
                 // A step onto a point where the constraints can't be evaluated (a pole of Γ) is a step too far: shorten it.
                 val rt = try {
@@ -51,11 +63,13 @@ internal object Solver {
                     r = rt
                     cost = ct
                     lambda = max(lambda / 3, 1e-15 * diagonal)
+                    radius *= 2
                     improved = true
                     if (small) return x
                     break
                 }
                 lambda *= 4
+                if (bounded) radius = minOf(radius, length) / 2
             }
             if (!improved) return x
         }

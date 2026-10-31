@@ -23,6 +23,9 @@ class QuantityTest {
         assertEquals(m, n(0.0) + m)
         assertEquals(-m, n(0.0) - m)
         assertFailsWith<UnitsException> { m + n(1e-9) }
+        // So does a zero that picked up a unit: 0/M + 1.
+        assertEquals(n(1.0), n(0.0) / (m * s) + n(1.0))
+        assertEquals(m, m + n(0.0) / s)
     }
 
     @Test

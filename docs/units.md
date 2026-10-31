@@ -22,7 +22,7 @@
 | `sin`, `exp`, `ln`, … | Argument must be dimensionless (angles count as dimensionless, see below) |
 | `abs`, `max`, `min`, `sum` | Preserve the dimension; elements must match, but a bare 0 in `max` and `min` takes the others' unit (`max(0, x)`) |
 | Matrices | Each element has its own unit, so `[F; M]` can hold a force and a moment. Arithmetic checks units element by element; see [evaluation.md](evaluation.md#arrays) |
-| A bare 0 | A dimensionless zero matches any dimension: `x > 0` for a length, and `0 + F` is F, so a program can start an array with zeros and collect forces in it (found importing `.xmcd` sheets, 2026-10-29). Only an exact 0: `1 m + 1e-9` is still an error. In arrays, since `.xmcd` arrays shared one unit: a bare 0 put into an element that has a unit keeps that unit (`v[1] <- 0` in an array of lengths is 0 m), and the data of `linterp`, `max`, `min` take any 0 as their unit, whatever unit it picked up on the way (0/MN) |
+| A bare 0 | A zero matches any dimension: `x > 0` for a length, and `0 + F` is F, so a program can start an array with zeros and collect forces in it (found importing `.xmcd` sheets, 2026-10-29). So does a zero that picked up a unit on the way, `0/M_p + 1` with a moment of 0 (2026-10-31, from saved results †). Only an exact 0: `1 m + 1e-9` is still an error. In arrays, since `.xmcd` arrays shared one unit: a bare 0 put into an element that has a unit keeps that unit (`v[1] <- 0` in an array of lengths is 0 m), a bare 0 written in an array beside elements that share one unit takes it (`[0; T - T_amb]` is a column of temperature differences; 2026-10-31), and the data of `linterp`, `max`, `min` take any 0 as their unit, whatever unit it picked up on the way (0/MN) |
 
 ## Display
 

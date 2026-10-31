@@ -6,6 +6,7 @@ import pub.beermat.engine.syntax.Parser
 import pub.beermat.engine.syntax.Printer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /** Solve blocks: `given`, constraints, then `find` or `minerr` (Given … Find). */
 class SolveBlockTest {
@@ -52,9 +53,24 @@ class SolveBlockTest {
     }
 
     @Test
+    fun `a chained constraint holds every link`() {
+        // `0 < x < 5` is 0 < x and x < 5, not (0 < x) < 5, which is always true.
+        assertEquals("5", text("f(x) := -x", "x := 1", "given", "0 < x < 5", "Minimize(f, x) = ?"))
+        // x = 2 would solve x² = 4, but the chain's upper link rules it out.
+        assertTrue("no solution" in text("x := 1", "given", "x^2 == 4", "0 < x < 1.5", "find(x) = ?"))
+    }
+
+    @Test
     fun `a step onto a pole is shortened, not an error`() {
         // Γ(1 + 1/k) has poles the iteration can land on, from these guesses.
         assertEquals("[-0.908; -2.163]", text("λ := 1", "k := 1", "given", "λ*Γ(1 + 1/k) == -1.5", "λ^2*(Γ(1 + 2/k) - Γ(1 + 1/k)^2) == 8.286", "find([λ; k]) = ?"))
+    }
+
+    @Test
+    fun `steps stay near the guesses, so a fit stays on their side of a pole`() {
+        // A Weibull fit (mean 120, variance 900) from k = 1: the solution with k > 0, as imported sheets' saved results have it for such fits,
+        // not one with k < 0 that a first, undamped step across k = 0 used to reach.
+        assertEquals("[131.425; 4.542]", text("λ := 1", "k := 1", "given", "λ*Γ(1 + 1/k) == 120", "λ^2*(Γ(1 + 2/k) - Γ(1 + 1/k)^2) == 900", "find([λ; k]) = ?"))
     }
 
     @Test

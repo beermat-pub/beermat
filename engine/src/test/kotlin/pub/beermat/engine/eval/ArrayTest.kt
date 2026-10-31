@@ -81,6 +81,13 @@ class ArrayTest {
     }
 
     @Test
+    fun `a bare 0 beside elements with one unit takes it`() {
+        assertEquals("[0; 5]*N", text("ΔT := [0; 5 K]", "α := 2/K", "ΔT*α*0.5 N = ?"))
+        // Mixed units stay as they are.
+        assertEquals("[0; 1 m; 2 s]", text("[0; 1 m; 2 s] = ?"))
+    }
+
+    @Test
     fun `inverse and determinant`() {
         assertEquals("[-2, 1; 1.5, -0.5]", text("[1, 2; 3, 4]^-1 = ?"))
         assertEquals("-2", text("|[1, 2; 3, 4]| = ?"))

@@ -21,9 +21,16 @@ class Dimension private constructor(private val exponents: List<Rational>) {
 
     val isNone: Boolean get() = exponents.all { it.isZero }
 
-    operator fun times(other: Dimension) = Dimension(exponents.zip(other.exponents, Rational::plus))
+    // A pure number on either side keeps the other dimension as it is, so arrays of millions of
+    // elements scaled by a number or a unit share one Dimension instead of one each.
+    operator fun times(other: Dimension) = when {
+        other.isNone -> this
+        isNone -> other
+        else -> Dimension(exponents.zip(other.exponents, Rational::plus))
+    }
 
-    operator fun div(other: Dimension) = Dimension(exponents.zip(other.exponents, Rational::minus))
+    operator fun div(other: Dimension) =
+        if (other.isNone) this else Dimension(exponents.zip(other.exponents, Rational::minus))
 
     fun pow(n: Rational) = Dimension(exponents.map { it * n })
 
