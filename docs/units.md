@@ -41,7 +41,7 @@ The unit placeholder is **sticky**: it is stored in the file (`= ? kN*m`), so it
 
 ## Built-in unit library
 
-Starts with the built-in set that `.xmcd` files use. The table lives in [engine/src/main/resources/pub/beermat/engine/units.bbm](../engine/src/main/resources/pub/beermat/engine/units.bbm) and covers:
+Starts with the built-in set that `.xmcd` files use. The table lives in [engine/src/commonMain/resources/pub/beermat/engine/units.bbm](../engine/src/commonMain/resources/pub/beermat/engine/units.bbm) and covers:
 
 - **SI base and derived:** m, kg, s, A, K, mol, cd, N, Pa, J, W, C, V, Ω (`ohm`), F, H, T, Wb, Hz, S, lm, lx, Gy, Sv, Bq, kat.
 - **Prefixed forms:** generated from prefixes (`k`, `M`, `G`, `m`, `μ`/`u`, `n`, `c`, `d`, …), but **only for a curated list** (mm, cm, km, kN, MN, GN, kPa, MPa, GPa, kJ, MJ, kW, MW, mA, μm, ns, …), so that every identifier doesn't become a unit and names don't collide with user variables.
