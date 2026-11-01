@@ -45,4 +45,4 @@ A result is drawn from its two parts in linear syntax (`ResultText.Parts`): the 
 
 - `--png out.png` renders the pages to an image without a window;
 - `--script "click 100 50; type x:3m«enter»"` (or `--script @steps.txt`) edits first, for checking the editor by eye;
-- `--selftest keys.txt` opens the window and posts the keys to its own event queue, as a keyboard would: it checks the real key handling.
+- `--selftest keys.txt` opens the window and posts the keys to its own event queue, as a keyboard would: it checks the real key handling. With `--snapshot out.png`, once the keys are typed the app saves the sheet as it then stands as a PNG and closes, so the check needs no one watching the screen.

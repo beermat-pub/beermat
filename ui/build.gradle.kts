@@ -25,8 +25,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":export"))
-            // Compose, and Skia with it, which draws the math and the page on both platforms.
+            // Compose (and Skia with it, which draws the math and the page) on both platforms.
             implementation(compose.ui)
+            implementation(compose.foundation)
         }
         // The tests draw with Skia, which on the JVM needs this system's native part.
         jvmTest.dependencies {

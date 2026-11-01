@@ -10,3 +10,7 @@ internal expect fun defaultFontBytes(): ByteArray?
 
 /** [block] run holding [lock], so threads take turns (the desktop's MCP server lays out the live sheet too); the browser has one thread. */
 internal expect inline fun <T> locked(lock: Any, block: () -> T): T
+
+/** [content] with a tip ([tip], drawn by the caller) shown while the mouse rests on it: the toolbar's buttons. */
+@androidx.compose.runtime.Composable
+internal expect fun WithTip(tip: @androidx.compose.runtime.Composable () -> Unit, content: @androidx.compose.runtime.Composable () -> Unit)

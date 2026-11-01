@@ -14,3 +14,8 @@ internal actual fun defaultFontBytes(): ByteArray? =
     pub.beermat.app.math.SkiaMath::class.java.getResourceAsStream("/fonts/STIXTwoMath-Regular.ttf")?.readBytes()
 
 internal actual inline fun <T> locked(lock: Any, block: () -> T): T = synchronized(lock, block)
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@androidx.compose.runtime.Composable
+internal actual fun WithTip(tip: @androidx.compose.runtime.Composable () -> Unit, content: @androidx.compose.runtime.Composable () -> Unit) =
+    androidx.compose.foundation.TooltipArea(tooltip = tip, delayMillis = 350) { content() }
