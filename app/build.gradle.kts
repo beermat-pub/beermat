@@ -15,6 +15,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":ui"))
     implementation(project(":export"))
     implementation(project(":mcp"))
     implementation(compose.desktop.currentOs)
@@ -65,9 +66,6 @@ tasks.test {
     useJUnitPlatform()
     // `-Pbeermat.pdfOut=dir` keeps the PDFs (and a PNG of each page) that PdfTest writes, to look at.
     providers.gradleProperty("beermat.pdfOut").orNull?.let { systemProperty("beermat.pdfOut", it) }
-    // The bundled Python, for the tests of Python functions in the editor.
-    dependsOn(":symbolic:preparePython")
-    systemProperty("beermat.python", rootDir.resolve("symbolic/build/app-resources/common/python").path)
 }
 
 // Compose registers it late, after this script runs.

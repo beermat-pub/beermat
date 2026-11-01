@@ -10,6 +10,7 @@ import org.jetbrains.skia.PaintStrokeCap
 import org.jetbrains.skia.PaintStrokeJoin
 import org.jetbrains.skia.PathBuilder
 import org.jetbrains.skia.Typeface
+import pub.beermat.app.defaultFontBytes
 
 /**
  * Measuring and drawing math with Skia, in STIX Two Math (SIL Open Font License; the licence
@@ -17,9 +18,11 @@ import org.jetbrains.skia.Typeface
  */
 object SkiaMath : Metrics {
 
+    /** The font file's bytes: read from the app's resources on the desktop; a shell may set them before the first page is drawn. */
+    var fontBytes: ByteArray? = null
+
     val typeface: Typeface by lazy {
-        val bytes = SkiaMath::class.java.getResourceAsStream("/fonts/STIXTwoMath-Regular.ttf")?.readBytes()
-            ?: error("the math font is missing from the resources")
+        val bytes = fontBytes ?: defaultFontBytes() ?: error("the math font is missing from the resources")
         FontMgr.default.makeFromData(Data.makeFromBytes(bytes)) ?: error("the math font could not be loaded")
     }
 

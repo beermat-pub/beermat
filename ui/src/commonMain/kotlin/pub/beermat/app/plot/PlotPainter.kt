@@ -1,5 +1,11 @@
 package pub.beermat.app.plot
 
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.pow
+import kotlin.math.round
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.PaintMode
@@ -12,11 +18,6 @@ import pub.beermat.engine.display.ResultFormat
 import pub.beermat.engine.display.Rounding
 import pub.beermat.format.Axis
 import pub.beermat.format.PlotData
-import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.log10
-import kotlin.math.pow
 
 /**
  * Draws an X-Y plot with Skia: title, frame, nice ticks (or decades on a log axis), grid,
@@ -67,7 +68,7 @@ object PlotPainter {
             if (axis.log) return NumberFormat.format(v, ResultFormat(rounding = Rounding.Decimals(maxOf(0, -floor(log10(v) + 1e-9).toInt())), exponentialThreshold = 6))
             // Just enough decimals for the step: 0.2 and 0.4, not 0.2000; 2.5 keeps its .5.
             val step = axis.step ?: step(lo, hi)
-            val places = (0..10).first { p -> abs(step * 10.0.pow(p) - Math.rint(step * 10.0.pow(p))) < 1e-6 * step * 10.0.pow(p) }
+            val places = (0..10).first { p -> abs(step * 10.0.pow(p) - round(step * 10.0.pow(p))) < 1e-6 * step * 10.0.pow(p) }
             return NumberFormat.format(v, ResultFormat(rounding = Rounding.Decimals(places), exponentialThreshold = 6))
         }
 

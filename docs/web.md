@@ -22,13 +22,13 @@ Compose Multiplatform runs in the browser through Kotlin/Wasm, drawing with the 
 1. Make `engine`, `symbolic`, `format` and `export` **multiplatform** (JVM and Wasm targets), moving the Java uses behind small `expect`/`actual` functions. Same tests, run on both targets. This is most of the work, and it is worth it anyway: the engine could then also run in a browser page of the docs, or in the VS Code extension ([vscode.md](vscode.md)).
    - **engine: done** (2026-11-01). What the platform gives is in `Platform.kt` (files as `HostFile`, a `java.io.File` on the desktop; stopping; the clock; how deep calls may nest: 1,000 on the JVM, 300 in WebAssembly, whose stack is smaller). Results are rounded by our own `Decimal`, and random numbers come from `SheetRandom`, a copy of `java.util.Random`'s generator; JVM-only tests check both against the Java classes, so sheets show the same digits and the same random values on every platform. The version and the unit table are generated as Kotlin source. One difference found on the way: in WebAssembly `HashMap.putAll` keeps a value equal to the new one, so `Scope` merges with `put`, which a sheet's `°C := K` needs.
    - **symbolic, format, export: done** (2026-11-01). Our own symbolic engine runs everywhere, its exact fractions on `BigInt` (ours, 32-bit limbs and Knuth's long division) instead of `BigInteger`; SymPy and the sheet's Python functions are JVM only, so in the browser what our engine can't do says it needs SymPy. The format module reads YAML with `snakeyaml-engine-kmp` (the multiplatform port of SnakeYAML Engine, Apache-2.0), hashes results with its own SHA-256, and in the browser `READEXCEL` says it needs the desktop version. JVM-only tests check `BigInt` against `BigInteger`, the fractions' doubles against `BigDecimal`, and the hash against `MessageDigest`, so saved sheets keep their results and hashes.
-2. Split the app into a common UI module (editor, page, painter, toolbar) and two shells: desktop (window, menus, files, MCP) and web (canvas, browser storage, upload and download). Planned on 2026-11-01, for Dan to approve (see [Step 2 in detail](#step-2-in-detail)).
+2. Split the app into a common UI module (editor, page, painter, toolbar) and two shells: desktop (window, menus, files, MCP) and web (canvas, browser storage, upload and download). Planned on 2026-11-01 and approved by Dan (see [Step 2 in detail](#step-2-in-detail)).
 3. The web shell: examples to open, the sheet kept in the browser's storage, Open and Save as file upload and download, a banner "the desktop app does more: download".
 4. Host it on GitHub Pages under `beermat.pub/try`, built by the release workflow, so it always matches the latest release.
 
 ## Step 2 in detail
 
-> Status: **proposed** by Claude on 2026-11-01, for Dan to approve before code moves.
+> Status: **approved** by Dan on 2026-11-01 (printing and PDF in the browser: later). **2a done** (2026-11-01); 2b next.
 
 What the app is made of today (`app/`, about 7,000 lines):
 
@@ -51,7 +51,7 @@ What the app is made of today (`app/`, about 7,000 lines):
 
 **In two steps, each tested and committed on its own:**
 
-- **2a:** create `ui`, move `editor/`, `math/`, `page/`, `plot/` and the commands into it, with the few desktop uses replaced (the folder as `HostFile`, the error log through `Host`, `identityMap`, Kotlin's `Base64`, the font from resources). No change for the user; every app test passes, and `ui` compiles for WebAssembly.
+- **2a (done):** create `ui`, move `editor/`, `math/`, `page/`, `plot/` and the commands into it, with the few desktop uses replaced: the folder as `HostFile` (the engine now reads a file's bytes through it, for pictures beside the sheet), the error log and a lock as small platform functions in `ui` (the error log moves into `Host` in 2b), `identityMap`, a plain most-recent-last picture cache. The packages keep their names (`pub.beermat.app.page`…), so nothing else changed. The font stays a desktop resource for now, read through `SkiaMath.fontBytes`, which the browser shell will set. `PlotImages` (the plots' SVG for exports) stays in `app`, as it writes through a JVM stream. `ui`'s tests run on the JVM (they draw with Skia); every one passes, and `ui` compiles for WebAssembly.
 - **2b:** take the sheet view out of `Main.kt` into `ui`, behind `Host`. `Main.kt` keeps the window and menus. Checked in the real window with `--selftest` and `--png --script`, as the editor was.
 
 Printing and PDF export stay on the desktop for now; in the browser they show greyed out, like the rest of what it leaves out.

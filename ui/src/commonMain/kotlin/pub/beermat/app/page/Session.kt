@@ -1,37 +1,41 @@
 package pub.beermat.app.page
 
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import pub.beermat.app.editor.Cursor
 import pub.beermat.app.editor.EditState
 import pub.beermat.app.editor.Editor
 import pub.beermat.app.editor.Key
 import pub.beermat.app.editor.Nodes
+import pub.beermat.app.logError
 import pub.beermat.app.math.BoxPaths
 import pub.beermat.app.math.MathLayout
+import pub.beermat.engine.HostFile
 import pub.beermat.engine.display.ResultText
 import pub.beermat.engine.display.Rounding
-import pub.beermat.engine.syntax.Id
-import pub.beermat.engine.syntax.Op
 import pub.beermat.engine.syntax.Apply
 import pub.beermat.engine.syntax.Define
 import pub.beermat.engine.syntax.Evaluate
 import pub.beermat.engine.syntax.Expr
-import pub.beermat.engine.syntax.ResultSlot
-import pub.beermat.engine.syntax.Statement
 import pub.beermat.engine.syntax.ExprStatement
+import pub.beermat.engine.syntax.Id
 import pub.beermat.engine.syntax.Multiplication
+import pub.beermat.engine.syntax.Op
 import pub.beermat.engine.syntax.ParseException
 import pub.beermat.engine.syntax.Parser
 import pub.beermat.engine.syntax.Placeholder
 import pub.beermat.engine.syntax.Printer
+import pub.beermat.engine.syntax.ResultSlot
+import pub.beermat.engine.syntax.Statement
 import pub.beermat.engine.syntax.Unparsed
 import pub.beermat.format.AreaEnd
 import pub.beermat.format.AreaStart
 import pub.beermat.format.Attributes
 import pub.beermat.format.CalcLine
 import pub.beermat.format.Calculation
+import pub.beermat.format.ImageRegion
 import pub.beermat.format.MathRegion
 import pub.beermat.format.PageBreak
-import pub.beermat.format.ImageRegion
 import pub.beermat.format.PlotRegion
 import pub.beermat.format.Region
 import pub.beermat.format.Regions
@@ -40,8 +44,6 @@ import pub.beermat.format.TextRegion
 import pub.beermat.format.WorksheetText
 import pub.beermat.format.with
 import pub.beermat.format.without
-import kotlin.math.abs
-import kotlin.math.roundToInt
 
 /**
  * An open worksheet being edited (docs/editor.md): its regions, the statement or text being
@@ -136,7 +138,7 @@ class Session(text: String, private val math: MathLayout) {
     }
 
     /** The sheet's folder, where pictures linked by file name are found; null for a new sheet. */
-    var base: java.io.File? = null
+    var base: HostFile? = null
         set(value) {
             field = value
             relayout()
@@ -401,7 +403,7 @@ class Session(text: String, private val math: MathLayout) {
         val best = Nodes.leaves(e.state.statement)
             .mapNotNull { p -> BoxPaths.rect(sv.box, p, 0f, sv.baseline)?.let { p to it } }
             .filter { (_, r) -> val y = (r.top + r.bottom) / 2; if (up) y < cy - 2f else y > cy + 2f }
-            .minByOrNull { (_, r) -> Math.abs((r.top + r.bottom) / 2 - cy) * 2 + Math.abs((r.x + r.right) / 2 - cx) } ?: return false
+            .minByOrNull { (_, r) -> abs((r.top + r.bottom) / 2 - cy) * 2 + abs((r.x + r.right) / 2 - cx) } ?: return false
         setEditing(e.copy(state = Editor.enter(e.state, best.first, atEnd = true)), changed = false)
         return true
     }
@@ -526,7 +528,7 @@ class Session(text: String, private val math: MathLayout) {
     fun resize(index: Int, w: Float, h: Float) {
         val r = regions.getOrNull(index)?.takeIf { it is ImageRegion || it is PlotRegion } ?: return
         snapshot()
-        val a = r.attributes.with("w", Math.round(w.snap().coerceAtLeast(24f)).toString()).with("h", Math.round(h.snap().coerceAtLeast(24f)).toString())
+        val a = r.attributes.with("w", w.snap().coerceAtLeast(24f).roundToInt().toString()).with("h", h.snap().coerceAtLeast(24f).roundToInt().toString())
         regions = regions.toMutableList().also { it[index] = r.withAttributes(a) }
         changed()
     }
@@ -778,8 +780,8 @@ class Session(text: String, private val math: MathLayout) {
         val (w, h) = Pictures.fit(picture, layout.format.contentWidth - x)
         leave()
         snapshot()
-        val a = Attributes.NONE.with("x", Math.round(x).toString()).with("y", Math.round(y).toString())
-            .with("w", Math.round(w).toString()).with("h", Math.round(h).toString())
+        val a = Attributes.NONE.with("x", x.roundToInt().toString()).with("y", y.roundToInt().toString())
+            .with("w", w.roundToInt().toString()).with("h", h.roundToInt().toString())
         val r = ImageRegion(a, alt, ImageRegion.dataUri(mime, bytes))
         regions = regions + r
         sortRegions()
@@ -861,19 +863,13 @@ class Session(text: String, private val math: MathLayout) {
             dirty = wasDirty
             typingRun = false
             runCatching { relayout() }.onFailure { editing = null; textEditing = null; relayout() }
-            lastError = "That didn't work (a bug, undone): ${e.javaClass.simpleName}"
+            lastError = "That didn't work (a bug, undone): ${e::class.simpleName}"
             log(e)
             fallback
         }
     }
 
-    private fun log(e: Exception) {
-        runCatching {
-            val dir = java.io.File(System.getProperty("user.home"), ".beermat").apply { mkdirs() }
-            java.io.File(dir, "errors.log").appendText("${java.time.Instant.now()} ${pub.beermat.engine.Version.current}\n${e.stackTraceToString()}\n")
-        }
-        e.printStackTrace()
-    }
+    private fun log(e: Exception) = logError(e)
 
     // Undo.
 

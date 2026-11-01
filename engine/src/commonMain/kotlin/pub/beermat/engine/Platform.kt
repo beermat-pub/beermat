@@ -14,15 +14,18 @@ import kotlin.math.ulp
 expect class HostFile
 
 /** [path] itself when it is absolute, otherwise in [folder] (the current folder when null). */
-internal expect fun hostFile(folder: HostFile?, path: String): HostFile
+expect fun hostFile(folder: HostFile?, path: String): HostFile
 
-internal expect fun isAbsolutePath(path: String): Boolean
+expect fun isAbsolutePath(path: String): Boolean
 
 /** Whether [file] exists and is a file, not a folder. */
-internal expect fun isHostFile(file: HostFile): Boolean
+expect fun isHostFile(file: HostFile): Boolean
 
 /** The lines of [file]; throws if it can't be read. */
 internal expect fun hostLines(file: HostFile): List<String>
+
+/** The bytes of [file] (a picture beside the sheet); null if it can't be read. */
+expect fun hostBytes(file: HostFile): ByteArray?
 
 /** Whether the evaluation was asked to stop (the desktop app interrupts its evaluation thread). */
 internal expect fun stopRequested(): Boolean

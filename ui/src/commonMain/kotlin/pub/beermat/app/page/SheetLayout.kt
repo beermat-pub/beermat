@@ -1,13 +1,15 @@
 package pub.beermat.app.page
 
+import kotlin.math.floor
 import org.jetbrains.skia.paragraph.Paragraph
+import pub.beermat.app.editor.Draft
 import pub.beermat.app.editor.EditState
 import pub.beermat.app.math.Box
 import pub.beermat.app.math.Group
 import pub.beermat.app.math.MathAlphabet
 import pub.beermat.app.math.MathLayout
 import pub.beermat.app.math.TextBox
-import pub.beermat.app.editor.Draft
+import pub.beermat.engine.HostFile
 import pub.beermat.engine.display.ResultText
 import pub.beermat.engine.syntax.Expr
 import pub.beermat.engine.syntax.Statement
@@ -19,8 +21,8 @@ import pub.beermat.format.AreaStart
 import pub.beermat.format.CalcBlock
 import pub.beermat.format.CalcLine
 import pub.beermat.format.Calculation
-import pub.beermat.format.LineOutcome
 import pub.beermat.format.ImageRegion
+import pub.beermat.format.LineOutcome
 import pub.beermat.format.MathRegion
 import pub.beermat.format.PageBreak
 import pub.beermat.format.PlotData
@@ -30,8 +32,7 @@ import pub.beermat.format.Regions
 import pub.beermat.format.TableRegion
 import pub.beermat.format.TextRegion
 import pub.beermat.format.Worksheet
-import java.util.IdentityHashMap
-import kotlin.math.floor
+import pub.beermat.format.identityMap
 
 /** The statement being edited: statement [statement] of region [region]. */
 data class Editing(val region: Int, val statement: Int, val state: EditState)
@@ -141,7 +142,7 @@ class SheetLayout(
         const val FLOW_GAP = 10f
         const val STATEMENT_GAP = 6f
 
-        fun build(frontmatter: List<String>?, regions: List<Region>, editing: Editing?, math: MathLayout, format: PageFormat, base: java.io.File? = null): SheetLayout {
+        fun build(frontmatter: List<String>?, regions: List<Region>, editing: Editing?, math: MathLayout, format: PageFormat, base: HostFile? = null): SheetLayout {
             val evaluated = regions.mapIndexed { i, r -> if (editing != null && i == editing.region && r is MathRegion) withStatement(r, editing.statement, editing.state.text) else r }
             val sheet = Regions.sheet(frontmatter, evaluated)
             val calc = Calculation.of(sheet, base)
@@ -250,7 +251,7 @@ class SheetLayout(
             val shown = d.shown() ?: return emptyMap()
             val node = s.node as? Expr ?: return emptyMap()
             val text = if (d.kind == Draft.Kind.NAME) MathAlphabet.italic(shown) else shown
-            return IdentityHashMap<Expr, String>().apply { put(node, text) }
+            return identityMap<Expr, String>().apply { put(node, text) }
         }
 
         /** Where a region may be cut across pages: between statements and between program lines. */

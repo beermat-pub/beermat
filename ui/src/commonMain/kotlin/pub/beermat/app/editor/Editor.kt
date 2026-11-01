@@ -1,37 +1,38 @@
 package pub.beermat.app.editor
 
+import kotlin.concurrent.Volatile
 import pub.beermat.engine.syntax.Apply
 import pub.beermat.engine.syntax.Break
-import pub.beermat.engine.syntax.Continue
-import pub.beermat.engine.syntax.For
-import pub.beermat.engine.syntax.IfThen
-import pub.beermat.engine.syntax.Line
-import pub.beermat.engine.syntax.LocalDefine
-import pub.beermat.engine.syntax.Matrix
-import pub.beermat.engine.syntax.Multiplication
-import pub.beermat.engine.syntax.Otherwise
-import pub.beermat.engine.syntax.Program
-import pub.beermat.engine.syntax.ProgramLine
-import pub.beermat.engine.syntax.Return
-import pub.beermat.engine.syntax.While
 import pub.beermat.engine.syntax.Call
+import pub.beermat.engine.syntax.Continue
 import pub.beermat.engine.syntax.Define
 import pub.beermat.engine.syntax.Evaluate
 import pub.beermat.engine.syntax.Expr
 import pub.beermat.engine.syntax.ExprStatement
+import pub.beermat.engine.syntax.For
 import pub.beermat.engine.syntax.Given
 import pub.beermat.engine.syntax.Id
+import pub.beermat.engine.syntax.IfThen
 import pub.beermat.engine.syntax.Index
+import pub.beermat.engine.syntax.Line
+import pub.beermat.engine.syntax.LocalDefine
+import pub.beermat.engine.syntax.Matrix
+import pub.beermat.engine.syntax.Multiplication
 import pub.beermat.engine.syntax.Num
 import pub.beermat.engine.syntax.Op
+import pub.beermat.engine.syntax.Otherwise
 import pub.beermat.engine.syntax.Parens
 import pub.beermat.engine.syntax.Placeholder
 import pub.beermat.engine.syntax.Printer
+import pub.beermat.engine.syntax.Program
+import pub.beermat.engine.syntax.ProgramLine
 import pub.beermat.engine.syntax.Range
 import pub.beermat.engine.syntax.ResultSlot
+import pub.beermat.engine.syntax.Return
 import pub.beermat.engine.syntax.Statement
 import pub.beermat.engine.syntax.Str
 import pub.beermat.engine.syntax.Symbolic
+import pub.beermat.engine.syntax.While
 
 /** Which side of the selection the insertion cursor's vertical bar is on. */
 enum class Side { LEFT, RIGHT }

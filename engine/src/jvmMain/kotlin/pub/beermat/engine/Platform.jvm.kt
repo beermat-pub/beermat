@@ -4,13 +4,15 @@ import java.io.File
 
 actual typealias HostFile = File
 
-internal actual fun hostFile(folder: HostFile?, path: String): HostFile = File(path).takeIf { it.isAbsolute } ?: File(folder ?: File("."), path)
+actual fun hostFile(folder: HostFile?, path: String): HostFile = File(path).takeIf { it.isAbsolute } ?: File(folder ?: File("."), path)
 
-internal actual fun isAbsolutePath(path: String): Boolean = File(path).isAbsolute
+actual fun isAbsolutePath(path: String): Boolean = File(path).isAbsolute
 
-internal actual fun isHostFile(file: HostFile): Boolean = file.isFile
+actual fun isHostFile(file: HostFile): Boolean = file.isFile
 
 internal actual fun hostLines(file: HostFile): List<String> = file.readLines()
+
+actual fun hostBytes(file: HostFile): ByteArray? = runCatching { file.readBytes() }.getOrNull()
 
 internal actual fun stopRequested(): Boolean = Thread.currentThread().isInterrupted
 

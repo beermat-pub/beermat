@@ -13,6 +13,12 @@ object MathAlphabet {
 
     fun bold(text: String): String = map(text, latin = 0x1D400, greek = 0x1D6A8, digits = 0x1D7CE)
 
+    /** Appends one Unicode character, as a surrogate pair when it lies beyond the first 65,536. */
+    private fun StringBuilder.appendCodePoint(code: Int) {
+        if (code < 0x10000) append(code.toChar())
+        else append((0xD800 + ((code - 0x10000) shr 10)).toChar()).append((0xDC00 + ((code - 0x10000) and 0x3FF)).toChar())
+    }
+
     /** Maps letters to the alphabets starting at [latin] (A to Z, then a to z) and [greek] (Α to Ω, then α to ω). */
     private fun map(text: String, latin: Int, greek: Int, digits: Int?, special: (Char) -> String? = { null }): String = buildString {
         for (c in text) {

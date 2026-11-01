@@ -9,9 +9,14 @@ import org.jetbrains.skia.PaintMode
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.svg.SVGDOM
 import org.jetbrains.skia.svg.SVGLengthContext
+import pub.beermat.app.locked
 import pub.beermat.app.math.SkiaMath
+import pub.beermat.engine.HostFile
+import pub.beermat.engine.hostBytes
+import pub.beermat.engine.hostFile
+import pub.beermat.engine.isAbsolutePath
+import pub.beermat.engine.isHostFile
 import pub.beermat.format.ImageRegion
-import java.io.File
 
 /**
  * The pictures of image regions (docs/file-format.md#images), decoded once and kept by their
@@ -26,24 +31,29 @@ object Pictures {
     }
 
     private const val PT_PER_PX = 0.75f
-    private val cache = object : LinkedHashMap<String, Picture?>(16, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Picture?>) = size > 64
-    }
+    /** The last 64 pictures used, the most recent last. */
+    private val cache = LinkedHashMap<String, Picture?>()
 
     /** The picture of [r]; a file is found relative to [base], the sheet's folder. Null when it can't be read. */
-    @Synchronized
-    fun of(r: ImageRegion, base: File?): Picture? {
-        val key = if (r.embedded) r.source else File(base, r.source).path
-        return cache.getOrPut(key) { decode(bytes(r, base) ?: return@getOrPut null) }
+    fun of(r: ImageRegion, base: HostFile?): Picture? = locked(cache) {
+        val key = if (r.embedded) r.source else "$base | ${r.source}"
+        if (key in cache) return@locked cache.remove(key).also { cache[key] = it }
+        val picture = bytes(r, base)?.let(::decode)
+        cache[key] = picture
+        if (cache.size > 64) cache.remove(cache.keys.first())
+        picture
     }
 
-    private fun bytes(r: ImageRegion, base: File?): ByteArray? =
-        r.bytes() ?: runCatching { File(r.source).takeIf { it.isAbsolute } ?: File(base ?: return null, r.source) }.getOrNull()
-            ?.takeIf { !r.embedded && it.isFile }?.readBytes()
+    private fun bytes(r: ImageRegion, base: HostFile?): ByteArray? {
+        r.bytes()?.let { return it }
+        if (r.embedded || (base == null && !isAbsolutePath(r.source))) return null
+        val file = runCatching { hostFile(base, r.source) }.getOrNull() ?: return null
+        return if (isHostFile(file)) hostBytes(file) else null
+    }
 
     /** [bytes] as a picture: SVG when it reads as XML with an `<svg>`, otherwise any format Skia knows. */
     fun decode(bytes: ByteArray): Picture? {
-        val head = String(bytes, 0, minOf(bytes.size, 512), Charsets.UTF_8)
+        val head = bytes.decodeToString(0, minOf(bytes.size, 512))
         if ("<svg" in head || head.trimStart().startsWith("<?xml")) {
             return runCatching {
                 val dom = SVGDOM(Data.makeFromBytes(bytes))

@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 }
 
 // Modules are added as their milestone arrives.
-include("engine", "symbolic", "format", "export", "xmcd", "mcp", "cli", "app")
+include("engine", "symbolic", "format", "export", "xmcd", "mcp", "cli", "ui", "app")

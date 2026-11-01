@@ -16,7 +16,7 @@ import pub.beermat.format.PlotBlock
 import pub.beermat.format.PlotData
 import pub.beermat.format.PlotOutcome
 import pub.beermat.format.Worksheet
-import java.util.IdentityHashMap
+import pub.beermat.format.identityMap
 
 /** What the read-only view shows, top to bottom (milestone 4: one column, in file order). */
 sealed interface SheetItem {
@@ -44,8 +44,8 @@ object SheetItems {
         val latex = Latex(units, calc.settings.multiplication)
         val mathMl = MathMl(units, calc.settings.multiplication)
         val sheetLayout = layout.forSheet(units, calc.settings.multiplication)
-        val plots = IdentityHashMap<PlotBlock, PlotOutcome>().apply { calc.plots.forEach { put(it.block, it) } }
-        val outcomes = IdentityHashMap<Any, pub.beermat.format.LineOutcome>().apply { calc.lines.forEach { put(it.line, it) } }
+        val plots = identityMap<PlotBlock, PlotOutcome>().apply { calc.plots.forEach { put(it.block, it) } }
+        val outcomes = identityMap<Any, pub.beermat.format.LineOutcome>().apply { calc.lines.forEach { put(it.line, it) } }
         val items = mutableListOf<SheetItem>()
         for (part in sheet.parts) {
             when (part) {
