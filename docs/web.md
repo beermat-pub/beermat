@@ -23,7 +23,7 @@ Compose Multiplatform runs in the browser through Kotlin/Wasm, drawing with the 
    - **engine: done** (2026-11-01). What the platform gives is in `Platform.kt` (files as `HostFile`, a `java.io.File` on the desktop; stopping; the clock; how deep calls may nest: 1,000 on the JVM, 300 in WebAssembly, whose stack is smaller). Results are rounded by our own `Decimal`, and random numbers come from `SheetRandom`, a copy of `java.util.Random`'s generator; JVM-only tests check both against the Java classes, so sheets show the same digits and the same random values on every platform. The version and the unit table are generated as Kotlin source. One difference found on the way: in WebAssembly `HashMap.putAll` keeps a value equal to the new one, so `Scope` merges with `put`, which a sheet's `°C := K` needs.
    - **symbolic, format, export: done** (2026-11-01). Our own symbolic engine runs everywhere, its exact fractions on `BigInt` (ours, 32-bit limbs and Knuth's long division) instead of `BigInteger`; SymPy and the sheet's Python functions are JVM only, so in the browser what our engine can't do says it needs SymPy. The format module reads YAML with `snakeyaml-engine-kmp` (the multiplatform port of SnakeYAML Engine, Apache-2.0), hashes results with its own SHA-256, and in the browser `READEXCEL` says it needs the desktop version. JVM-only tests check `BigInt` against `BigInteger`, the fractions' doubles against `BigDecimal`, and the hash against `MessageDigest`, so saved sheets keep their results and hashes.
 2. Split the app into a common UI module (editor, page, painter, toolbar) and two shells: desktop (window, menus, files, MCP) and web (canvas, browser storage, upload and download). Planned on 2026-11-01 and approved by Dan (see [Step 2 in detail](#step-2-in-detail)).
-3. The web shell: examples to open, the sheet kept in the browser's storage, Open and Save as file upload and download, a banner "the desktop app does more: download".
+3. The web shell: examples to open, the sheet kept in the browser's storage, Open and Save as file upload and download, a banner "the desktop app does more: download". **Done** (2026-11-01; [Step 3 in detail](#step-3-in-detail)).
 4. Host it on GitHub Pages under `beermat.pub/try`, built by the release workflow, so it always matches the latest release.
 
 ## Step 2 in detail
@@ -56,6 +56,23 @@ What the app is made of today (`app/`, about 7,000 lines):
   For step 3, from this step: the three Swing dialogs (matrix size, matrix resize, Result Format, and the large-picture question in Insert → Picture) need Compose versions in the browser; the browser's clipboard answers later (`navigator.clipboard`), so paste there will come from the page's paste event rather than `Host.paste`; and the toolbar's tooltips.
 
 Printing and PDF export stay on the desktop for now; in the browser they show greyed out, like the rest of what it leaves out.
+
+## Step 3 in detail
+
+> Status: **done** (2026-11-01), checked in headless Edge; hosting (step 4) next.
+
+The `web` module (Kotlin/Wasm and Compose, `web/`): one page that runs `SheetView` from `ui`, as the desktop window does.
+
+- **The page:** a top bar with the sheet's name, New, Open… (a file from the computer, uploaded), Save (downloaded as `.bbm`) and Examples (the files in `examples/`, built into the page); then the toolbar, the pages and a status bar saying the sheet stays in this browser until saved. The sheet is kept in the browser's storage at every change and comes back on the next visit.
+- **What only the desktop does** shows greyed in the top bar (Print, PDF, Import .xmcd, AI assistant (MCP)); a click offers the download page. "Get the desktop app" links there too.
+- **`WebHost`:** the clipboard through `navigator.clipboard` (copy; a paste comes from the page's paste event, the only place the browser gives it), the browser's own question boxes for a matrix's size, and for Result Format, for now, a note that the dialog is in the desktop version.
+- **Fonts:** the browser gives Skia no fonts of its own, so the page brings them: STIX Two Math (from `ui`'s resources) and Liberation Sans and Mono (SIL Open Font License 1.1, with their licence, in `web`'s resources), registered through `PageFonts` before the first page is drawn. Liberation Sans has Arial's metrics, so text sits as it does on the desktop.
+- **Found on the way, fixed for both:** the browser's Skia lacks `Font.measureText`, so the math is measured from its glyphs (the same numbers on the desktop, checked by a test); in the browser a typed character comes with its key-down event, which `Keys` now reads there; and `Session.text()` now gives new regions their ids in the text it writes, so a sheet kept before its first save reads back whole (the MCP server's `read_worksheet` had the same gap).
+- **Size:** about 16 MB as served (the Skia runtime 8.6 MB, Beermat 3.4 MB, the fonts 3 MB); browsers cache it after the first visit.
+- **Checking it** with no one at the screen: `tools/web-drive.mjs` drives headless Edge over the DevTools protocol: it loads the page, prints its console, clicks, types, reloads, and saves screenshots of the page itself.
+- **Still to come:** the toolbar's tooltips and Compose versions of the dialogs (Result Format; matrix size beyond the question boxes), pictures from a file (Insert → Picture), the zoom from the keyboard.
+
+To try it locally: `./gradlew :web:wasmJsBrowserDevelopmentRun` serves it with live reloading; `./gradlew :web:wasmJsBrowserDistribution` builds the files to host (`web/build/dist/wasmJs/productionExecutable`).
 
 ## What the web version leaves out
 

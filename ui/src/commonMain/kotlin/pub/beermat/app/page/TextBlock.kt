@@ -18,14 +18,14 @@ object TextBlock {
     const val SIZE = 11f
     private val FAMILIES = arrayOf("Segoe UI", "Helvetica Neue", "Arial", "Liberation Sans", "sans-serif")
 
-    private val fonts by lazy { FontCollection().apply { setDefaultFontManager(FontMgr.default) } }
+    private val fonts by lazy { FontCollection().apply { setDefaultFontManager(FontMgr.default); setAssetFontManager(PageFonts.provider) } }
 
     fun paragraph(lines: List<String>, width: Float, color: Int = 0xFF1A1A1A.toInt()): Paragraph {
         val builder = ParagraphBuilder(ParagraphStyle(), fonts)
         fun style(size: Float, bold: Boolean = false, italic: Boolean = false, mono: Boolean = false) = TextStyle().apply {
             fontSize = size
             this.color = color
-            setFontFamilies(if (mono) arrayOf("Consolas", "Menlo", "monospace") else FAMILIES)
+            setFontFamilies(if (mono) arrayOf("Consolas", "Menlo", "Liberation Mono", "monospace") else FAMILIES)
             fontStyle = when {
                 bold && italic -> FontStyle.BOLD_ITALIC
                 bold -> FontStyle.BOLD

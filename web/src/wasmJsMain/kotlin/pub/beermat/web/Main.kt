@@ -1,0 +1,139 @@
+package pub.beermat.web
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.ComposeViewport
+import kotlinx.browser.document
+import pub.beermat.app.Commands
+import pub.beermat.app.MATH_SIZE
+import pub.beermat.app.SheetView
+import pub.beermat.app.math.MathLayout
+import pub.beermat.app.math.SkiaMath
+import pub.beermat.app.page.PageFonts
+import pub.beermat.app.page.Session
+import pub.beermat.engine.Version
+import pub.beermat.web.resources.Res
+
+/** Where the desktop versions are, for what the browser can't do. */
+private const val DOWNLOAD = "https://beermat.pub/download"
+
+/** The browser's storage keys: the sheet and its name, kept between visits. */
+private const val SHEET = "beermat.sheet"
+private const val NAME = "beermat.name"
+
+/** The text fonts: the browser gives Skia none of its own. */
+private val TEXT_FONTS = listOf("LiberationSans-Regular", "LiberationSans-Bold", "LiberationSans-Italic", "LiberationSans-BoldItalic", "LiberationMono-Regular")
+
+@OptIn(ExperimentalComposeUiApi::class)
+fun main() {
+    ComposeViewport(document.body!!) { WebApp() }
+}
+
+@Composable
+private fun WebApp() {
+    var ready by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        SkiaMath.load()
+        for (font in TEXT_FONTS) PageFonts.register(Res.readBytes("files/fonts/$font.ttf"))
+        ready = true
+    }
+    if (!ready) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { BasicText("Loading Beermat…", style = TextStyle(fontSize = 18.sp)) }
+        return
+    }
+    val session = remember { Session(stored(SHEET) ?: EXAMPLES.first { it.first == "beam.bbm" }.second, MathLayout(SkiaMath, MATH_SIZE)) }
+    var name by remember { mutableStateOf(stored(NAME) ?: "beam.bbm") }
+    var revision by remember { mutableIntStateOf(0) }
+    var zoom by remember { mutableIntStateOf(100) }
+    var examples by remember { mutableStateOf(false) }
+    fun changed() {
+        revision++
+        store(SHEET, session.text())
+    }
+    fun open(fileName: String, text: String) {
+        session.load(text)
+        name = fileName
+        store(NAME, fileName)
+        changed()
+    }
+    LaunchedEffect(Unit) { onPaste { text -> session.guard(Unit) { session.paste(text) }; changed() } }
+    Column(Modifier.fillMaxSize()) {
+        Row(Modifier.fillMaxWidth().background(Color(0xFF2B2118)).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            BasicText("Beermat", style = TextStyle(color = Color(0xFFF2B33D), fontSize = 16.sp))
+            Spacer(Modifier.width(16.dp))
+            BasicText(name, style = TextStyle(color = Color(0xFFDDDDDD), fontSize = 13.sp))
+            Spacer(Modifier.width(24.dp))
+            Button("New") { open("Untitled.bbm", "") }
+            Button("Open…") { upload { fileName, text -> open(fileName, text) } }
+            Button("Save") { download(name, session.save()); revision++ }
+            Button("Examples ▾") { examples = !examples }
+            Spacer(Modifier.width(16.dp))
+            // What only the desktop does, shown so a visitor knows it is there (docs/web.md#what-the-web-version-leaves-out).
+            for (feature in listOf("Print", "PDF", "Import .xmcd", "AI assistant (MCP)")) Greyed(feature)
+            Spacer(Modifier.weight(1f))
+            Button("Get the desktop app") { openPage(DOWNLOAD) }
+        }
+        if (examples) {
+            Row(Modifier.fillMaxWidth().background(Color(0xFF3A2E24)).padding(horizontal = 12.dp, vertical = 4.dp)) {
+                for ((fileName, text) in EXAMPLES) Button(fileName.removeSuffix(".bbm")) { open(fileName, text); examples = false }
+            }
+        }
+        Box(Modifier.weight(1f)) {
+            SheetView(
+                session, revision, Commands.palettes, zoom, WebHost,
+                onChange = ::changed,
+                onSave = { download(name, session.save()); revision++ },
+                onZoom = { step -> zoom = (zoom + 25 * step).coerceIn(50, 200) },
+                statusBar = {
+                    Row(Modifier.fillMaxWidth().background(Color(0xFFF4F4F4)).padding(horizontal = 12.dp, vertical = 3.dp)) {
+                        BasicText("Beermat ${Version.current} in the browser: your sheet stays in this browser until you save it.", style = TextStyle(fontSize = 12.sp, color = Color(0xFF555555)))
+                        Spacer(Modifier.weight(1f))
+                        BasicText("Zoom $zoom%", style = TextStyle(fontSize = 12.sp, color = Color(0xFF555555)))
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun Button(label: String, onClick: () -> Unit) {
+    BasicText(
+        label,
+        Modifier.clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 2.dp),
+        style = TextStyle(color = Color.White, fontSize = 13.sp),
+    )
+}
+
+/** A desktop feature, greyed out: a click tells where it is. */
+@Composable
+private fun Greyed(label: String) {
+    BasicText(
+        label,
+        Modifier.clickable { if (confirm("$label is available in the desktop version. Open the download page?")) openPage(DOWNLOAD) }.padding(horizontal = 6.dp, vertical = 2.dp),
+        style = TextStyle(color = Color(0xFF8A7F74), fontSize = 13.sp),
+    )
+}

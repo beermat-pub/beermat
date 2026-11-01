@@ -10,8 +10,9 @@ internal actual fun logError(e: Throwable) {
     e.printStackTrace()
 }
 
+// On the desktop the resources are files in the jar: reading them now costs nothing.
 internal actual fun defaultFontBytes(): ByteArray? =
-    pub.beermat.app.math.SkiaMath::class.java.getResourceAsStream("/fonts/STIXTwoMath-Regular.ttf")?.readBytes()
+    kotlinx.coroutines.runBlocking { pub.beermat.app.resources.Res.readBytes(pub.beermat.app.math.SkiaMath.FONT) }
 
 internal actual inline fun <T> locked(lock: Any, block: () -> T): T = synchronized(lock, block)
 
@@ -19,3 +20,5 @@ internal actual inline fun <T> locked(lock: Any, block: () -> T): T = synchroniz
 @androidx.compose.runtime.Composable
 internal actual fun WithTip(tip: @androidx.compose.runtime.Composable () -> Unit, content: @androidx.compose.runtime.Composable () -> Unit) =
     androidx.compose.foundation.TooltipArea(tooltip = tip, delayMillis = 350) { content() }
+
+internal actual val typedOnKeyDown: Boolean = false

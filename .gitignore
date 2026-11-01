@@ -29,3 +29,6 @@ xmcd/survey.gradle.kts
 xmcd/src/test/kotlin/pub/beermat/xmcd/XmcdSurveyTest.kt
 xmcd/src/test/kotlin/pub/beermat/xmcd/ExcelProbeTest.kt
 tools/survey-parallel.ps1
+
+# Heap dumps the JVM writes when it runs out of memory.
+*.hprof

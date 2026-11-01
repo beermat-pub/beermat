@@ -28,6 +28,8 @@ kotlin {
             // Compose (and Skia with it, which draws the math and the page) on both platforms.
             implementation(compose.ui)
             implementation(compose.foundation)
+            // The math font, read the same way on the desktop and in the browser.
+            implementation(compose.components.resources)
         }
         // The tests draw with Skia, which on the JVM needs this system's native part.
         jvmTest.dependencies {
@@ -35,6 +37,10 @@ kotlin {
             implementation(compose.desktop.currentOs)
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "pub.beermat.app.resources"
 }
 
 tasks.named<Test>("jvmTest") {

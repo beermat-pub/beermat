@@ -14,3 +14,6 @@ internal expect inline fun <T> locked(lock: Any, block: () -> T): T
 /** [content] with a tip ([tip], drawn by the caller) shown while the mouse rests on it: the toolbar's buttons. */
 @androidx.compose.runtime.Composable
 internal expect fun WithTip(tip: @androidx.compose.runtime.Composable () -> Unit, content: @androidx.compose.runtime.Composable () -> Unit)
+
+/** Whether a typed character comes with its key-down event (the browser) rather than as an event of its own (the desktop). */
+internal expect val typedOnKeyDown: Boolean

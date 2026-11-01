@@ -83,6 +83,7 @@ class TableGrid(
 
         private val typeface: Typeface by lazy {
             listOf("Segoe UI", "Helvetica Neue", "Arial", "Liberation Sans").firstNotNullOfOrNull { FontMgr.default.matchFamilyStyle(it, FontStyle.NORMAL) }
+                ?: PageFonts.provider.matchFamilyStyle("Liberation Sans", FontStyle.NORMAL)
                 ?: FontMgr.default.legacyMakeTypeface("", FontStyle.NORMAL)!!
         }
         private val REGULAR by lazy { Font(typeface, 11f) }

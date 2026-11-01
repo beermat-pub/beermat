@@ -6,7 +6,7 @@ The app draws the expression tree as 2D math with a small TeX-like box model (`u
 
 ## Font
 
-STIX Two Math, bundled in `ui/src/jvmMain/resources/fonts` with its licence, the SIL Open Font License 1.1. The OFL allows bundling the font with software under any licence; the font itself stays under the OFL (approved by Dan: fonts under the OFL are fine).
+STIX Two Math, bundled in `ui/src/commonMain/composeResources/files/fonts` with its licence, the SIL Open Font License 1.1. In the browser, which has no fonts of its own, the web version also brings Liberation Sans and Liberation Mono (OFL 1.1) for text and tables ([web.md](web.md#step-3-in-detail)). The OFL allows bundling the font with software under any licence; the font itself stays under the OFL (approved by Dan: fonts under the OFL are fine).
 
 Variables are italic, multi-letter names too (drawn with Unicode's mathematical italic letters, which the font has). Units, numbers, built-in functions (`sin`, `rows`) and literal subscripts (`M_max`) are upright. A name counts as a unit as in [export.md](export.md): a built-in unit the sheet doesn't define; in a result's unit part every name is a unit. Gravity `g` is the exception: a physical constant, drawn italic, so it can't be mistaken for the gram, the upright `\rm g`. Program keywords (`if`, `for`, `try`, `on error`, …) are bold.
 

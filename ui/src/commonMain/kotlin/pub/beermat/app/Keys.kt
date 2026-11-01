@@ -55,8 +55,18 @@ object Keys {
             K.MoveEnd -> session.key(Key.End)
             K.Insert -> session.key(Key.Insert)
             K.F9 -> session.relayout().let { true }
-            else -> if (ctrl) control(e.key, shift, session, host, onSave) else false
+            else -> when {
+                ctrl -> control(e.key, shift, session, host, onSave)
+                typedOnKeyDown -> typed(e)?.let { c -> session.key(if (c == ' ') Key.Space else Key.Type(c)) } ?: false
+                else -> false
+            }
         }
+    }
+
+    /** In the browser, the character a key-down event types: printable, without Ctrl. */
+    private fun typed(e: KeyEvent): Char? {
+        val code = e.utf16CodePoint
+        return if (code < 32 || code == 127 || code == 0xFFFF) null else code.toChar()
     }
 
     /** A key for the table grid at the cell cursor (docs/tables.md#editing); null to handle it as usual (Ctrl+S, Ctrl+Z…). */
@@ -67,6 +77,8 @@ object Keys {
             return TableEditor.key(session, CellKey.Type(code.toChar()))
         }
         if (e.type != KeyEventType.KeyDown) return null
+        // In the browser, a letter typed into a cell comes with its key-down event.
+        val typedCell = { if (typedOnKeyDown && !ctrl) typed(e)?.let { TableEditor.key(session, CellKey.Type(it)) } else null }
         val key = when (e.key) {
             K.Enter, K.NumPadEnter -> CellKey.Enter
             K.Escape -> CellKey.Escape
@@ -80,9 +92,9 @@ object Keys {
             K.MoveHome -> CellKey.Home
             K.MoveEnd -> CellKey.End
             K.F2 -> CellKey.Edit
-            K.V -> if (ctrl) return (host.paste() as? Pasted.Text)?.let { TableEditor.paste(session, it.text) } ?: false else return null
-            K.C -> if (ctrl) return TableEditor.copy(session)?.let { host.copyText(it); true } ?: false else return null
-            else -> return null
+            K.V -> return if (ctrl) (host.paste() as? Pasted.Text)?.let { TableEditor.paste(session, it.text) } ?: false else typedCell()
+            K.C -> return if (ctrl) TableEditor.copy(session)?.let { host.copyText(it); true } ?: false else typedCell()
+            else -> return typedCell()
         }
         return TableEditor.key(session, key)
     }

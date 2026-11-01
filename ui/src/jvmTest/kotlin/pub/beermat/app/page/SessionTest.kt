@@ -228,6 +228,22 @@ class SessionTest {
     }
 
     @Test
+    fun `the text of a sheet with new regions reads back as the same sheet, before any save`() {
+        val s = Session("", math)
+        s.click(s.format.margin + 0f, s.format.margin + 0f)
+        s.type("\"")
+        s.setText(0, null, "A note.")
+        s.click(s.format.margin + 0f, s.format.margin + 60f)
+        s.type("x:3m")
+        s.enter()
+        val text = s.text()
+        assertTrue("<!-- #t1 x=0 y=0 -->\nA note." in text, text)
+        val again = Session(text, math)
+        assertEquals(s.regions.map { it::class to it.y }, again.regions.map { it::class to it.y })
+        assertEquals(listOf(null, null), s.regions.map { it.attributes.id }, "text() gives ids in its text only")
+    }
+
+    @Test
     fun `the examples load, place every region, and save without losing anything`() {
         for (name in listOf("beam.bbm", "beam-table.bbm")) {
             val text = File("../examples/$name").readText()

@@ -11,15 +11,23 @@ import org.jetbrains.skia.PaintStrokeJoin
 import org.jetbrains.skia.PathBuilder
 import org.jetbrains.skia.Typeface
 import pub.beermat.app.defaultFontBytes
+import pub.beermat.app.resources.Res
 
 /**
  * Measuring and drawing math with Skia, in STIX Two Math (SIL Open Font License; the licence
- * travels with the font in `resources/fonts`).
+ * travels with the font in `composeResources/files/fonts`).
  */
 object SkiaMath : Metrics {
 
-    /** The font file's bytes: read from the app's resources on the desktop; a shell may set them before the first page is drawn. */
+    /** The font file's bytes: read from the resources when first needed on the desktop; the browser shell calls [load] first. */
     var fontBytes: ByteArray? = null
+
+    const val FONT = "files/fonts/STIXTwoMath-Regular.ttf"
+
+    /** Reads the font from the resources, where that has to wait (in the browser, a download); before the first page is drawn. */
+    suspend fun load() {
+        if (fontBytes == null) fontBytes = Res.readBytes(FONT)
+    }
 
     val typeface: Typeface by lazy {
         val bytes = fontBytes ?: defaultFontBytes() ?: error("the math font is missing from the resources")
@@ -32,10 +40,18 @@ object SkiaMath : Metrics {
         Font(typeface, size).apply { isEmboldened = bold }
     }
 
+    // From the glyphs (their advances and ink boxes) rather than Font.measureText, which the browser's
+    // Skia lacks: the same width and the same ink above and below the baseline.
     override fun measure(text: String, size: Float): Extent {
         val font = font(size)
-        val bounds = font.measureText(text)
-        return Extent(font.measureTextWidth(text), maxOf(-bounds.top, 0f), maxOf(bounds.bottom, 0f))
+        val glyphs = font.getStringGlyphs(text)
+        var top = 0f
+        var bottom = 0f
+        for (box in font.getBounds(glyphs)) {
+            top = minOf(top, box.top)
+            bottom = maxOf(bottom, box.bottom)
+        }
+        return Extent(font.getWidths(glyphs).sum(), -top, bottom)
     }
 
     /** The colours of [Ink], as ARGB. */

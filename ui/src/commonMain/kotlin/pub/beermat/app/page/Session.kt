@@ -119,12 +119,15 @@ class Session(text: String, private val math: MathLayout) {
         relayout()
     }
 
-    /** The sheet as it stands, unsaved changes and the statement being edited included, with fresh results (it doesn't save). */
+    /**
+     * The sheet as it stands, unsaved changes and the statement being edited included, with fresh results
+     * (it doesn't save). New regions get ids in this text only, as they would when saved, so it reads back as it is.
+     */
     fun text(): String {
         val e = editing
-        val now = regions.mapIndexed { i, r ->
+        val now = withIds(regions.mapIndexed { i, r ->
             if (e != null && i == e.region && r is MathRegion) SheetLayout.withStatement(r, e.statement, Printer.print(Editor.commit(e.state).statement)) else r
-        }
+        })
         return WorksheetText.write(Calculation.of(Regions.sheet(frontmatter, now), base).written())
     }
 
@@ -232,8 +235,13 @@ class Session(text: String, private val math: MathLayout) {
     }
 
     private fun assignIds() {
-        val used = regions.mapNotNull { it.attributes.id }.toMutableSet()
-        regions = regions.map { r ->
+        regions = withIds(regions)
+    }
+
+    /** [list] with an id given to each region that needs one and has none (the file's text marks a region by its id). */
+    private fun withIds(list: List<Region>): List<Region> {
+        val used = list.mapNotNull { it.attributes.id }.toMutableSet()
+        return list.map { r ->
             if (r.attributes.id != null || r is PageBreak || r is AreaEnd) return@map r
             val prefix = when (r) {
                 is MathRegion -> "r"

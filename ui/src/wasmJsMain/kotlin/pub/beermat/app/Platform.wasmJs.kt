@@ -10,3 +10,5 @@ internal actual inline fun <T> locked(lock: Any, block: () -> T): T = block()
 // Compose has no tooltip area in the browser yet; the web shell's own comes in step 3 (docs/web.md).
 @androidx.compose.runtime.Composable
 internal actual fun WithTip(tip: @androidx.compose.runtime.Composable () -> Unit, content: @androidx.compose.runtime.Composable () -> Unit) = content()
+
+internal actual val typedOnKeyDown: Boolean = true
