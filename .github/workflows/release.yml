@@ -12,7 +12,7 @@ on:
         description: Version to stamp on a trial build (nothing is published)
         default: 1.0.0-trial
       only:
-        description: Build only this system (windows, macos or linux); empty for all
+        description: Build only this system (windows, macos, linux or web); empty for all
         default: ""
 
 permissions:
@@ -120,14 +120,29 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: linux, path: "beermat-linux.*\nbeermat-cli-linux.zip" }
 
+  # The web version (docs/web.md): the page's files, zipped for the release and published to beermat.pub/try.
+  web:
+    if: ${{ !inputs.only || inputs.only == 'web' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: 21 }
+      - uses: gradle/actions/setup-gradle@v4
+      - run: echo "V=${VERSION#v}" >> $GITHUB_ENV
+      - run: ./gradlew :web:wasmJsBrowserDistribution "-Pversion=${{ env.V }}"
+      - run: cd web/build/dist/wasmJs/productionExecutable && zip -qr "$GITHUB_WORKSPACE/beermat-web.zip" .
+      - uses: actions/upload-artifact@v4
+        with: { name: web, path: beermat-web.zip }
+
   publish:
     if: github.ref_type == 'tag'
-    needs: [windows, macos, linux]
+    needs: [windows, macos, linux, web]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
-        with: { path: dist, pattern: '{windows,macos,linux}', merge-multiple: true }
+        with: { path: dist, pattern: '{windows,macos,linux,web}', merge-multiple: true }
       - name: Release notes from CHANGELOG.md
         run: |
           v="${GITHUB_REF_NAME#v}"
@@ -137,3 +152,31 @@ jobs:
           files: dist/*
           body_path: notes.md
           prerelease: ${{ contains(github.ref_name, '-') }}
+
+  # beermat.pub/try: the released page, in the site's repository (beermat-pub/beermat.pub, served by
+  # GitHub Pages), pushed with a deploy key that can write there and nowhere else (docs/release.md#web-version).
+  site:
+    if: github.ref_type == 'tag'
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy key
+        env: { KEY: "${{ secrets.SITE_DEPLOY_KEY }}" }
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Add the SITE_DEPLOY_KEY secret (docs/release.md#web-version), then re-run this job."
+            exit 1
+          fi
+      - uses: actions/download-artifact@v4
+        with: { name: web }
+      - uses: actions/checkout@v4
+        with: { repository: beermat-pub/beermat.pub, ssh-key: "${{ secrets.SITE_DEPLOY_KEY }}", path: site }
+      - name: Publish to try/
+        run: |
+          rm -rf site/try && mkdir site/try && unzip -q beermat-web.zip -d site/try
+          cd site
+          git config user.name "Beermat release"
+          git config user.email "hello@beermat.pub"
+          git add -A try
+          git diff --cached --quiet || git commit -m "try: Beermat ${GITHUB_REF_NAME#v}"
+          git push

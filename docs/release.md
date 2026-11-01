@@ -42,6 +42,19 @@ https://github.com/beermat-pub/beermat/releases/latest/download/beermat-linux.de
 
 These only work once the repository is public (a private repository's releases need a login).
 
+## Web version
+
+Every release also builds the web version ([web.md](web.md)): the `web` job zips the page as `beermat-web.zip` on the release, and on a tagged release the `site` job publishes it to **beermat.pub/try**, replacing the `try/` folder of the site's repository (`beermat-pub/beermat.pub`, served by GitHub Pages) with one commit. From 1.0.0-dev1 on, previews publish it too (Dan, 2026-11-01), so it can be tried before 1.0.
+
+The `site` job pushes with a **deploy key**: an SSH key that can write to `beermat-pub/beermat.pub` and nothing else, its private half the `SITE_DEPLOY_KEY` secret of this repository. Without it the job fails with a note, and is re-run once the key is in. Setting it up, once (by an owner):
+
+```bash
+ssh-keygen -t ed25519 -N "" -C "beermat release workflow" -f sitekey
+gh api repos/beermat-pub/beermat.pub/keys -f title="beermat release" -f key="$(cat sitekey.pub)" -F read_only=false
+gh secret set SITE_DEPLOY_KEY -R beermat-pub/beermat < sitekey
+rm sitekey sitekey.pub
+```
+
 ## Installers and branding
 
 - **Every icon comes from `branding/logo.svg`**: `./gradlew :app:icons` renders `packaging/icons` (PNG sizes, the Windows `.ico`, the macOS `.icns`, the installer pictures), committed. Run it again when the logo changes. Sizes of 32 px and below use `logo-small.svg`, as `branding/README.md` says.

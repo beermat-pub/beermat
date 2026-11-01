@@ -2,6 +2,17 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
+## 1.0.0-dev1 (developer preview)
+
+The second preview, and the first with **Beermat in the browser**: [beermat.pub/try](https://beermat.pub/try), nothing to install. Please try it and report what you find.
+
+- **The web version**: the same page, toolbar and keys as the desktop app. Open the examples, open and save sheets from your computer; your sheet stays in the browser until you save it. Printing, PDF, `.xmcd` import, SymPy, Python functions and the AI assistant (MCP) are in the desktop versions, shown greyed in the browser.
+- **Much faster on big sheets**: sheets that fill arrays in loops, or define many local variables, run in seconds where they took hours.
+- **Solve blocks** keep every part of a chained constraint (`0 < L < L_max`), and stay near the guesses, so a fit no longer jumps to a solution on the other side of a pole.
+- **Units**: a zero matches any unit in a sum, and a plain 0 in an array of lengths is 0 m.
+- **The keyboard**: the arrow keys move the crosshair (or the selected regions), Enter moves it down a line, and Tab goes on to the next region once no placeholder is left.
+- **Fixed**: a symbolic result could show the answer to an earlier statement after the sheet was edited while SymPy worked; the toolbar no longer starts a wrapped row with a divider; the status bar says "AI/MCP"; the installer's header shows only the logo.
+
 ## 1.0.0-dev0 (developer preview)
 
 The first build to try: everything below under 1.0.0 is in it, along with what came since. It is a preview, so expect rough edges, and please report what you find.

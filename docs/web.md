@@ -24,7 +24,7 @@ Compose Multiplatform runs in the browser through Kotlin/Wasm, drawing with the 
    - **symbolic, format, export: done** (2026-11-01). Our own symbolic engine runs everywhere, its exact fractions on `BigInt` (ours, 32-bit limbs and Knuth's long division) instead of `BigInteger`; SymPy and the sheet's Python functions are JVM only, so in the browser what our engine can't do says it needs SymPy. The format module reads YAML with `snakeyaml-engine-kmp` (the multiplatform port of SnakeYAML Engine, Apache-2.0), hashes results with its own SHA-256, and in the browser `READEXCEL` says it needs the desktop version. JVM-only tests check `BigInt` against `BigInteger`, the fractions' doubles against `BigDecimal`, and the hash against `MessageDigest`, so saved sheets keep their results and hashes.
 2. Split the app into a common UI module (editor, page, painter, toolbar) and two shells: desktop (window, menus, files, MCP) and web (canvas, browser storage, upload and download). Planned on 2026-11-01 and approved by Dan (see [Step 2 in detail](#step-2-in-detail)).
 3. The web shell: examples to open, the sheet kept in the browser's storage, Open and Save as file upload and download, a banner "the desktop app does more: download". **Done** (2026-11-01; [Step 3 in detail](#step-3-in-detail)).
-4. Host it on GitHub Pages under `beermat.pub/try`, built by the release workflow, so it always matches the latest release.
+4. Host it on GitHub Pages under `beermat.pub/try`, built by the release workflow, so it always matches the latest release. **Done** in the workflow (2026-11-01; [release.md](release.md#web-version)): the `site` job publishes each tagged release, previews included, once the deploy key is in.
 
 ## Step 2 in detail
 
@@ -88,7 +88,7 @@ Asked for by Dan on 2026-10-29: whatever the browser can't do still shows, greye
 
 ## Effort and order
 
-About as large as a milestone: step 1 is the bulk (mechanical but wide), steps 2 and 3 are moderate. It is **part of 1.0** (Dan, 2026-10-29): the 1.0.0 release ships the desktop versions and the web version together. The website also shows a short video of each key feature.
+About as large as a milestone: step 1 is the bulk (mechanical but wide), steps 2 and 3 are moderate. It is **part of 1.0** (Dan, 2026-10-29): the 1.0.0 release ships the desktop versions and the web version together. Brought forward to the **1.0.0-dev1** preview (Dan, 2026-11-01), so the web version can be tried before 1.0. The website also shows a short video of each key feature.
 
 ## Alternatives considered
 
