@@ -11,10 +11,11 @@ class BigInt private constructor(val signum: Int, private val mag: IntArray) : C
     operator fun plus(o: BigInt): BigInt = when {
         o.signum == 0 -> this
         signum == 0 -> o
-        signum == o.signum -> BigInt(signum, add(mag, o.mag))
+        // Through `of`, which drops a zero top limb: a sum without a final carry has one.
+        signum == o.signum -> of(signum, add(mag, o.mag))
         else -> when (val c = compareMag(mag, o.mag)) {
             0 -> ZERO
-            else -> if (c > 0) BigInt(signum, sub(mag, o.mag)) else BigInt(o.signum, sub(o.mag, mag))
+            else -> if (c > 0) of(signum, sub(mag, o.mag)) else of(o.signum, sub(o.mag, mag))
         }
     }
 

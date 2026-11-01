@@ -57,6 +57,29 @@ class BigIntTest {
     }
 
     @Test
+    fun `results used again as inputs`() {
+        // Numbers made by arithmetic, not only parsed: a sum without a final carry once kept a zero top
+        // limb, and dividing by it went wrong (gcd(-120000000, 400000000000000) never ended).
+        var j = BigInteger.ONE
+        var x = BigInt.ONE
+        repeat(3000) {
+            val b = sample(120)
+            val y = ours(b)
+            when (it % 5) {
+                0 -> { j = j.add(b); x += y }
+                1 -> { j = j.subtract(b); x -= y }
+                2 -> { j = j.multiply(b).mod(BigInteger.TEN.pow(60)); x = (x * y).let { p -> p - p / BigInt.TEN.pow(60) * BigInt.TEN.pow(60) }.let { m -> if (m.signum < 0) m + BigInt.TEN.pow(60) else m } }
+                3 -> if (b.signum() != 0) { j = j.rem(b); x %= y }
+                else -> { j = j.gcd(b).add(b); x = x.gcd(y) + y }
+            }
+            assertEquals(j.toString(), x.toString(), "step $it")
+            if (j.signum() != 0) assertEquals(b.rem(j).toString(), (y % x).toString(), "step $it, dividing by the result")
+            assertEquals(j.bitLength(), x.bitLength(), "step $it, bits")
+        }
+        assertEquals("40000000", BigInt.of(-120000000).gcd(BigInt.of(160000000) + BigInt.of(399999840000000)).toString())
+    }
+
+    @Test
     fun `fractions read and turn into doubles as with BigDecimal`() {
         repeat(3000) {
             val n = sample(200)
