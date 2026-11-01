@@ -41,6 +41,22 @@ class DecimalTest {
         }
     }
 
+    @Test
+    fun `exact values and the scientific form, as BigDecimal`() {
+        val random = Random(2)
+        val samples = List(3000) { random.nextDouble() * Math.pow(10.0, random.nextInt(-40, 40).toDouble()) * (if (random.nextBoolean()) -1 else 1) } +
+            listOf(0.1, 1e20, 1.5e20, 1.2e-7, 123.0, 5e-324, Double.MAX_VALUE, 1e-6, 9.999999e-7)
+        for (x in samples) {
+            for (figures in listOf(3, 10, 17)) {
+                val b = BigDecimal(x).round(MathContext(figures)).stripTrailingZeros()
+                val d = Decimal.exactOf(x).round(figures).stripTrailingZeros()
+                assertEquals(b.toPlainString(), d.toPlainString(), "$x to $figures figures")
+                assertEquals(b.toString(), d.toScientificString(), "$x to $figures figures, as text")
+                assertEquals(b.scale(), d.scale, "$x's scale")
+            }
+        }
+    }
+
     // BigDecimal.valueOf keeps a trailing ".0" (1.0E10 is 10 digits and a scale); only the value need agree.
     private fun String.trimZero() = if ('.' in this) trimEnd('0').trimEnd('.') else this
 }

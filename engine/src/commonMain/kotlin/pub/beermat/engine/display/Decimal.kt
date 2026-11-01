@@ -3,9 +3,10 @@ package pub.beermat.engine.display
 /**
  * A decimal number for rounding results: the [digits] of a whole number (no leading zeros; "0"
  * for zero) times 10^-[scale], as `java.math.BigDecimal` keeps one, with the few operations
- * [NumberFormat] needs, all rounding halves up. Plain Kotlin, so results show the same on every platform.
+ * [NumberFormat] and the symbolic engine need, all rounding halves up. Plain Kotlin, so results
+ * show the same on every platform.
  */
-internal class Decimal private constructor(private val negative: Boolean, private val digits: String, val scale: Int) {
+class Decimal private constructor(private val negative: Boolean, private val digits: String, val scale: Int) {
 
     val signum: Int get() = if (digits == "0") 0 else if (negative) -1 else 1
 
@@ -47,6 +48,17 @@ internal class Decimal private constructor(private val negative: Boolean, privat
         return sign + padded.substring(0, padded.length - scale) + "." + padded.substring(padded.length - scale)
     }
 
+    /** As `BigDecimal.toString` writes it: plain, or `1.5E+20` and `1.2E-7` when the exponent is large or the number tiny. */
+    fun toScientificString(): String {
+        val adjusted = precision - 1 - scale
+        if (scale >= 0 && adjusted >= -6) return toPlainString()
+        val sign = if (signum < 0) "-" else ""
+        val mantissa = if (digits.length > 1) digits[0] + "." + digits.substring(1) else digits
+        return sign + mantissa + "E" + (if (adjusted > 0) "+" else "") + adjusted
+    }
+
+    fun toDouble(): Double = toPlainString().toDouble()
+
     override fun toString() = toPlainString()
 
     companion object {
@@ -68,6 +80,43 @@ internal class Decimal private constructor(private val negative: Boolean, privat
                 out[k] = '0'
             }
             return "1" + out.concatToString()
+        }
+
+        /** The exact value of [x], every binary digit of it (as `BigDecimal(double)` gives it): 0.1 is 0.1000000000000000055511151231257827…. */
+        fun exactOf(x: Double): Decimal {
+            require(x.isFinite())
+            if (x == 0.0) return ZERO
+            val bits = x.toRawBits()
+            val biased = ((bits ushr 52) and 0x7FF).toInt()
+            val fraction = bits and 0xFFFFFFFFFFFFFL
+            // x = m × 2^e, m a whole number.
+            val m = if (biased == 0) fraction else fraction or (1L shl 52)
+            val e = (if (biased == 0) 1 else biased) - 1075
+            var digits = m.toString()
+            return if (e >= 0) {
+                repeat(e) { digits = timesSmall(digits, 2) }
+                of(x < 0, digits, 0)
+            } else {
+                // m × 2^e = m × 5^-e / 10^-e.
+                repeat(-e) { digits = timesSmall(digits, 5) }
+                of(x < 0, digits, -e)
+            }
+        }
+
+        /** A whole number written in digits, times a small factor. */
+        private fun timesSmall(digits: String, factor: Int): String {
+            val out = StringBuilder()
+            var carry = 0
+            for (k in digits.indices.reversed()) {
+                val v = (digits[k] - '0') * factor + carry
+                out.append('0' + v % 10)
+                carry = v / 10
+            }
+            while (carry > 0) {
+                out.append('0' + carry % 10)
+                carry /= 10
+            }
+            return out.reverse().toString()
         }
 
         /**

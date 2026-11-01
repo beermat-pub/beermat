@@ -1,21 +1,31 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import java.net.URI
 import java.nio.file.Files
 import javax.inject.Inject
 
 // Symbolic evaluation (milestone 10, docs/symbolic.md): a small engine of our own behind the
 // engine's SymbolicBackend interface, and the bundled Python with SymPy for the rest.
+// Kotlin Multiplatform (docs/web.md): our own engine everywhere; Python and SymPy on the JVM only.
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.multiplatform)
 }
 
 kotlin {
     jvmToolchain(21)
-}
-
-dependencies {
-    api(project(":engine"))
-    testImplementation(kotlin("test"))
+    jvm()
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        nodejs()
+    }
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":engine"))
+        }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
+    }
 }
 
 /**
@@ -117,7 +127,7 @@ val preparePython = tasks.register<PreparePython>("preparePython") {
     downloads = rootProject.layout.projectDirectory.dir(".gradle/python-downloads")
 }
 
-tasks.test {
+tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
     dependsOn(preparePython)
     systemProperty("beermat.python", layout.buildDirectory.dir("app-resources/common/python").get().asFile.path)
