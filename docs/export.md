@@ -36,3 +36,16 @@ Decided by Dan on 2026-10-29: an exported sheet is **one file**, with no folder 
 - **Copy as image**: right-click a plot (or a picture, or a selection of regions) → Copy as image puts a PNG on the clipboard, at twice screen resolution, to paste into Word, an email or a chat. Copying math stays LaTeX and MathML, which paste as equations.
 
 **Built on 2026-10-29:** File → Export to Markdown… in the app, and the MCP `export` tool when the app serves it, embed each plot as its SVG (`PlotImages`, text as outlines, on white). The `beermat` command line has no drawing engine, so its Markdown keeps the placeholder line for plots. **Copy as image** is on the right-click menu of a plot or a picture (a selection of several regions is still to come).
+
+## Word
+
+> Status: **plan**, milestone 25 (Dan asked on 2026-10-30; placed after the VS Code extension on 2026-11-01).
+
+File → Export → Word writes a `.docx` of the whole worksheet, for drafting reports and papers:
+
+- **Text** with its Markdown formatting: headings, bold, italic, lists, links.
+- **Math** as native Word equations (Office Math, OMML), built from the expression tree as the MathML export is, so they can be edited in Word. Results are written after their `=` as on the page, in their display units.
+- **Plots and pictures** as images (PNG at print resolution), each at its size on the page.
+- Regions in reading order, one paragraph each; side-by-side regions follow one another (Word has no free-form page).
+
+Written directly (a `.docx` is a zip of XML files), with no other program needed. `beermat export --to docx` does the same from the command line.
