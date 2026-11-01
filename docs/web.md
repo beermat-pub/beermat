@@ -22,9 +22,39 @@ Compose Multiplatform runs in the browser through Kotlin/Wasm, drawing with the 
 1. Make `engine`, `symbolic`, `format` and `export` **multiplatform** (JVM and Wasm targets), moving the Java uses behind small `expect`/`actual` functions. Same tests, run on both targets. This is most of the work, and it is worth it anyway: the engine could then also run in a browser page of the docs, or in the VS Code extension ([vscode.md](vscode.md)).
    - **engine: done** (2026-11-01). What the platform gives is in `Platform.kt` (files as `HostFile`, a `java.io.File` on the desktop; stopping; the clock; how deep calls may nest: 1,000 on the JVM, 300 in WebAssembly, whose stack is smaller). Results are rounded by our own `Decimal`, and random numbers come from `SheetRandom`, a copy of `java.util.Random`'s generator; JVM-only tests check both against the Java classes, so sheets show the same digits and the same random values on every platform. The version and the unit table are generated as Kotlin source. One difference found on the way: in WebAssembly `HashMap.putAll` keeps a value equal to the new one, so `Scope` merges with `put`, which a sheet's `°C := K` needs.
    - **symbolic, format, export: done** (2026-11-01). Our own symbolic engine runs everywhere, its exact fractions on `BigInt` (ours, 32-bit limbs and Knuth's long division) instead of `BigInteger`; SymPy and the sheet's Python functions are JVM only, so in the browser what our engine can't do says it needs SymPy. The format module reads YAML with `snakeyaml-engine-kmp` (the multiplatform port of SnakeYAML Engine, Apache-2.0), hashes results with its own SHA-256, and in the browser `READEXCEL` says it needs the desktop version. JVM-only tests check `BigInt` against `BigInteger`, the fractions' doubles against `BigDecimal`, and the hash against `MessageDigest`, so saved sheets keep their results and hashes.
-2. Split the app into a common UI module (editor, page, painter, toolbar) and two shells: desktop (window, menus, files, MCP) and web (canvas, browser storage, upload and download).
+2. Split the app into a common UI module (editor, page, painter, toolbar) and two shells: desktop (window, menus, files, MCP) and web (canvas, browser storage, upload and download). Planned on 2026-11-01, for Dan to approve (see [Step 2 in detail](#step-2-in-detail)).
 3. The web shell: examples to open, the sheet kept in the browser's storage, Open and Save as file upload and download, a banner "the desktop app does more: download".
 4. Host it on GitHub Pages under `beermat.pub/try`, built by the release workflow, so it always matches the latest release.
+
+## Step 2 in detail
+
+> Status: **proposed** by Claude on 2026-11-01, for Dan to approve before code moves.
+
+What the app is made of today (`app/`, about 7,000 lines):
+
+| Part | Lines | Desktop-only uses |
+|---|---|---|
+| `editor/` (the editing model), `math/` (2D layout, Skia drawing) | 1,900 | the font read from the classpath |
+| `page/` (session, layout, pages, painter, tables, pictures, text), `plot/` | 2,400 | the sheet's folder as a `java.io.File`, the error log, `IdentityHashMap`, `java.util.Base64` |
+| `Commands.kt`, `SheetItems.kt`, `SheetImage.kt` | 300 | one `IdentityHashMap` |
+| `Main.kt`: the window, menu bar, file dialogs, clipboard, the sheet view, its keys and mouse, the toolbar, the text editor, the right-click menus, self-test and scripts | 1,060 | most of them |
+| `McpHttp.kt`, `Updates.kt`, `Settings.kt`, `PythonPermission.kt`, `ResultFormatDialog.kt`, `Brand.kt`, `Icons.kt`, `print/` | 1,400 | HTTP server, preferences, dialogs, printing, the PDF writer's files |
+
+**The proposal:**
+
+- **A new module, `ui`** (Kotlin Multiplatform and Compose, JVM and WebAssembly): `editor/`, `math/`, `page/`, `plot/`, the commands, and the sheet view taken out of `Main.kt`: the page with its mouse and keys, the toolbar, the text editor, the right-click menus, the Result Format dialog. Its tests move with it and run on both platforms where they can.
+- **`app` stays the desktop shell** (JVM): the window and menu bar, file dialogs and watching the file, clipboard, printing and PDF, the MCP server, the update check, preferences, the Python permission dialog, the icon generator, the self-test and scripts. It depends on `ui`.
+- **`web`, the browser shell**, comes in step 3, on `ui` the same way.
+- **What the shells give the sheet view: one interface, `Host`**, passed in rather than `expect`/`actual`, since the two shells differ in more than a function or two: copy text or an image, open a link, open or save a file and choose a picture (as `suspend` functions, because a browser's file picker answers later), log an error, keep a setting. The desktop's `Host` does what `Main.kt` does today.
+- **The font** (STIX Two Math) through Compose resources, which both platforms read; the shell loads it once before the first page is drawn.
+- **Desktop-only Compose features** in the sheet view get common equivalents: `onPointerEvent` becomes `pointerInput`; the scrollbars and the toolbar's tooltips, desktop-only today, are given by the shell (the desktop keeps its own; the browser's come in step 3).
+
+**In two steps, each tested and committed on its own:**
+
+- **2a:** create `ui`, move `editor/`, `math/`, `page/`, `plot/` and the commands into it, with the few desktop uses replaced (the folder as `HostFile`, the error log through `Host`, `identityMap`, Kotlin's `Base64`, the font from resources). No change for the user; every app test passes, and `ui` compiles for WebAssembly.
+- **2b:** take the sheet view out of `Main.kt` into `ui`, behind `Host`. `Main.kt` keeps the window and menus. Checked in the real window with `--selftest` and `--png --script`, as the editor was.
+
+Printing and PDF export stay on the desktop for now; in the browser they show greyed out, like the rest of what it leaves out.
 
 ## What the web version leaves out
 
