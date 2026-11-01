@@ -422,11 +422,36 @@ class Session(text: String, private val math: MathLayout) {
         relayout()
     }
 
-    /** Enter: leave the region, the crosshair below it. */
+    /** Enter: leave the region, the crosshair below it; with only the crosshair, the crosshair down a line. */
     fun enter() {
         val v = (editing?.region ?: textEditing?.first)?.let { layout.views.getOrNull(it) }
+        if (v == null && selected.isEmpty()) crosshair?.let { (x, y) -> crosshair = x to y + LINE }
         leave()
         if (v != null) crosshair = v.x.snap() to (v.y + v.height + SheetLayout.FLOW_GAP).snap()
+    }
+
+    /** An arrow key off the math: the selected regions, or else the crosshair, one grid step that way. */
+    fun nudge(dx: Int, dy: Int): Boolean {
+        if (selected.isNotEmpty()) {
+            move(selected, dx * GRID, dy * GRID)
+            return true
+        }
+        val (x, y) = crosshair ?: return false
+        crosshair = (x + dx * GRID).coerceAtLeast(0f) to (y + dy * GRID).coerceAtLeast(0f)
+        return true
+    }
+
+    /** Tab: the next placeholder; with none left (or only the crosshair), the next math region. Shift+Tab goes back. */
+    fun tab(back: Boolean): Boolean {
+        if (key(if (back) Key.BackTab else Key.Tab)) return true
+        val maths = layout.views.filterIsInstance<MathView>().filter { !it.hidden }
+        val here = editing?.region
+        val c = crosshair
+        val after = { v: MathView -> if (here != null) v.index > here else c != null && (v.y > c.second || v.y == c.second && v.x > c.first) }
+        val before = { v: MathView -> if (here != null) v.index < here else c != null && (v.y < c.second || v.y == c.second && v.x < c.first) }
+        val target = (if (back) maths.lastOrNull(before) else maths.firstOrNull(after)) ?: return false
+        clickMath(target, 0f, 0f)
+        return true
     }
 
     /** Stops editing: the statement goes back into its region (an empty one is removed). */
@@ -927,6 +952,9 @@ class Session(text: String, private val math: MathLayout) {
 
     companion object {
         const val GRID = 6f
+
+        /** How far Enter moves the crosshair down when there is no region to go below: a line of text. */
+        const val LINE = 3 * GRID
 
         /** How near the corner of a selected picture or plot a press grabs its resize handle, in points. */
         const val HANDLE = 5f

@@ -113,7 +113,7 @@ fun StatusBar(session: Session, mcpPort: Int?, revision: Int, notice: Notice?, z
         BasicText("${session.layout.pages} page${if (session.layout.pages == 1) "" else "s"}", style = style)
         BasicText("Zoom $zoom%", style = style)
         if (session.specialText) BasicText("Special text: every key goes into the name; Ctrl+Shift+K to end", style = TextStyle(fontSize = 11.sp, color = Brand.AMBER_TEXT, fontWeight = FontWeight.Bold))
-        BasicText(if (mcpPort != null) "Claude/MCP: on, port $mcpPort" else "Claude/MCP: off", style = style)
+        BasicText(if (mcpPort != null) "AI/MCP: on, port $mcpPort" else "AI/MCP: off", style = style)
         session.lastError?.let { BasicText("$it; details in ~/.beermat/errors.log", style = TextStyle(fontSize = 11.sp, color = Color(0xFFD32F2F))) }
         Box(Modifier.weight(1f))
         notice?.let { n ->

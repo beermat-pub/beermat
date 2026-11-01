@@ -10,7 +10,7 @@ The editor works on the expression tree, never on text: keystrokes insert or wra
 - Inside a name, a number or a string, the cursor is a caret between characters.
 - **Space** widens the selection to the parent node. **Insert** flips the side.
 - **Arrow keys** move between operands: Left and Right go to the neighbouring leaf, Up and Down to the leaf above or below (a numerator, a denominator, a superscript).
-- **Tab** jumps to the next placeholder (■); Shift+Tab to the previous one.
+- **Tab** jumps to the next placeholder (■); Shift+Tab to the previous one. With none left, Tab goes on to the next math region, and Shift+Tab to the one before (Dan, 2026-11-01); from the crosshair, Tab goes to the first region after it.
 - **Backspace** deletes the character before the caret. On an empty leaf it leaves a placeholder; on a placeholder it removes the operator and keeps the other operand (rather than leaving an empty operator slot). **Delete** does the same forwards.
 - **Escape** leaves the region.
 
@@ -59,7 +59,7 @@ The editor works on the expression tree, never on text: keystrokes insert or wra
 
 ## Toolbar
 
-For those who prefer buttons: every command is on a toolbar below the menus, grouped in palettes (Calculator, Comparisons, Matrix, Calculus, Programming, Symbolic and solving, Greek, Style, Insert). Hovering over a button shows its name and its keystroke, so the toolbar also teaches the keys. A button does exactly what its keystroke does (one table, `app/Commands.kt`, drives both), and never takes the focus from the sheet.
+For those who prefer buttons: every command is on a toolbar below the menus, grouped in palettes (Calculator, Comparisons, Matrix, Calculus, Programming, Symbolic and solving, Greek, Style, Insert). Hovering over a button shows its name and its keystroke, so the toolbar also teaches the keys. A button does exactly what its keystroke does (one table, `app/Commands.kt`, drives both), and never takes the focus from the sheet. A palette wraps to the next row as a whole, its divider after it, so a row may end with a divider but never starts with one.
 
 **Choosing what shows** (Dan, 2026-10-28): View → Toolbar → **Show the toolbar** hides or shows it all; below it, a checkbox per palette shows only the ones ticked, for a thinner bar. Each palette wraps to the next row as a whole. Both are remembered between runs (Java preferences, node `pub/beermat`), as the user's choice rather than the sheet's.
 
@@ -73,7 +73,7 @@ It opens 1000 pixels wide (at 100% display scaling) and as tall as a page allows
 
 ## Regions on the page
 
-- The page is free-form: **click anywhere** to put the red **+** crosshair there, and type. Enter moves the crosshair down a line. Regions snap to a grid (6 pt) and can be **dragged**.
+- The page is free-form: **click anywhere** to put the red **+** crosshair there, and type. The **arrow keys** move the crosshair a grid step (6 pt), and Enter moves it down a line (18 pt); with regions selected, the arrows move them instead, a step at a time (Dan, 2026-11-01). Regions snap to a grid (6 pt) and can be **dragged**.
 - **Selecting regions:** drag on empty paper for a rectangle, which works as in AutoCAD (Dan's choice): dragged **left to right** (a solid blue rectangle) it selects the regions wholly inside it; dragged **right to left** (a dashed green one) it selects every region it touches. Selected regions show in a dashed blue box. `Ctrl+click` adds a region to the selection or takes it out. Dragging any selected region moves them all, keeping their layout; `Delete` removes them (one undo step); `Esc` or a click elsewhere ends the selection. Page breaks can be selected and moved too; an area's lines can't (a click on one folds the area).
 - **A new sheet:** started without a file, the app opens a blank sheet, "Untitled", saved where the user chooses at the first `Ctrl+S`. File → New (`Ctrl+N`), Open… (`Ctrl+O`), Save As…; closing, opening or starting another sheet with unsaved changes asks whether to save them.
 - Positions are stored in the file (`x=`, `y=`, in points). **Evaluation order is top to bottom, then left to right**, counting a math region from the baseline of its first line, not its top (so a fraction reaching up beside a definition comes after it; baselines within 3 points are one line; 2026-10-29), and the file is saved in that order ([file-format.md](file-format.md)).

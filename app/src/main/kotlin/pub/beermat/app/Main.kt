@@ -757,11 +757,11 @@ object Keys {
             K.Escape -> session.leave().also { session.deselect() }.let { true }
             K.Backspace -> session.deleteSelected() || session.key(Key.Backspace)
             K.Delete -> session.deleteSelected() || session.key(Key.Delete)
-            K.DirectionLeft -> session.key(Key.Left)
-            K.DirectionUp -> session.vertical(up = true)
-            K.DirectionDown -> session.vertical(up = false)
-            K.DirectionRight -> session.key(Key.Right)
-            K.Tab -> session.key(if (shift) Key.BackTab else Key.Tab)
+            K.DirectionLeft -> session.key(Key.Left) || session.nudge(-1, 0)
+            K.DirectionUp -> session.vertical(up = true) || session.nudge(0, -1)
+            K.DirectionDown -> session.vertical(up = false) || session.nudge(0, 1)
+            K.DirectionRight -> session.key(Key.Right) || session.nudge(1, 0)
+            K.Tab -> session.tab(back = shift)
             K.MoveHome -> session.key(Key.Home)
             K.MoveEnd -> session.key(Key.End)
             K.Insert -> session.key(Key.Insert)
@@ -1001,10 +1001,9 @@ private fun Toolbar(session: Session, palettes: List<Palette>, onUsed: () -> Uni
         Modifier.fillMaxWidth().background(Color(0xFFF4F4F4)).padding(horizontal = 6.dp, vertical = 3.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        // Each palette wraps as a whole, so a divider never ends a row on its own.
+        // Each palette wraps as a whole, its divider after it: a wrapped row ends with one, and none starts a row.
         palettes.forEachIndexed { k, palette ->
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (k > 0) Box(Modifier.padding(horizontal = 5.dp).width(1.dp).height(22.dp).background(Color(0xFFCCCCCC)))
                 palette.commands.forEach { c ->
                     TooltipArea(
                         tooltip = {
@@ -1028,6 +1027,7 @@ private fun Toolbar(session: Session, palettes: List<Palette>, onUsed: () -> Uni
                         }
                     }
                 }
+                if (k < palettes.lastIndex) Box(Modifier.padding(horizontal = 5.dp).width(1.dp).height(22.dp).background(Color(0xFFCCCCCC)))
             }
         }
     }

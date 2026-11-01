@@ -35,8 +35,8 @@ fun main(args: Array<String>) {
     // The Windows installer's pictures (Inno Setup, modern style): cream, with the logo; no red anywhere.
     File(out, "installer-side.bmp").writeBytes(Icons.bmp(Icons.panel(svg, 164, 314, logoSize = 96, logoY = 92)))
     File(out, "installer-side-2x.bmp").writeBytes(Icons.bmp(Icons.panel(svg, 328, 628, logoSize = 192, logoY = 184)))
-    File(out, "installer-small.bmp").writeBytes(Icons.bmp(Icons.panel(svg, 55, 55, logoSize = 47, logoY = 4)))
-    File(out, "installer-small-2x.bmp").writeBytes(Icons.bmp(Icons.panel(svg, 110, 110, logoSize = 94, logoY = 8)))
+    File(out, "installer-small.bmp").writeBytes(Icons.bmp(Icons.panel(svg, 55, 55, logoSize = 47, logoY = 4, background = Icons.WHITE)))
+    File(out, "installer-small-2x.bmp").writeBytes(Icons.bmp(Icons.panel(svg, 110, 110, logoSize = 94, logoY = 8, background = Icons.WHITE)))
     // The Microsoft Store package's logos (packaging/windows/msix.ps1): the taskbar and Start menu
     // pick a target size, plated or not; the tiles have room around the logo.
     val msix = File(out, "msix").apply { mkdirs() }
@@ -78,10 +78,13 @@ object Icons {
         return surface.makeImageSnapshot().encodeToData(EncodedImageFormat.PNG)!!.bytes
     }
 
-    /** A cream panel with the logo centred across, its top at [logoY]. */
-    fun panel(svg: ByteArray, width: Int, height: Int, logoSize: Int, logoY: Int): Image {
+    /** The wizard's white, behind the small picture in its header, so only the round logo shows there. */
+    const val WHITE = 0xFFFFFFFF.toInt()
+
+    /** A panel (cream unless [background] says otherwise) with the logo centred across, its top at [logoY]. */
+    fun panel(svg: ByteArray, width: Int, height: Int, logoSize: Int, logoY: Int, background: Int = CREAM): Image {
         val surface = Surface.makeRasterN32Premul(width, height)
-        surface.canvas.clear(CREAM)
+        surface.canvas.clear(background)
         draw(svg, surface.canvas, (width - logoSize) / 2f, logoY.toFloat(), logoSize.toFloat())
         return surface.makeImageSnapshot()
     }

@@ -192,6 +192,42 @@ class SessionTest {
     }
 
     @Test
+    fun `arrows move the crosshair or the selection a grid step, and Enter moves the crosshair down a line`() {
+        val s = Session("```calc {#r1 x=0 y=0}\na := 1\n```\n", math)
+        s.click(s.format.margin + 102f, s.format.margin + 48f)
+        assertTrue(s.nudge(1, 0))
+        assertTrue(s.nudge(0, -1))
+        assertEquals(108f to 42f, s.crosshair)
+        s.enter()
+        assertEquals(108f to 60f, s.crosshair)
+        s.selectIn(0f, 0f, 600f, 800f)
+        assertTrue(s.nudge(0, 1))
+        assertEquals(0f to 6f, s.regions.single().let { it.x to it.y })
+        assertEquals(setOf(0), s.selected, "still selected, for the next step")
+    }
+
+    @Test
+    fun `Tab goes to the next placeholder, then to the next math region`() {
+        val s = Session("```calc {#r1 x=0 y=0}\na := 1\n```\n\n```calc {#r2 x=0 y=60}\nb := 2\n```\n", math)
+        s.click(s.format.margin + 200f, s.format.margin + 30f)
+        assertTrue(s.tab(back = false))
+        assertEquals(1, s.editing?.region, "from the crosshair, the first region below it")
+        assertTrue(!s.tab(back = false), "nothing after the last region")
+        assertTrue(s.tab(back = true))
+        assertEquals(0, s.editing?.region)
+        // A placeholder comes first.
+        s.leave()
+        s.click(s.format.margin + 200f, s.format.margin + 120f)
+        s.type("c:")
+        assertTrue(s.tab(back = false))
+        assertEquals("c := ?", s.copyText())
+        assertEquals(2, s.editing?.region, "still on its placeholder")
+        s.type("5")
+        assertTrue(s.tab(back = true))
+        assertEquals(1, s.editing?.region, "filled: on to the region before")
+    }
+
+    @Test
     fun `the examples load, place every region, and save without losing anything`() {
         for (name in listOf("beam.bbm", "beam-table.bbm")) {
             val text = File("../examples/$name").readText()
