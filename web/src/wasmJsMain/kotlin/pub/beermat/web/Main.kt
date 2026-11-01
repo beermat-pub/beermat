@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
 import pub.beermat.app.Commands
+import pub.beermat.app.ResultFormatPanel
 import pub.beermat.app.MATH_SIZE
 import pub.beermat.app.SheetView
 import pub.beermat.app.math.MathLayout
@@ -36,6 +37,7 @@ import pub.beermat.app.page.PageFonts
 import pub.beermat.app.page.Session
 import pub.beermat.engine.Version
 import pub.beermat.web.resources.Res
+import kotlin.io.encoding.Base64
 
 /** Where the desktop versions are, for what the browser can't do. */
 private const val DOWNLOAD = "https://beermat.pub/download"
@@ -69,6 +71,8 @@ private fun WebApp() {
     var revision by remember { mutableIntStateOf(0) }
     var zoom by remember { mutableIntStateOf(100) }
     var examples by remember { mutableStateOf(false) }
+    var resultFormat by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    WebHost.resultFormat = { region, statement -> resultFormat = region to statement }
     fun changed() {
         revision++
         store(SHEET, session.text())
@@ -90,6 +94,16 @@ private fun WebApp() {
             Button("Open…") { upload { fileName, text -> open(fileName, text) } }
             Button("Save") { download(name, session.save()); revision++ }
             Button("Examples ▾") { examples = !examples }
+            Button("Picture…") {
+                uploadPicture { fileName, mime, base64 ->
+                    val bytes = Base64.decode(base64)
+                    val big = bytes.size > 3_000_000
+                    if (!big || confirm("$fileName is ${bytes.size / 100_000 / 10.0} MB; the sheet will grow by about a third more than that. Insert it anyway?")) {
+                        if (!session.guard(false) { session.insertImage(bytes, mime, fileName.substringBeforeLast('.')) }) alert("$fileName isn't a picture Beermat can read (PNG, JPEG, GIF, WebP or SVG).")
+                        changed()
+                    }
+                }
+            }
             Spacer(Modifier.width(16.dp))
             // What only the desktop does, shown so a visitor knows it is there (docs/web.md#what-the-web-version-leaves-out).
             for (feature in listOf("Print", "PDF", "Import .xmcd", "AI assistant (MCP)")) Greyed(feature)
@@ -111,11 +125,26 @@ private fun WebApp() {
                     Row(Modifier.fillMaxWidth().background(Color(0xFFF4F4F4)).padding(horizontal = 12.dp, vertical = 3.dp)) {
                         BasicText("Beermat ${Version.current} in the browser: your sheet stays in this browser until you save it.", style = TextStyle(fontSize = 12.sp, color = Color(0xFF555555)))
                         Spacer(Modifier.weight(1f))
-                        BasicText("Zoom $zoom%", style = TextStyle(fontSize = 12.sp, color = Color(0xFF555555)))
+                        // The browser keeps Ctrl+wheel and Ctrl+= for its own zoom: these buttons zoom the sheet.
+                        val small = TextStyle(fontSize = 12.sp, color = Color(0xFF555555))
+                        BasicText(" − ", Modifier.clickable { zoom = (zoom - 25).coerceAtLeast(50) }, style = small)
+                        BasicText(" Zoom $zoom% ", style = small)
+                        BasicText(" + ", Modifier.clickable { zoom = (zoom + 25).coerceAtMost(200) }, style = small)
                     }
                 },
             )
         }
+    }
+    resultFormat?.let { (region, statement) ->
+        ResultFormatPanel(
+            session.resultSettings(region, statement),
+            onApply = { settings ->
+                session.guard(Unit) { session.setResultSettings(region, statement, settings) }
+                resultFormat = null
+                changed()
+            },
+            onCancel = { resultFormat = null },
+        )
     }
 }
 

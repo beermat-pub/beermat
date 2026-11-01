@@ -33,6 +33,23 @@ internal fun upload(onFile: (String, String) -> Unit): Unit = js(
     }""",
 )
 
+/** Asks for a picture on the computer, and gives its name, type and bytes (base64) when one is chosen. */
+internal fun uploadPicture(onPicture: (String, String, String) -> Unit): Unit = js(
+    """{
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml';
+        input.onchange = () => {
+            const f = input.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = () => onPicture(f.name, f.type, reader.result.substring(reader.result.indexOf(',') + 1));
+            reader.readAsDataURL(f);
+        };
+        input.click();
+    }""",
+)
+
 internal fun copyToClipboard(text: String): Unit = js("navigator.clipboard.writeText(text).catch(() => {})")
 
 private fun copyPngToClipboard(base64: String): Unit = js(

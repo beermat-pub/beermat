@@ -6,7 +6,8 @@
 //   (cd web/build/dist/wasmJs/productionExecutable && python -m http.server 8765)
 //   node tools/web-drive.mjs http://127.0.0.1:8765/index.html out/web "@330,700" "x:3m{Enter}x=mm{Enter}"
 //
-// Keys: text, and {Enter}, {Tab}, {Escape}, {Backspace}; a first argument "@x,y" is where to click first.
+// Keys: text, and {Enter}, {Tab}, {Escape}, {Backspace}; {click:x,y}, {dblclick:x,y}, {hover:x,y};
+// {shot:name} for a screenshot on the way. A first argument "@x,y" is where to click first.
 // Saves <prefix>-loaded.png, then (with keys) <prefix>-typed.png and <prefix>-reloaded.png.
 import { spawn } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -60,7 +61,23 @@ if (keys.length) {
   for (const k of keys) {
     const parts = k.match(/\{[^}]+\}|[^{]+/g);
     for (const part of parts) {
-      if (part.startsWith('{')) {
+      // {click:x,y}, {dblclick:x,y} and {hover:x,y} use the mouse; {shot:name} saves a screenshot there.
+      const mouse = part.match(/^\{(click|dblclick|hover):(\d+),(\d+)\}$/);
+      const snap = part.match(/^\{shot:(\w+)\}$/);
+      if (mouse) {
+        const [, action, x, y] = mouse;
+        if (action === 'hover') {
+          await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: +x, y: +y });
+        } else {
+          for (const count of action === 'dblclick' ? [1, 2] : [1]) {
+            for (const type of ['mousePressed', 'mouseReleased']) await send('Input.dispatchMouseEvent', { type, x: +x, y: +y, button: 'left', clickCount: count });
+          }
+        }
+        await sleep(700);
+      } else if (snap) {
+        await sleep(500);
+        await shot(snap[1]);
+      } else if (part.startsWith('{')) {
         const name = part.slice(1, -1);
         const [code, key, text] = named[name];
         await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', windowsVirtualKeyCode: code, key, code: key });

@@ -27,8 +27,10 @@ internal object WebHost : Host {
         return Triple(n[0], n[1], confirm("OK to insert them, Cancel to delete them."))
     }
 
-    override fun editResultFormat(session: Session, region: Int, statement: Int) =
-        alert("The Result Format dialog is in the desktop version for now. In the sheet, a result's unit can be typed after it: = ? kN*m")
+    /** Opens the page's Result Format dialog (the page sets this to show it). */
+    var resultFormat: (region: Int, statement: Int) -> Unit = { _, _ -> }
+
+    override fun editResultFormat(session: Session, region: Int, statement: Int) = resultFormat(region, statement)
 
     private fun numbers(text: String) = Regex("""\d+""").findAll(text).map { it.value.toInt() }.toList()
 }

@@ -112,6 +112,9 @@ fun SheetView(
     var hover by remember { mutableStateOf<Overlay.Tip?>(null) }
     // The right-click menu on a multiplication: where it opens (in the sheet's pixels), and the operator it is for.
     var mulMenu by remember { mutableStateOf<Pair<Offset, Apply>?>(null) }
+    // The last click (time, place), to tell a double click: kept here, as the mouse handler below starts
+    // again whenever the layout changes, which the first click of a double click does.
+    val lastClick = remember { object { var value: Triple<Long, Float, Float>? = null } }
     var tableMenu by remember { mutableStateOf<Offset?>(null) }
     var imageMenu by remember { mutableStateOf<Pair<Offset, Int>?>(null) }
     val layout = session.layout.also { revision }
@@ -152,7 +155,6 @@ fun SheetView(
                 Canvas(
                     Modifier.size((maxOf(width / scale, layout.format.width) * scale / density).dp, (layout.totalHeight * scale / density).dp)
                         .pointerInput(layout, host) {
-                            var lastClick: Triple<Long, Float, Float>? = null
                             awaitPointerEventScope {
                                 while (true) {
                                     val down = awaitPointerEvent()
@@ -226,8 +228,8 @@ fun SheetView(
                                                         // A second click soon after, at the same spot: on a table cell, edit it;
                                                         // on a result, its Result Format dialog.
                                                         val now = e.changes.first().uptimeMillis
-                                                        val again = lastClick?.let { (t, x, y) -> now - t < 450 && abs(x - px) < 4f && abs(y - py) < 4f } == true
-                                                        lastClick = if (again) null else Triple(now, px, py)
+                                                        val again = lastClick.value?.let { (t, x, y) -> now - t < 450 && abs(x - px) < 4f && abs(y - py) < 4f } == true
+                                                        lastClick.value = if (again) null else Triple(now, px, py)
                                                         if (again && session.table != null) {
                                                             TableEditor.key(session, CellKey.Edit)
                                                         } else if (again) {
