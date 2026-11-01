@@ -2,6 +2,10 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
+## 1.0.0-dev2 (not released yet)
+
+- **The `beermat` command comes with the desktop app**: no separate download and no Java to install. On Windows the installer adds it to the PATH; on macOS and Linux, Tools → Install the beermat command.
+
 ## 1.0.0-dev1 (developer preview)
 
 The second preview, and the first with **Beermat in the browser**: [beermat.pub/try](https://beermat.pub/try), nothing to install. Please try it and report what you find.

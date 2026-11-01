@@ -218,6 +218,13 @@ fun main(args: Array<String>) {
                         Item("MCP server off: port ${McpHttp.DEFAULT_PORT} is in use (another window?)", enabled = false, onClick = {})
                     }
                     Item("Recalculate    F9", onClick = { session.guard(Unit) { session.relayout() }; revision++ })
+                    // The beermat command on the PATH (docs/cli.md#installing); Windows's installer does it there.
+                    if (CommandLine.available) {
+                        Separator()
+                        Item("Install the beermat command…", onClick = {
+                            javax.swing.JOptionPane.showMessageDialog(null, CommandLine.install(), "The beermat command", javax.swing.JOptionPane.INFORMATION_MESSAGE)
+                        })
+                    }
                 }
                 Menu("Help") {
                     Item("Keyboard shortcuts", onClick = { Brand.open(Brand.SHORTCUTS) })

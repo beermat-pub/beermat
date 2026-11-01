@@ -53,6 +53,20 @@ Serves worksheets to MCP clients such as Claude Code on standard input and outpu
 | 1 | The sheet has errors, or (`check`) stale results |
 | 2 | Bad arguments, or the file can't be read or written |
 
+## Installing
+
+The desktop installers bring the `beermat` command with them (from 1.0.0-dev2; Dan, 2026-11-01): a small script in the app's folder that runs the command line with the app's own Java and Python, so nothing else is needed and the two always match.
+
+| System | The script | On the PATH |
+|---|---|---|
+| Windows | `bineermat.cmd` in the app's folder | the installer's "Add the beermat command to the PATH" (ticked by default; the user's PATH, or the system's for an install for everyone; the uninstaller takes it out). The portable zip has the same `bin` folder, to add by hand |
+| macOS | `Beermat.app/Contents/app/bin/beermat` (not beside the `Beermat` launcher: macOS names ignore case) | Tools → Install the beermat command…: a link in `/usr/local/bin`, after macOS asks for the password |
+| Linux | `/opt/beermat/bin/beermat` | Tools → Install the beermat command…: a link in `~/.local/bin`, no password |
+
+The app's Java has no `java` launcher of its own (Compose leaves the JDK's launchers out), so the build puts it back in the runtime image (about 300 KB), and adds the command line's code to the app (about 2 MB). The release workflow runs `beermat eval examples/symbolic.bbm` from each system's package.
+
+The separate zips stay, for machines without the desktop app (a server, a build machine); they need Java 21 for now.
+
 ## Building
 
 `./gradlew :cli:installDist` puts a launcher in `cli/build/install/beermat/bin/` (`beermat` and `beermat.bat`). The distribution carries the bundled Python with SymPy in `python/`, beside `lib/` ([symbolic.md](symbolic.md#bundled-sympy)), so symbolic evaluation does as much as in the app; that makes it one zip per system (`beermat-cli-windows.zip`, `-macos`, `-linux`), about 30 MB each. It needs Java 21 for now.

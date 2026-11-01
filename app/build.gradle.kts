@@ -1,3 +1,4 @@
+import org.jetbrains.compose.desktop.application.tasks.AbstractJLinkTask
 import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
@@ -16,6 +17,8 @@ kotlin {
 
 dependencies {
     implementation(project(":ui"))
+    // The command line, run from the app's own folder with its Java and Python (docs/cli.md#installing).
+    implementation(project(":cli"))
     implementation(project(":export"))
     implementation(project(":mcp"))
     implementation(compose.desktop.currentOs)
@@ -83,10 +86,36 @@ tasks.matching { it.name == "packageDeb" || it.name == "packageRpm" }.configureE
 }
 tasks.matching { it.name.matches(Regex("create(Release)?Distributable")) }.configureEach {
     val image = (this as AbstractJPackageTask).destinationDir
+    val cmd = rootProject.file("packaging/cli/beermat.cmd")
+    val sh = rootProject.file("packaging/cli/beermat.sh")
     doLast {
         image.get().asFile.walkTopDown()
             .filter { it.isFile && it.parentFile.name == "bin" && it.parentFile.parentFile.name == "python" }
             .forEach { it.setExecutable(true, false) }
+        // The beermat command, in the image every package is made from (docs/cli.md#installing): Windows
+        // bineermat.cmd, Linux bin/beermat, macOS Contents/app/bin/beermat (not beside the Beermat launcher:
+        // macOS names ignore case).
+        val root = image.get().asFile
+        val windows = File(root, "Beermat/Beermat.exe")
+        val mac = File(root, "Beermat.app/Contents/app")
+        val linux = File(root, "Beermat/lib/app")
+        when {
+            windows.exists() -> cmd.copyTo(File(root, "Beermat/bin/beermat.cmd"), overwrite = true)
+            mac.exists() -> sh.copyTo(File(mac, "bin/beermat"), overwrite = true).setExecutable(true, false)
+            linux.exists() -> sh.copyTo(File(root, "Beermat/bin/beermat"), overwrite = true).setExecutable(true, false)
+        }
+    }
+}
+
+// Compose leaves the JDK's launchers out of the app's Java; the beermat command needs `java`, so it goes back
+// in (about 300 KB), from the same JDK.
+tasks.matching { it.name.matches(Regex("create(Release)?RuntimeImage")) }.configureEach {
+    val task = this as AbstractJLinkTask
+    val home = task.javaHome
+    val out = task.destinationDir
+    doLast {
+        val name = if (System.getProperty("os.name").startsWith("Windows")) "java.exe" else "java"
+        File(home.get(), "bin/$name").copyTo(out.get().file("bin/$name").asFile, overwrite = true).setExecutable(true, false)
     }
 }
 

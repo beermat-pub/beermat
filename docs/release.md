@@ -18,6 +18,7 @@
    - macOS: `Beermat-macos.dmg`;
    - Linux: `beermat-linux.deb` and `beermat-linux.rpm`;
    - the command line, with its Python: `beermat-cli-windows.zip`, `beermat-cli-macos.zip`, `beermat-cli-linux.zip` (need Java 21 for now);
+   - the desktop installers have the `beermat` command too, on the app's own Java and Python ([cli.md](cli.md#installing)); the zips are for machines without the app;
 
    Each job first checks that the bundled Python answers: `import sympy` inside the app as packaged (on Linux, from the unpacked `.deb`), and `beermat eval examples/symbolic.bbm` from the unzipped command line, which fails if a symbolic result needs SymPy and doesn't get it.
 

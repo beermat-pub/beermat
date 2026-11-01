@@ -39,6 +39,8 @@ SolidCompression=yes
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
+; The beermat command's folder may be added to the PATH (docs/cli.md#installing).
+ChangesEnvironment=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -46,6 +48,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "associate"; Description: "Open .bbm worksheets with Beermat"; GroupDescription: "Files:"
+Name: "addtopath"; Description: "Add the beermat command to the PATH (for terminals and AI assistants)"; GroupDescription: "Command line:"
 
 [Files]
 Source: "{#AppImage}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -62,3 +65,48 @@ Root: HKA; Subkey: "Software\Classes\Beermat.Worksheet\shell\open\command"; Valu
 
 [Run]
 Filename: "{app}\Beermat.exe"; Description: "{cm:LaunchProgram,Beermat}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+// The PATH that the "addtopath" task changes: the user's, or the system's for an install for everyone.
+function EnvRoot: Integer;
+begin
+  if IsAdminInstallMode then Result := HKEY_LOCAL_MACHINE else Result := HKEY_CURRENT_USER;
+end;
+
+function EnvKey: String;
+begin
+  if IsAdminInstallMode then Result := 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment' else Result := 'Environment';
+end;
+
+procedure AddToPath(Dir: String);
+var
+  Path: String;
+begin
+  if not RegQueryStringValue(EnvRoot, EnvKey, 'Path', Path) then Path := '';
+  if Pos(';' + Uppercase(Dir) + ';', ';' + Uppercase(Path) + ';') > 0 then exit;
+  if (Path <> '') and (Copy(Path, Length(Path), 1) <> ';') then Path := Path + ';';
+  RegWriteExpandStringValue(EnvRoot, EnvKey, 'Path', Path + Dir);
+end;
+
+procedure RemoveFromPath(Dir: String);
+var
+  Path: String;
+  P: Integer;
+begin
+  if not RegQueryStringValue(EnvRoot, EnvKey, 'Path', Path) then exit;
+  P := Pos(';' + Uppercase(Dir) + ';', ';' + Uppercase(Path) + ';');
+  if P = 0 then exit;
+  // Dir starts at P in Path; take it with the separator before it (or after it, when it comes first).
+  if P > 1 then Delete(Path, P - 1, Length(Dir) + 1) else Delete(Path, 1, Length(Dir) + 1);
+  RegWriteExpandStringValue(EnvRoot, EnvKey, 'Path', Path);
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if (CurStep = ssPostInstall) and WizardIsTaskSelected('addtopath') then AddToPath(ExpandConstant('{app}\bin'));
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usPostUninstall then RemoveFromPath(ExpandConstant('{app}\bin'));
+end;
