@@ -29,6 +29,17 @@ class SymPyTest {
     }
 
     @Test
+    fun `a request stopped while SymPy works never answers the next one`() {
+        // Interrupted as the app stops an evaluation: the next request must get its own answer, not the late one.
+        Thread.currentThread().interrupt()
+        assertTrue("stopped" in error("int(x*cos(x), x) -> ?"))
+        assertTrue(Thread.interrupted(), "the interruption is kept for the caller")
+        // Requests no other test makes, so neither is answered from the cache.
+        assertEquals("1/4", sym("int(x^3, x, 0, 1) -> ?"))
+        assertEquals("1/5", sym("int(x^4, x, 0, 1) -> ?"))
+    }
+
+    @Test
     fun `integrals`() {
         assertEquals("sin(x) - x*cos(x)", sym("int(x*sin(x), x) -> ?"))
         assertEquals("1/3", sym("int(x^2, x, 0, 1) -> ?"))

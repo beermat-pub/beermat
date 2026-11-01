@@ -43,7 +43,15 @@ class SymPy(private val home: File, private val timeoutSeconds: Long = 30) {
     }
 
     private fun next(seconds: Long, late: String): String {
-        val line = lines.poll(seconds, TimeUnit.SECONDS)
+        val line = try {
+            lines.poll(seconds, TimeUnit.SECONDS)
+        } catch (x: InterruptedException) {
+            // The evaluation was stopped while SymPy worked: its answer would come later and be taken
+            // for the next request's, so this process goes, and the next request starts a fresh one.
+            stop()
+            Thread.currentThread().interrupt()
+            throw EvalException("the evaluation was stopped")
+        }
         if (line == null) {
             stop()
             throw EvalException(late)
