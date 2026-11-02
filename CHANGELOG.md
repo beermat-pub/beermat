@@ -2,7 +2,9 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
-## 1.0.0-dev2 (not released yet)
+## 1.0.0-dev2 (developer preview)
+
+The third preview: everything a first public version needs, put out the way 1.0 will be, with the [download page](https://beermat.pub/download), the [manual](https://beermat.pub/docs/) and [Beermat in the browser](https://beermat.pub/try). Please try it and report what you find.
 
 - **The `beermat` command comes with the desktop app**: no separate download and no Java to install. On Windows the installer adds it to the PATH; on macOS and Linux, Tools → Install the beermat command.
 - **Fixed**: the arrow keys moved the crosshair (and selected regions) without the page showing it until the next edit, in the browser and on the desktop.
