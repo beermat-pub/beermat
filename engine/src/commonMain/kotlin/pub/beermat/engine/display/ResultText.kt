@@ -37,13 +37,38 @@ object ResultText {
 
     fun format(shown: Shown, f: ResultFormat = ResultFormat()): String = parts(shown, f).text
 
+    /**
+     * The part of a big array a result shows at a time (docs/results.md#big-arrays): [SIZE] rows and
+     * columns from [row] and [col], kept inside the array.
+     */
+    data class Window(val row: Int = 0, val col: Int = 0) {
+        fun rows(n: Int): IntRange = first(row, n).let { it until minOf(n, it + SIZE) }
+
+        fun cols(n: Int): IntRange = first(col, n).let { it until minOf(n, it + SIZE) }
+
+        companion object {
+            /** Rows and columns shown at a time; an array with more is a scrolled table. */
+            const val SIZE = 20
+
+            fun first(k: Int, n: Int) = k.coerceIn(0, maxOf(0, n - SIZE))
+        }
+    }
+
+    /** The array a result shows, when it has more rows or columns than a table shows at once; null otherwise. */
+    fun table(shown: Shown): ArrayValue? = when (val v = shown.value) {
+        is ArrayValue -> v
+        is RangeValue -> ArrayValue.column(v.values)
+        else -> null
+    }?.takeIf { it.rows > Window.SIZE || it.cols > Window.SIZE }
+
     /** The unit a result of dimension [d] is shown in without a placeholder, such as `N*m` or `m/s^2`. */
     fun unitText(d: pub.beermat.engine.units.Dimension): String = AutoUnit.text(d)
 
-    fun parts(shown: Shown, f: ResultFormat = ResultFormat()): Parts = when (val v = shown.value) {
+    /** The parts of a result; of an array, only the [window] (all of it without one), in the unit chosen for the whole. */
+    fun parts(shown: Shown, f: ResultFormat = ResultFormat(), window: Window? = null): Parts = when (val v = shown.value) {
         is Scalar -> quantity(v.q, shown, f)
-        is ArrayValue -> array(v, shown, f)
-        is RangeValue -> array(ArrayValue.column(v.values), shown, f)
+        is ArrayValue -> array(v, shown, f, window)
+        is RangeValue -> array(ArrayValue.column(v.values), shown, f, window)
         is Text -> Parts(Printer.print(Str(v.value)), null)
         is Module -> Parts(v.toString(), null)
         is FunctionValue -> Parts(v.toString(), null)
@@ -53,7 +78,11 @@ object ResultText {
      * `[1, 2; 3, 4] m` when every element has the same unit (or the sticky unit applies);
      * otherwise each element with its own: `[3 kN; 2 kN*m]`.
      */
-    private fun array(a: ArrayValue, shown: Shown, f: ResultFormat): Parts {
+    private fun array(a: ArrayValue, shown: Shown, f: ResultFormat, window: Window?): Parts {
+        val rows = window?.rows(a.rows) ?: 0 until a.rows
+        val cols = window?.cols(a.cols) ?: 0 until a.cols
+        fun matrix(a: ArrayValue, element: (Value) -> String): String =
+            rows.joinToString("; ", "[", "]") { r -> cols.joinToString(", ") { c -> element(a[r, c]) } }
         shown.unit?.let { unit ->
             return Parts(matrix(a) { NumberFormat.format((it.quantity("a result").value - Complex(shown.zero)) / unit.value, f) }, Printer.print(shown.unitExpr!!))
         }
@@ -85,8 +114,6 @@ object ResultText {
         else -> Prefixes.unit(AutoUnit.text(dim, f.currency), magnitude, f)
     }
 
-    private fun matrix(a: ArrayValue, element: (Value) -> String): String =
-        (0 until a.rows).joinToString("; ", "[", "]") { r -> (0 until a.cols).joinToString(", ") { c -> element(a[r, c]) } }
 
     private fun quantity(q: Quantity, shown: Shown, f: ResultFormat): Parts {
         val unit = shown.unit

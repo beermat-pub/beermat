@@ -26,6 +26,15 @@ Then the first unit of that form gets an **engineering prefix** ([units.md](unit
 - Zero keeps the plain unit.
 - It can be set for a sheet (`result: {prefixes: false}`) or for one region (`{prefixes=false}`), like the other `result.*` settings.
 
+## Big arrays
+
+An array with more than 20 rows or columns is shown as a table of 20 at a time (Dan, 2026-11-02, after a sheet with input tables of thousands of rows was drawn 2 million pixels tall and stopped the window): the cells under their column numbers and beside their row numbers (counted from the sheet's ORIGIN), and thin scroll bars showing where the window is in the whole.
+
+- The mouse wheel over the table scrolls it (Shift+wheel sideways), three rows at a time; elsewhere it scrolls the page. Where it is scrolled to isn't saved.
+- The unit and its prefix are chosen for the whole array, so they don't change as it scrolls.
+- The same goes for a big array written in the sheet (an imported input table, `K := [0; 0; …]`).
+- The text form (the file's result cache, the command line, export) still has every element.
+
 ## Number
 
 The examples in this section are below the exponential threshold (see below).

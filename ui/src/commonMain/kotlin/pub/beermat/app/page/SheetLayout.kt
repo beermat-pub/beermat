@@ -92,6 +92,9 @@ class SheetLayout(
 
     val totalHeight: Float get() = pages * (format.height + PAGE_GAP)
 
+    /** The page's width, or more where regions reach past its right edge (docs/editor.md#the-page). */
+    val totalWidth: Float get() = maxOf(format.width, (views.filter { !it.hidden }.maxOfOrNull { format.margin + it.x + it.width } ?: 0f) + format.margin)
+
     fun pageTop(page: Int) = page * (format.height + PAGE_GAP)
 
     /** Where [view]'s origin is drawn for [piece]. */
@@ -142,7 +145,19 @@ class SheetLayout(
         const val FLOW_GAP = 10f
         const val STATEMENT_GAP = 6f
 
-        fun build(frontmatter: List<String>?, regions: List<Region>, editing: Editing?, math: MathLayout, format: PageFormat, base: HostFile? = null): SheetLayout {
+        /**
+         * [scroll] is where each big array result's table is scrolled to, by region and statement
+         * (docs/results.md#big-arrays): the first row and column shown.
+         */
+        fun build(
+            frontmatter: List<String>?,
+            regions: List<Region>,
+            editing: Editing?,
+            math: MathLayout,
+            format: PageFormat,
+            base: HostFile? = null,
+            scroll: Map<Pair<Int, Int>, Pair<Int, Int>> = emptyMap(),
+        ): SheetLayout {
             val evaluated = regions.mapIndexed { i, r -> if (editing != null && i == editing.region && r is MathRegion) withStatement(r, editing.statement, editing.state.text) else r }
             val sheet = Regions.sheet(frontmatter, evaluated)
             val calc = Calculation.of(sheet, base)
@@ -168,7 +183,7 @@ class SheetLayout(
                         groups.forEachIndexed { j, _ ->
                             val o = calc.lines.getOrNull(line++)
                             val active = editing?.takeIf { it.region == i && it.statement == j }
-                            val sv = statement(layout, o, active?.state, top)
+                            val sv = statement(layout, o, active?.state, top, scroll[i to j], calc.settings.origin)
                             statements += sv
                             top = sv.bottom + STATEMENT_GAP
                         }
@@ -232,12 +247,17 @@ class SheetLayout(
             return r.copy(lines = groups.flatten())
         }
 
-        private fun statement(layout: MathLayout, o: LineOutcome?, editing: EditState?, top: Float): StatementView {
+        private fun statement(layout: MathLayout, o: LineOutcome?, editing: EditState?, top: Float, scrolled: Pair<Int, Int>? = null, origin: Int = 0): StatementView {
+            // A big array shows a window at a time, as a table (docs/results.md#big-arrays).
+            val big = o?.shown?.let { ResultText.table(it) }
+            val window = big?.let { ResultText.Window(ResultText.Window.first(scrolled?.first ?: 0, it.rows), ResultText.Window.first(scrolled?.second ?: 0, it.cols)) }
+            val table = big?.let { MathLayout.Table(it.rows, it.cols, window!!.row, window.col, origin) }
             // A symbolic result is an expression, cached as its text.
-            val parts = o?.shown?.let { ResultText.parts(it, o.format) }
+            val parts = o?.shown?.let { ResultText.parts(it, o.format, window) }
                 ?: (o?.annotation as? Annotation.Result)?.takeIf { (editing?.statement ?: o.parsed) is pub.beermat.engine.syntax.Symbolic }?.let { ResultText.Parts(it.text, null) }
             val st = editing?.statement ?: o?.parsed ?: Unparsed(null, "?")
-            val box = if (editing != null) layout.editing(drafts(editing)).statement(st, parts?.number, parts?.unit) else layout.statement(st, parts?.number, parts?.unit)
+            val scrolledLayout = layout.scrolled(MathLayout.Scroll(scrolled?.first ?: 0, scrolled?.second ?: 0, origin))
+            val box = if (editing != null) scrolledLayout.editing(drafts(editing)).statement(st, parts?.number, parts?.unit, table) else scrolledLayout.statement(st, parts?.number, parts?.unit, table)
             val message = (o?.annotation as? Annotation.Error)?.message?.takeIf { o.parsed !is Unparsed || editing != null }
             val error = message?.let { layout.message(it, o.errorNames) }
             val baseline = top + box.ascent

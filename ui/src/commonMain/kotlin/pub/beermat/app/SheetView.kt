@@ -135,10 +135,23 @@ fun SheetView(
                         awaitPointerEventScope {
                             while (true) {
                                 val e = awaitPointerEvent(PointerEventPass.Initial)
-                                if (e.type != PointerEventType.Scroll || !e.keyboardModifiers.isCtrlPressed) continue
-                                val dy = e.changes.first().scrollDelta.y
-                                if (dy != 0f) onZoom(if (dy < 0) 1 else -1)
-                                e.changes.forEach { it.consume() }
+                                if (e.type != PointerEventType.Scroll) continue
+                                val change = e.changes.first()
+                                val dy = change.scrollDelta.y
+                                if (e.keyboardModifiers.isCtrlPressed) {
+                                    if (dy != 0f) onZoom(if (dy < 0) 1 else -1)
+                                    e.changes.forEach { it.consume() }
+                                    continue
+                                }
+                                // Over a big array result, the wheel scrolls its table (Shift+wheel sideways; docs/results.md#big-arrays).
+                                val px = (change.position.x + horizontal.value) / scale - left
+                                val py = (change.position.y + vertical.value) / scale
+                                val sideways = e.keyboardModifiers.isShiftPressed || change.scrollDelta.x != 0f
+                                val step = (if (sideways) change.scrollDelta.x.takeIf { it != 0f } ?: dy else dy).let { if (it > 0) 3 else if (it < 0) -3 else 0 }
+                                if (step != 0 && session.guard(false) { session.scrollTable(px, py, if (sideways) 0 else step, if (sideways) step else 0) }) {
+                                    e.changes.forEach { it.consume() }
+                                    onChange()
+                                }
                             }
                         }
                     }
@@ -154,8 +167,13 @@ fun SheetView(
                         done
                     },
             ) {
+                // As wide as the regions reach, past the page's edge too, so the scroll bar can get there.
+                val canvasWidth = maxOf(width / scale, left + layout.totalWidth) * scale
+                // Compose can't size anything much taller than 2^18 px (half that when it is wide): past that a
+                // very long sheet's end can't be scrolled to, but the window doesn't fail (it did, before big arrays became tables).
+                val canvasHeight = minOf(layout.totalHeight * scale, if (canvasWidth < 8000f) 260_000f else 130_000f)
                 Canvas(
-                    Modifier.size((maxOf(width / scale, layout.format.width) * scale / density).dp, (layout.totalHeight * scale / density).dp)
+                    Modifier.size((canvasWidth / density).dp, (canvasHeight / density).dp)
                         .pointerInput(layout, host) {
                             awaitPointerEventScope {
                                 while (true) {

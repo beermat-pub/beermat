@@ -79,6 +79,18 @@ class Session(text: String, private val math: MathLayout) {
     var selected: Set<Int> = emptySet()
         private set
 
+    /** The first matrix in [node] too big to show at once (docs/results.md#big-arrays); null if there is none. */
+    private fun bigMatrix(node: Any): pub.beermat.engine.syntax.Matrix? {
+        if (node is pub.beermat.engine.syntax.Matrix && (node.rows.size > ResultText.Window.SIZE || node.rows[0].size > ResultText.Window.SIZE)) return node
+        return pub.beermat.app.editor.Nodes.children(node).firstNotNullOfOrNull(::bigMatrix)
+    }
+
+    /**
+     * Where each big array result is scrolled to, by region and statement: its first row and
+     * column shown (docs/results.md#big-arrays). Not saved; a new sheet starts at the top.
+     */
+    private var tableScroll: Map<Pair<Int, Int>, Pair<Int, Int>> = emptyMap()
+
     lateinit var layout: SheetLayout
         private set
 
@@ -148,7 +160,7 @@ class Session(text: String, private val math: MathLayout) {
         }
 
     fun relayout() {
-        layout = SheetLayout.build(frontmatter, regions, editing, math, format, base)
+        layout = SheetLayout.build(frontmatter, regions, editing, math, format, base, tableScroll)
         // `.` after a name that holds a module picks one of its functions (docs/symbolic.md#python-functions-in-a-sheet).
         val modules = layout.calculation.modules
         Editor.holdsModule = { it in modules }
@@ -430,6 +442,28 @@ class Session(text: String, private val math: MathLayout) {
         textEditing = null
         if (changed) dirty = true
         relayout()
+    }
+
+
+    /**
+     * The mouse wheel over the page at ([px], [py]) (screen points, as [click]): over a big array
+     * result, it scrolls the table by [rows] (and [cols]) instead of the page. False when it isn't
+     * over one.
+     */
+    fun scrollTable(px: Float, py: Float, rows: Int, cols: Int): Boolean {
+        val (v, _, ry) = layout.hit(px, py) ?: return false
+        val math = v as? MathView ?: return false
+        val k = math.statements.indexOfFirst { ry >= it.top && ry <= it.bottom }.takeIf { it >= 0 } ?: return false
+        // A big result, or else a big array written in the statement (an imported input table).
+        val sv = math.statements[k]
+        val (nr, nc) = sv.outcome?.shown?.let { ResultText.table(it) }?.let { it.rows to it.cols }
+            ?: sv.parsed?.let(::bigMatrix)?.let { it.rows.size to it.rows[0].size } ?: return false
+        val (r, c) = tableScroll[v.index to k] ?: (0 to 0)
+        val next = ResultText.Window.first(r + rows, nr) to ResultText.Window.first(c + cols, nc)
+        if (next == (r to c)) return true
+        tableScroll = tableScroll + ((v.index to k) to next)
+        relayout()
+        return true
     }
 
     /**

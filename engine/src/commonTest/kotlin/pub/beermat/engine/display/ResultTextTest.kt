@@ -2,6 +2,8 @@ package pub.beermat.engine.display
 
 import pub.beermat.engine.eval.Evaluator
 import pub.beermat.engine.eval.Outcome
+import pub.beermat.engine.eval.Scalar
+import pub.beermat.engine.eval.Shown
 import pub.beermat.engine.syntax.Parser
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -101,6 +103,25 @@ class ResultTextTest {
         assertEquals("54000 N*m", text("M := 54 kN*m = ?"))
         // What it writes reads back as the same value.
         for (s in listOf("250 \\rm g", "7.85 t/m^3", "[0.5; 2.5]*kN", "1500 mm^2", "5 μm")) Parser.parseExpression(s)
+    }
+
+    @Test
+    fun `a big array shows a window, in the unit of the whole`() {
+        val shown = when (val o = Evaluator().run(listOf("i := 0..99", "x[i] := i*1 mm", "x = ?").map(Parser::parseStatement)).last()) {
+            is Outcome.Evaluated -> o.shown
+            else -> error("no result: $o")
+        }
+        val big = ResultText.table(shown)!!
+        assertEquals(100 to 1, big.rows to big.cols)
+        // The largest element (99 mm) picks the unit for every window.
+        val first = ResultText.parts(shown, plain.copy(prefixes = true), ResultText.Window())
+        assertEquals("[0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19]" to "mm", first.number to first.unit)
+        // A window past the end stops at the last 20 rows.
+        val last = ResultText.parts(shown, plain.copy(prefixes = true), ResultText.Window(row = 95))
+        assertEquals("80", last.number.removePrefix("[").substringBefore(";"))
+        assertEquals(80 until 100, ResultText.Window(row = 95).rows(100))
+        // Small arrays aren't tables.
+        assertEquals(null, ResultText.table(Shown(pub.beermat.engine.eval.ArrayValue.column(List(20) { Scalar(pub.beermat.engine.units.Quantity(1.0)) }))))
     }
 
     @Test

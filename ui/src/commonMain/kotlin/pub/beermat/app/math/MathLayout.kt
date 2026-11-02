@@ -1,5 +1,6 @@
 package pub.beermat.app.math
 
+import pub.beermat.engine.display.ResultText
 import pub.beermat.engine.eval.Builtins
 import pub.beermat.engine.syntax.Apply
 import pub.beermat.engine.syntax.Break
@@ -71,13 +72,21 @@ class MathLayout(
     private val drafts: Map<Expr, String> = emptyMap(),
     /** How `*` is drawn, from the sheet's settings (docs/syntax.md#multiplication-style). */
     private val multiplication: Multiplication = Multiplication.DOT,
+    /** Where a big array in the statement is scrolled to (docs/results.md#big-arrays). */
+    private val scroll: Scroll = Scroll(),
 ) {
 
+    /** The first row and column a big array's table shows, and the sheet's ORIGIN to number them from. */
+    data class Scroll(val row: Int = 0, val col: Int = 0, val origin: Int = 0)
+
+    /** This layout with big arrays scrolled to [scroll]. */
+    fun scrolled(scroll: Scroll) = MathLayout(metrics, size, units, tagged, drafts, multiplication, scroll)
+
     /** This layout for a sheet whose units are [units] and whose `*` is drawn as [multiplication]. */
-    fun forSheet(units: Units, multiplication: Multiplication) = MathLayout(metrics, size, units, tagged, drafts, multiplication)
+    fun forSheet(units: Units, multiplication: Multiplication) = MathLayout(metrics, size, units, tagged, drafts, multiplication, scroll)
 
     /** This layout for the statement being edited (see the class comment); [drafts] should be an identity map. */
-    fun editing(drafts: Map<Expr, String>) = MathLayout(metrics, size, units, true, drafts, multiplication)
+    fun editing(drafts: Map<Expr, String>) = MathLayout(metrics, size, units, true, drafts, multiplication, scroll)
 
     /** [b] marked as child [k] of the node around it, when tagging. */
     private fun tag(k: Int, b: Box): Box = if (!tagged) b else Group(b.width, b.ascent, b.descent, listOf(Placed(b, 0f, 0f)), k)
@@ -111,9 +120,9 @@ class MathLayout(
      * A statement, with its result after `=` when it shows one. [number] and [unit] are the
      * result's parts in linear syntax (see `ResultText.Parts`).
      */
-    fun statement(st: Statement, number: String? = null, unit: String? = null): Box {
+    fun statement(st: Statement, number: String? = null, unit: String? = null, table: Table? = null): Box {
         // A symbolic statement carries no units, so every name in it is a variable (`t` in `laplace(t)`).
-        if (st is Symbolic && units !== Units.NONE) return MathLayout(metrics, size, Units.NONE, tagged, drafts, multiplication).statement(st, number, unit)
+        if (st is Symbolic && units !== Units.NONE) return MathLayout(metrics, size, Units.NONE, tagged, drafts, multiplication, scroll).statement(st, number, unit)
         val s = size
         // The result unit slot: its index among the statement's children, and the unit typed into it.
         val (slot, slotUnit) = when (st) {
@@ -122,7 +131,7 @@ class MathLayout(
             else -> null to null
         }
         val result = when {
-            number != null -> result(number, unit, slot, slotUnit)
+            number != null -> result(number, unit, slot, slotUnit, table)
             st is Evaluate || (tagged && slot != null) -> resultSlotOnly(slot, slotUnit, s)
             else -> null
         }
@@ -157,12 +166,19 @@ class MathLayout(
         else -> expr(kw, s)
     }
 
-    /** A result: the number (or matrix…) and its unit, each parsed back from linear syntax. */
-    fun result(number: String, unit: String?, slot: Int? = null, slotUnit: Expr? = null): Box {
+    /**
+     * A big array result shown a window at a time (docs/results.md#big-arrays): [rows] by [cols] in
+     * all, the window from [firstRow], [firstCol]; indices counted from [origin].
+     */
+    data class Table(val rows: Int, val cols: Int, val firstRow: Int, val firstCol: Int, val origin: Int)
+
+    /** A result: the number (or matrix…) and its unit, each parsed back from linear syntax; a big array as a [table]. */
+    fun result(number: String, unit: String?, slot: Int? = null, slotUnit: Expr? = null, table: Table? = null): Box {
         val s = size
-        val n = parsedOrText(number, s)
+        val window = table?.let { runCatching { pub.beermat.engine.syntax.Parser.parseExpression(number) as? Matrix }.getOrNull() }
+        val n = if (table != null && window != null) table(window.rows.map { row -> row.map { expr(it, s) } }, table, s) else parsedOrText(number, s)
         // In the unit part every name is a unit.
-        val units = MathLayout(metrics, size, Units.ALL, tagged, drafts, multiplication)
+        val units = MathLayout(metrics, size, Units.ALL, tagged, drafts, multiplication, scroll)
         val u = when {
             !tagged || slot == null -> unit?.let { units.parsedOrText(it, s) }
             slotUnit != null -> tag(slot, units.expr(slotUnit, s))
@@ -175,7 +191,7 @@ class MathLayout(
     /** No result yet: a placeholder, and the unit slot when editing. */
     private fun resultSlotOnly(slot: Int?, slotUnit: Expr?, s: Float): Box {
         if (!tagged || slot == null) return placeholder(s)
-        val u = slotUnit?.let { MathLayout(metrics, size, Units.ALL, true, drafts, multiplication).expr(it, s) } ?: placeholder(s * 0.75f)
+        val u = slotUnit?.let { MathLayout(metrics, size, Units.ALL, true, drafts, multiplication, scroll).expr(it, s) } ?: placeholder(s * 0.75f)
         return row(placeholder(s), thin(s), tag(slot, u))
     }
 
@@ -475,6 +491,12 @@ class MathLayout(
     /** A matrix: centred cells in a grid, centred on the axis, in square brackets. */
     private fun matrix(m: Matrix, s: Float): Box {
         val cols0 = m.rows[0].size
+        // A big one (an imported input table) shows a window at a time, as a big result does (docs/results.md#big-arrays).
+        if (m.rows.size > ResultText.Window.SIZE || cols0 > ResultText.Window.SIZE) {
+            val w = ResultText.Window(ResultText.Window.first(scroll.row, m.rows.size), ResultText.Window.first(scroll.col, cols0))
+            val cells = w.rows(m.rows.size).map { r -> w.cols(cols0).map { c -> child(r * cols0 + c, m.rows[r][c], s) } }
+            return table(cells, Table(m.rows.size, cols0, w.row, w.col, scroll.origin), s)
+        }
         val cells = m.rows.mapIndexed { r, row -> row.mapIndexed { c, cell -> child(r * cols0 + c, cell, s) } }
         val cols = cells[0].indices.map { c -> cells.maxOf { it[c].width } }
         val colGap = 0.8f * s
@@ -495,6 +517,71 @@ class MathLayout(
         }
         val grid = Group.of(placed, cols.sum() + colGap * (cols.size - 1))
         return fenced('[', ']', grid, s)
+    }
+
+    /**
+     * A window of a big array: its cells under column numbers and beside row numbers, with scroll
+     * bars that show where the window is in the whole (docs/results.md#big-arrays).
+     */
+    private fun table(cells: List<List<Box>>, t: Table, s: Float): Box {
+        val small = 0.7f * s
+        val nr = cells.size
+        val nc = cells[0].size
+        val rowHeads = (0 until nr).map { text((t.origin + t.firstRow + it).toString(), small, Ink.Faint) }
+        val colHeads = (0 until nc).map { text((t.origin + t.firstCol + it).toString(), small, Ink.Faint) }
+        val pad = 0.4f * s
+        val gap = 0.3f * s
+        val colW = (0 until nc).map { c -> maxOf(cells.maxOf { it[c].width }, colHeads[c].width) + 2 * pad }
+        val headW = rowHeads.maxOf { it.width } + 2 * pad
+        val rowA = cells.map { r -> maxOf(r.maxOf { it.ascent }, 0.75f * s) }
+        val rowD = cells.map { r -> maxOf(r.maxOf { it.descent }, 0.25f * s) }
+        val rowH = (0 until nr).map { rowA[it] + rowD[it] + gap }
+        val headH = 1.2f * small + gap
+        val bar = 0.6f * s
+        val bodyW = colW.sum()
+        val bodyH = rowH.sum()
+        val width = headW + bodyW + (if (t.rows > nr) bar else 0f)
+        val height = headH + bodyH + (if (t.cols > nc) bar else 0f)
+        val top = -axis(s) - height / 2
+        val placed = mutableListOf<Placed>()
+        var x = headW
+        colHeads.forEachIndexed { c, h ->
+            placed += Placed(h, x + colW[c] - pad - h.width, top + small)
+            x += colW[c]
+        }
+        var y = top + headH
+        cells.forEachIndexed { r, row ->
+            val baseline = y + gap / 2 + rowA[r]
+            placed += Placed(rowHeads[r], headW - pad - rowHeads[r].width, baseline)
+            var cx = headW
+            row.forEachIndexed { c, cell ->
+                placed += Placed(cell, cx + colW[c] - pad - cell.width, baseline)
+                cx += colW[c]
+            }
+            y += rowH[r]
+        }
+        val thin = 0.03f * s
+        fun stroke(path: List<PathOp>, thickness: Float) = Placed(StrokeBox(width, -top, top + height, path, thickness), 0f, 0f)
+        // The lines between the numbers and the cells.
+        placed += stroke(listOf(PathOp.Move(headW, top), PathOp.Line(headW, top + headH + bodyH), PathOp.Move(0f, top + headH), PathOp.Line(headW + bodyW, top + headH)), thin)
+        // Scroll bars: a track, and a thumb as long as the window's share of the whole (at least half a line).
+        fun thumb(first: Int, shown: Int, all: Int, length: Float): Pair<Float, Float> {
+            val a = first.toFloat() / all * length
+            return a to maxOf((first + shown).toFloat() / all * length, a + 0.5f * s)
+        }
+        if (t.rows > nr) {
+            val bx = headW + bodyW + bar / 2
+            val (a, b) = thumb(t.firstRow, nr, t.rows, bodyH)
+            placed += stroke(listOf(PathOp.Move(bx, top + headH), PathOp.Line(bx, top + headH + bodyH)), thin)
+            placed += stroke(listOf(PathOp.Move(bx, top + headH + a), PathOp.Line(bx, top + headH + b)), 0.15f * s)
+        }
+        if (t.cols > nc) {
+            val by = top + headH + bodyH + bar / 2
+            val (a, b) = thumb(t.firstCol, nc, t.cols, bodyW)
+            placed += stroke(listOf(PathOp.Move(headW, by), PathOp.Line(headW + bodyW, by)), thin)
+            placed += stroke(listOf(PathOp.Move(headW + a, by), PathOp.Line(headW + b, by)), 0.15f * s)
+        }
+        return Group.of(placed, width)
     }
 
     // Programs.

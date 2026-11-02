@@ -228,6 +228,28 @@ class SessionTest {
     }
 
     @Test
+    fun `big arrays are tables of 20 rows, which the wheel scrolls`() {
+        val rows = (1..300).joinToString("; ")
+        val s = Session("```calc {#a x=0 y=0}\ni := 0..999\nx[i] := i\nx = ?\n```\n```calc {#b x=0 y=900}\nK := [$rows]\n```\n", math)
+        val result = s.layout.views[0] as MathView
+        val literal = s.layout.views[1] as MathView
+        // 20 rows high, not a thousand: each table well under a page.
+        assertTrue(result.height < 700f, "${result.height}")
+        assertTrue(literal.height < 700f, "${literal.height}")
+        // The wheel over the result scrolls its table, not the page; over empty paper it doesn't.
+        val (ox, oy) = s.layout.origin(result, s.layout.pieces[0][0])
+        val k = result.statements.indices.last()
+        val sv = result.statements[k]
+        val over = oy + (sv.top + sv.bottom) / 2
+        assertTrue(s.scrollTable(ox + 20f, over, 3, 0))
+        assertTrue(s.scrollTable(ox + 20f, over, 10_000, 0), "clamped at the end")
+        assertEquals(false, s.scrollTable(s.format.margin + 600f, s.format.margin + 600f, 3, 0))
+        // And over the written one.
+        val (lx, ly) = s.layout.origin(literal, s.layout.pieces[1][0])
+        assertTrue(s.scrollTable(lx + 20f, ly + literal.height / 2, 3, 0))
+    }
+
+    @Test
     fun `a click on empty paper moves the crosshair, snapped to the grid`() {
         val s = Session("", math)
         s.click(s.format.margin + 100f, s.format.margin + 50f)
