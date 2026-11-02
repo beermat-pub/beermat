@@ -2,6 +2,7 @@ package pub.beermat.xmcd
 
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import pub.beermat.engine.syntax.Division
 import pub.beermat.engine.syntax.Apply
 import pub.beermat.engine.syntax.Break
 import pub.beermat.engine.syntax.Call
@@ -451,7 +452,8 @@ object XmcdImport {
                     "no-space" -> Apply(Op.MUL, listOf(x(0), x(1)), implicit = true)
                     else -> Apply(Op.MUL, listOf(x(0), x(1)))
                 }
-                "div" -> Apply(Op.DIV, x(0), x(1))
+                // `inline="true"`: a division on the line, drawn ÷.
+                "div" -> Apply(Op.DIV, x(0), x(1), division = if (head.attr("inline") == "true") Division.OBELUS else Division.STACKED)
                 "pow" -> Apply(Op.POW, x(0), x(1))
                 "equal" -> Apply(Op.EQ, x(0), x(1))
                 "notEqual" -> Apply(Op.NE, x(0), x(1))

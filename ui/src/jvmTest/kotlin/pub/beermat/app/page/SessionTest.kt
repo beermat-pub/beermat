@@ -143,6 +143,24 @@ class SessionTest {
     }
 
     @Test
+    fun `division style - Ctrl+slash on the line, and the right-click choices`() {
+        val s = Session("", math)
+        s.type("y:a+b")
+        s.key(pub.beermat.app.editor.Key.Ctrl('/'))
+        s.type("c")
+        assertEquals("y := a + b÷c", s.copyText())
+        assertTrue(s.edit { pub.beermat.app.editor.Editor.division(it, pub.beermat.engine.syntax.Division.STACKED) })
+        assertEquals("y := a + b/c", s.copyText())
+        // A sum typed into a fraction needs no parentheses there; going on the line adds them.
+        val t = Session("", math)
+        t.type("z:x/2")
+        t.vertical(up = true)
+        t.type("+1")
+        assertTrue(t.edit { pub.beermat.app.editor.Editor.division(it, pub.beermat.engine.syntax.Division.SLASH) })
+        assertEquals("z := (x + 1)∕2", t.copyText())
+    }
+
+    @Test
     fun `multiplication style - the sheet's default, and one operator's own`() {
         val s = Session("", math)
         s.type("y:q*L+a*2")

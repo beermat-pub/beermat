@@ -55,6 +55,9 @@ class ExportTest {
         assertEquals("t \\rightarrow \\mathbf{laplace(t)} \\rightarrow \\frac{1}{s^{2}}", latex.statement(Parser.parseStatement("t -> laplace(t) -> ?"), Result("1/s^2", Parser.parseExpression("1/s^2"), null)))
         assertTrue(mathMl.statement(Parser.parseStatement("t -> laplace(t) -> ?")).startsWith("<mrow><mi>t</mi>"))
         assertEquals("3\\,\\mathrm{t}", tex("3 t"))
+        // Divisions on the line keep their parentheses; a stacked one doesn't need them.
+        assertEquals("y := \\left(a + b\\right) \\div c + a/b + \\frac{a + b}{c}", tex("y := (a + b)÷c + a∕b + (a + b)/c"))
+        assertTrue("<mo>÷</mo>" in mathMl.statement(Parser.parseStatement("a÷b")))
         assertEquals("\\left|x\\right| + \\overrightarrow{v \\cdot w}", tex("|x| + vec(v*w)"))
         assertEquals("i := 0, 2 .. 10", tex("i := 0, 2..10"))
         assertEquals("\\text{“OK”}", tex("\"OK\""))

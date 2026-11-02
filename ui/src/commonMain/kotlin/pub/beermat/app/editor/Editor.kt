@@ -1,6 +1,7 @@
 package pub.beermat.app.editor
 
 import kotlin.concurrent.Volatile
+import pub.beermat.engine.syntax.Division
 import pub.beermat.engine.syntax.Apply
 import pub.beermat.engine.syntax.Break
 import pub.beermat.engine.syntax.Call
@@ -195,6 +196,8 @@ object Editor {
             '-' -> if (node == Placeholder || st.cursor.side == Side.LEFT) prefix(st, Op.NEG) else binary(st, Op.SUB)
             '*' -> binary(st, Op.MUL)
             '/' -> binary(st, Op.DIV)
+            '÷' -> binary(st, Op.DIV, division = Division.OBELUS)
+            '∕' -> binary(st, Op.DIV, division = Division.SLASH)
             '^' -> binary(st, Op.POW)
             '<' -> binary(st, Op.LT)
             '>' -> binary(st, Op.GT)
@@ -300,9 +303,9 @@ object Editor {
      * A binary operator applied to the selection (climbing by precedence unless it was widened).
      * In an empty slot it brings two empty operands, the cursor in the first (`*` → ■·■).
      */
-    private fun binary(s: EditState, op: Op, implicit: Boolean = false): EditState? {
+    private fun binary(s: EditState, op: Op, implicit: Boolean = false, division: Division = Division.STACKED): EditState? {
         if (s.node == Placeholder) {
-            val placed = place(s.statement, s.cursor.path, Apply(op, Placeholder, Placeholder))
+            val placed = place(s.statement, s.cursor.path, Apply(op, Placeholder, Placeholder, division = division))
             return EditState(placed.statement, Cursor(placed.path + 0))
         }
         var path = s.cursor.path
@@ -316,7 +319,7 @@ object Editor {
         val sel = Nodes.at(s.statement, path) as? Expr ?: return null
         if (sel is Placeholder) return null
         val left = s.cursor.side == Side.LEFT
-        val node = if (left) Apply(op, Placeholder, guard(op, 1, sel)) else Apply(op, guard(op, 0, sel), Placeholder, implicit = implicit)
+        val node = if (left) Apply(op, Placeholder, guard(op, 1, sel), division = division) else Apply(op, guard(op, 0, sel), Placeholder, implicit = implicit, division = division)
         val placed = place(s.statement, path, node)
         return EditState(placed.statement, Cursor(placed.path + if (left) 0 else 1))
     }
@@ -527,6 +530,8 @@ object Editor {
         val st = commit(s)
         return when (c.lowercaseChar()) {
             '=' -> binary(st, Op.EQ)
+            // A division on the line, drawn ÷ (docs/syntax.md#division-style).
+            '/' -> binary(st, Op.DIV, division = Division.OBELUS)
             '3' -> if (shift) iteration(st, "prod", limits = true) else binary(st, Op.NE)
             '4' -> if (shift) iteration(st, "sum", limits = true) else null
             '9' -> binary(st, Op.LE)
@@ -846,6 +851,24 @@ object Editor {
         val (path, a) = multiplicationAt(st) ?: return@checked null
         if (style == Multiplication.SPACE && !Printer.canJuxtapose(a.args[1])) return@checked null
         EditState(Nodes.set(st.statement, path, a.copy(implicit = style == Multiplication.SPACE, dot = style == Multiplication.DOT)) as Statement, st.cursor)
+    }
+
+    /** The multiplication or division the cursor is in (the innermost), for the right-click menu. */
+    fun styledAt(s: EditState): Pair<Path, Apply>? {
+        val st = commit(s)
+        return generateSequence(st.cursor.path) { if (it.isEmpty()) null else it.dropLast(1) }
+            .firstNotNullOfOrNull { p -> (Nodes.at(st.statement, p) as? Apply)?.takeIf { it.op == Op.MUL || it.op == Op.DIV }?.let { p to it } }
+    }
+
+    /**
+     * Right-click on a division: stacked, or on the line as ÷ or / (docs/syntax.md#division-style).
+     * On the line its operands take the parentheses a stacked fraction doesn't need: (a + b) ÷ c.
+     */
+    fun division(s: EditState, style: Division): EditState? = checked {
+        val st = commit(s)
+        val (path, a) = styledAt(st)?.takeIf { it.second.op == Op.DIV } ?: return@checked null
+        val args = if (style == Division.STACKED) a.args else a.args.mapIndexed { i, x -> if (x !is Parens && needsParens(a, i, x)) Parens(x) else x }
+        EditState(Nodes.set(st.statement, path, a.copy(args = args, division = style)) as Statement, Cursor(path))
     }
 
     fun matrix(s: EditState, rows: Int, cols: Int): EditState? = checked {

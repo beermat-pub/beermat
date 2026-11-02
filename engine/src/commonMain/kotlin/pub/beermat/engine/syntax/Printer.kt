@@ -222,6 +222,7 @@ object Printer {
                     when {
                         e.implicit -> " "
                         e.dot -> "·"
+                        e.op == Op.DIV -> e.division.symbol
                         e.op == Op.MUL || e.op == Op.DIV || e.op == Op.POW -> e.op.symbol
                         else -> " ${e.op.symbol} "
                     }
@@ -275,7 +276,7 @@ object Printer {
             else -> listOf(wrap(args[0], op.precedence), wrap(args[1], op.precedence + 1))
         }
         val implicit = e.implicit && ImplicitMultiplication.isValid(wrapped[1])
-        return Apply(op, wrapped, implicit, e.dot)
+        return Apply(op, wrapped, implicit, e.dot, e.division)
     }
 
     private fun startsWithT(e: Expr): Boolean = when (e) {

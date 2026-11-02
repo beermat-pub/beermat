@@ -225,7 +225,7 @@ class ProgramTest {
         assertEquals("2", text("try 4/2 on error 0 = ?"))
         assertEquals("\"bad\"", text("try 1 m + 1 s on error \"bad\" = ?"))
         assertEquals("[1; \"bad\"]", text("r(x) := try sqrt(x) on error \"bad\"", "[r(1); r(\"a\")] = ?"))
-        assertEquals("Apply(op=ON_ERROR, args=[Id(x), Id(y)], implicit=false, dot=false)", Parser.parseExpression("try x on error y").toString())
+        assertEquals("Apply(op=ON_ERROR, args=[Id(x), Id(y)], implicit=false, dot=false, division=STACKED)", Parser.parseExpression("try x on error y").toString())
         assertEquals("[Id(on)]", listOf(Parser.parseExpression("on")).toString())
         assertEquals("-1", text("try try 1/0 on error 1/0 on error -1 = ?"))
         assertEquals("3", text("1 + (try 1/0 on error 2) = ?"))

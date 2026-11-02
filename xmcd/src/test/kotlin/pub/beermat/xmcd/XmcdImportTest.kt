@@ -92,6 +92,19 @@ class XmcdImportTest {
     }
 
     @Test
+    fun `a division on the line is drawn ÷`() {
+        fun div(inline: String?) = """<ml:apply><ml:div${inline?.let { " inline=\"$it\"" } ?: ""}/><ml:id>a</ml:id><ml:id>b</ml:id></ml:apply>"""
+        val regions = listOf(null, "false", "true").mapIndexed { k, inline ->
+            """<region region-id="$k" left="0" top="${k * 20}"><math><ml:define><ml:id>v$k</ml:id>${div(inline)}</ml:define></math></region>"""
+        }
+        val xml = """<?xml version="1.0" encoding="UTF-8"?>
+            |<worksheet xmlns="http://schemas.mathsoft.com/worksheet30" xmlns:ml="http://schemas.mathsoft.com/math30">
+            |<regions>${regions.joinToString("")}</regions></worksheet>""".trimMargin()
+        val text = XmcdImport.import(xml.byteInputStream(), "Divisions").text
+        assertEquals(listOf("v0 := a/b", "v1 := a/b", "v2 := a÷b"), text.lines().filter { it.startsWith("v") })
+    }
+
+    @Test
     fun `the imported sheet evaluates`() {
         val calc = Calculation.of(WorksheetText.read(synthetic().text))
         val annotations = calc.lines.mapNotNull { it.annotation }

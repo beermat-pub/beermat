@@ -74,6 +74,8 @@ import pub.beermat.app.page.PagePainter
 import pub.beermat.app.page.RegionView
 import pub.beermat.app.page.Session
 import pub.beermat.app.page.TableEditor
+import pub.beermat.engine.syntax.Op
+import pub.beermat.engine.syntax.Division
 import pub.beermat.engine.syntax.Apply
 import pub.beermat.engine.syntax.Multiplication
 import pub.beermat.engine.syntax.Printer
@@ -173,7 +175,7 @@ fun SheetView(
                                     if (down.buttons.isSecondaryPressed) {
                                         // Right-click: the cursor goes there, and on a multiplication a menu of its styles opens.
                                         session.guard(Unit) { session.click(px, py) }
-                                        mulMenu = session.editing?.let { Editor.multiplicationAt(it.state)?.second }?.let { start to it }
+                                        mulMenu = session.editing?.let { Editor.styledAt(it.state)?.second }?.let { start to it }
                                         tableMenu = start.takeIf { session.table != null }
                                         // On a plot or picture: Copy as image.
                                         imageMenu = runCatching { session.layout.hit(px, py)?.first }.getOrNull()?.takeIf { it is pub.beermat.app.page.PlotView || it is pub.beermat.app.page.ImageView }?.let { start to it.index }
@@ -261,7 +263,14 @@ fun SheetView(
                     }
                 }
                 session.textEditing?.let { (index, statement) -> TextEditor(session, index, statement, scale, left, density, onChange) }
-                mulMenu?.let { (at, mul) ->
+                mulMenu?.takeIf { it.second.op == Op.DIV }?.let { (at, div) ->
+                    DivisionMenu(at, div, onDismiss = { mulMenu = null }) { style ->
+                        mulMenu = null
+                        if (!session.guard(false) { session.edit { Editor.division(it, style) } }) host.beep()
+                        onChange()
+                    }
+                }
+                mulMenu?.takeIf { it.second.op == Op.MUL }?.let { (at, mul) ->
                     MultiplicationMenu(at, mul, session.multiplication, onDismiss = { mulMenu = null }) { style ->
                         mulMenu = null
                         if (!session.guard(false) { session.edit { Editor.multiplication(it, style) } }) host.beep()
@@ -365,6 +374,25 @@ private fun MultiplicationMenu(at: Offset, mul: Apply, sheet: Multiplication, on
                     mark + label,
                     Modifier.fillMaxWidth().let { if (enabled) it.clickable { onPick(style) } else it }.padding(horizontal = 12.dp, vertical = 4.dp),
                     style = TextStyle(fontSize = 13.sp, color = if (enabled) Color(0xFF222222) else Color(0xFFAAAAAA)),
+                )
+            }
+        }
+    }
+}
+
+/** Right-click on a division (docs/syntax.md#division-style): stacked, or on the line as ÷ or /. */
+@Composable
+private fun DivisionMenu(at: Offset, div: Apply, onDismiss: () -> Unit, onPick: (Division) -> Unit) {
+    val items = listOf("Stacked   a over b" to Division.STACKED, "Inline   a ÷ b" to Division.OBELUS, "Inline   a / b" to Division.SLASH)
+    Popup(offset = IntOffset(at.x.roundToInt(), at.y.roundToInt()), onDismissRequest = onDismiss, properties = PopupProperties(focusable = true)) {
+        Column(Modifier.width(IntrinsicSize.Max).background(Color.White).border(1.dp, Color(0xFFBBBBBB)).padding(vertical = 4.dp)) {
+            BasicText("Division", Modifier.padding(horizontal = 12.dp, vertical = 3.dp), style = TextStyle(fontSize = 11.sp, color = Color(0xFF888888)))
+            for ((label, style) in items) {
+                val mark = if (style == div.division) "✓ " else "    "
+                BasicText(
+                    mark + label,
+                    Modifier.fillMaxWidth().clickable { onPick(style) }.padding(horizontal = 12.dp, vertical = 4.dp),
+                    style = TextStyle(fontSize = 13.sp, color = Color(0xFF222222)),
                 )
             }
         }

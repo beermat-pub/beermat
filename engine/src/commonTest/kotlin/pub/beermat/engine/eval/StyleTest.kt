@@ -30,7 +30,7 @@ class StyleTest {
             assertEquals(s, Printer.print(Parser.parseExpression(s)))
         }
         // A styled T is a name, not a transpose.
-        assertEquals("Apply(op=POW, args=[Id(x), Id(\\bf T)], implicit=false, dot=false)", Parser.parseExpression("x^\\bf T").toString())
+        assertEquals("Apply(op=POW, args=[Id(x), Id(\\bf T)], implicit=false, dot=false, division=STACKED)", Parser.parseExpression("x^\\bf T").toString())
         assertFailsWith<ParseException> { Parser.parseExpression("\\bf 2") }
         assertFailsWith<ParseException> { Parser.parseExpression("\\bf \\rm x") }
     }

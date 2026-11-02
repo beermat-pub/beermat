@@ -266,10 +266,15 @@ class Parser private constructor(text: String, private val line: Int = 0) {
             when {
                 // `x if c` and `x otherwise` end the expression on a program line.
                 unmarked(peek) && peek.text in PROGRAM_STOPS -> return left
-                peek.kind == K.STAR || peek.kind == K.SLASH || peek.kind == K.DOT_TIMES -> {
+                peek.kind in MULTIPLICATIVE -> {
                     val kind = advance().kind
                     last = unary()
-                    left = if (kind == K.SLASH) Apply(Op.DIV, left, last) else Apply(Op.MUL, left, last, dot = kind == K.DOT_TIMES)
+                    left = when (kind) {
+                        K.SLASH -> Apply(Op.DIV, left, last)
+                        K.OBELUS -> Apply(Op.DIV, left, last, division = Division.OBELUS)
+                        K.DIVISION_SLASH -> Apply(Op.DIV, left, last, division = Division.SLASH)
+                        else -> Apply(Op.MUL, left, last, dot = kind == K.DOT_TIMES)
+                    }
                 }
                 // A name after an operand, `3 m` or `q L`: a multiplication drawn with a thin space.
                 peek.kind == K.IDENT -> {
@@ -422,6 +427,9 @@ private val COMPARISONS = mapOf(
 
 /** Words that end an expression, because a program line uses them after one. */
 internal val PROGRAM_STOPS = setOf("if", "otherwise")
+
+/** The operators of a product: `*`, `·`, and the divisions `/`, `÷`, `∕`. */
+private val MULTIPLICATIVE = setOf(K.STAR, K.DOT_TIMES, K.SLASH, K.OBELUS, K.DIVISION_SLASH)
 
 private val POSTFIX_OR_POWER = setOf(Op.POW, Op.FACTORIAL, Op.TRANSPOSE, Op.COLUMN)
 

@@ -7,6 +7,7 @@ import pub.beermat.engine.syntax.Call
 import pub.beermat.engine.syntax.Multiplication
 import pub.beermat.engine.syntax.Continue
 import pub.beermat.engine.syntax.Define
+import pub.beermat.engine.syntax.Division
 import pub.beermat.engine.syntax.Evaluate
 import pub.beermat.engine.syntax.Expr
 import pub.beermat.engine.syntax.ExprStatement
@@ -270,7 +271,12 @@ class MathLayout(
             Op.SUB -> binary("−", ::medium)
             // A thin space when written so (`q L`), a dot when written `·`; `*` follows the sheet.
             Op.MUL -> if (e.implicit || (!e.dot && multiplication == Multiplication.SPACE)) row(x(0), thin(s), x(1)) else binary("·", ::medium)
-            Op.DIV -> fraction(child(0, a[0], s, unwrap = true), child(1, a[1], s, unwrap = true), s)
+            // Stacked when written `/`; on the line, with its parentheses, when written `÷` or `∕`.
+            Op.DIV -> when (e.division) {
+                Division.STACKED -> fraction(child(0, a[0], s, unwrap = true), child(1, a[1], s, unwrap = true), s)
+                Division.OBELUS -> binary("÷", ::medium)
+                Division.SLASH -> row(x(0), text("/", s), x(1))
+            }
             Op.POW -> script(x(0), sup = child(1, a[1], scriptSize(s), unwrap = true), s = s)
             Op.NEG -> row(text("−", s), x(0))
             Op.POS -> row(text("+", s), x(0))

@@ -11,7 +11,7 @@ internal enum class TokenKind {
     NUMBER, IDENT, STRING, PLACEHOLDER,
     DEFINE, GLOBAL_DEFINE, EVALUATE,
     EQ, NE, LT, LE, GT, GE,
-    PLUS, MINUS, STAR, DOT_TIMES, SLASH, CARET, BANG,
+    PLUS, MINUS, STAR, DOT_TIMES, SLASH, OBELUS, DIVISION_SLASH, CARET, BANG,
     LPAREN, RPAREN, LBRACKET, RBRACKET, COMMA, SEMICOLON, BAR, DOTDOT,
     /** `bt.f`: a module's member (docs/syntax.md#modules). */
     DOT,
@@ -94,6 +94,9 @@ internal class Lexer(private val src: String) {
                 // A multiplication always drawn with a dot; '⋅' (the dot operator) reads the same.
                 '·', '⋅' -> tok(TokenKind.DOT_TIMES, 1)
                 '/' -> tok(TokenKind.SLASH, 1)
+                // Divisions drawn on the line: a ÷ b, and a/b with the division slash (U+2215).
+                '÷' -> tok(TokenKind.OBELUS, 1)
+                '∕' -> tok(TokenKind.DIVISION_SLASH, 1)
                 '^' -> tok(TokenKind.CARET, 1)
                 '!' -> tok(TokenKind.BANG, 1)
                 '(' -> tok(TokenKind.LPAREN, 1)

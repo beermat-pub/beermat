@@ -69,6 +69,16 @@ class ParserTest {
     }
 
     @Test
+    fun `÷ and ∕ are divisions drawn on the line`() {
+        assertEquals(Apply(Op.DIV, id("a"), id("b"), division = Division.OBELUS), expr("a ÷ b"))
+        assertEquals(Apply(Op.DIV, id("a"), id("b"), division = Division.SLASH), expr("a∕b"))
+        // The precedence of `/`, left to right; the parentheses the line needs are kept.
+        assertEquals(Apply(Op.MUL, Apply(Op.DIV, id("a"), id("b"), division = Division.OBELUS), id("c")), expr("a÷b*c"))
+        assertEquals("(a + b)÷c + a∕b + a/b", Printer.print(stmt("(a + b) ÷ c + a ∕ b + a/b")))
+        for (s in listOf("x := (a + b)÷(c - d)", "y := q∕(2*L)", "z := 1÷2÷3")) assertEquals(stmt(s), stmt(Printer.print(stmt(s))))
+    }
+
+    @Test
     fun `number literals`() {
         for (s in listOf("3", "3.5", ".5", "1.2e-3", "1.2E+3", "2i", "0.5j", "1e3i", "0x1F", "0o17", "0b101.01")) assertEquals(n(s), expr(s))
         // Based literals in decimal, exactly, however long.

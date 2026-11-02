@@ -115,6 +115,7 @@ object Keys {
         put(K.Minus, '-')
         put(K.Backslash, '\\')
         put(K.Period, '.')
+        put(K.Slash, '/')
     }
 
     private fun control(key: K, shift: Boolean, session: Session, host: Host, onSave: () -> Unit): Boolean {

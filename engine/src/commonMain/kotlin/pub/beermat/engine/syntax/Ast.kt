@@ -153,16 +153,32 @@ data class Parens(val inner: Expr) : Expr
  * An operator applied to its operands. Two flags, valid only on [Op.MUL], choose how a
  * multiplication is drawn (docs/syntax.md#multiplication-style): [implicit], written by juxtaposition
  * (`3 m`, `q L`), with a thin space; [dot], written `·`, with a dot. With neither (`*`), the sheet's
- * default decides.
+ * default decides. On [Op.DIV], [division] chooses a stacked fraction or one on the line
+ * (docs/syntax.md#division-style).
  */
-data class Apply(val op: Op, val args: List<Expr>, val implicit: Boolean = false, val dot: Boolean = false) : Expr {
+data class Apply(
+    val op: Op,
+    val args: List<Expr>,
+    val implicit: Boolean = false,
+    val dot: Boolean = false,
+    val division: Division = Division.STACKED,
+) : Expr {
     init {
         require(args.size == op.arity) { "$op takes ${op.arity} operand(s), not ${args.size}" }
         require(!implicit || op == Op.MUL) { "only multiplication can be implicit" }
         require(!dot || (op == Op.MUL && !implicit)) { "only a multiplication can have a dot, and not with a space" }
+        require(division == Division.STACKED || op == Op.DIV) { "only a division can be drawn on the line" }
     }
 
-    constructor(op: Op, vararg args: Expr, implicit: Boolean = false, dot: Boolean = false) : this(op, args.toList(), implicit, dot)
+    constructor(op: Op, vararg args: Expr, implicit: Boolean = false, dot: Boolean = false, division: Division = Division.STACKED) :
+        this(op, args.toList(), implicit, dot, division)
+}
+
+/** How a division is drawn, by the character it is written with: `/` stacked, `÷` and `∕` (the division slash) on the line. */
+enum class Division(val symbol: String) {
+    STACKED("/"),
+    OBELUS("÷"),
+    SLASH("∕"),
 }
 
 /** How a multiplication written `*` is drawn: the sheet's default (frontmatter `multiplication:`). */

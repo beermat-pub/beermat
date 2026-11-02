@@ -40,6 +40,7 @@ The editor works on the expression tree, never on text: keystrokes insert or wra
 | `Ctrl+B`, `Ctrl+I` | the current name bold, or italic (plain); with neither, upright | `\bf F` |
 | `Ctrl+Shift+K` | special text mode: every key goes into the name (`*`, `%`, `/`, spaces…) until `Ctrl+Shift+K` again; on an empty slot it starts a name. The status bar says when it is on; the toolbar's Style palette has it too | `` `θ*` `` |
 | `.` with nothing after it | an empty subscript: a different variable that looks just like the plain one | `x_` |
+| `Ctrl+/` | a division on the line, drawn ÷ (typing `÷` or `∕` does the same, in its own style) | `a÷b` |
 | `Ctrl+M` | a matrix (rows and columns asked for); in a matrix, Insert adds rows below the cursor's cell and columns to its right, Delete removes them starting at it † | `[?, ?; ?, ?]` |
 | `.` after a module's name | its functions: a list opens, narrowed as you type; ↑ ↓ pick, Enter or Tab put it in, Esc closes; the mouse resting on `bt.f` shows its signature and docstring ([symbolic.md](symbolic.md#python-functions-in-a-sheet)) | `bt.moment` |
 | `Ctrl+6`, `Ctrl+1`, `Ctrl+-` | column, transpose, vectorize | |
@@ -51,6 +52,8 @@ The editor works on the expression tree, never on text: keystrokes insert or wra
 | a keyword, then Space | in an empty slot: `if`, `for`, `while`, `otherwise`, `return`, `break`, `continue`, `try` become their structure | |
 
 **Multiplication style:** right-click on a multiplication for Dot, Thin space or As the sheet; Format → Multiplication sets the sheet's default ([syntax.md](syntax.md#multiplication-style)).
+
+**Division style:** right-click on a division for Stacked, Inline ÷ or Inline /; going on the line adds the parentheses a fraction didn't need (`(x + 1)÷2`). The right-click menu is the innermost multiplication's or division's around the cursor ([syntax.md](syntax.md#division-style)).
 
 **Operators on an empty spot** bring their empty operands: `*` gives `■·■`, `/` a fraction, `<` `■ < ■`, `!` `■!`, `[` `■[■]`, the cursor in the first slot (Tab to the next). `:` gives `■ := ■`, the cursor on the name.
 

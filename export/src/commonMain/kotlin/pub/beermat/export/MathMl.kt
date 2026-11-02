@@ -1,6 +1,7 @@
 package pub.beermat.export
 
 import pub.beermat.engine.eval.Builtins
+import pub.beermat.engine.syntax.Division
 import pub.beermat.engine.syntax.Apply
 import pub.beermat.engine.syntax.Break
 import pub.beermat.engine.syntax.Call
@@ -109,7 +110,11 @@ class MathMl(private val units: Units = Units.BUILT_IN, private val multiplicati
             Op.ADD -> binary("+")
             Op.SUB -> binary("−")
             Op.MUL -> if (e.implicit || (!e.dot && multiplication == Multiplication.SPACE)) row(x(0) + "<mspace width=\"0.17em\"/>" + x(1)) else binary("·")
-            Op.DIV -> "<mfrac>${expr(unwrap(a[0]))}${expr(unwrap(a[1]))}</mfrac>"
+            Op.DIV -> when (e.division) {
+                Division.STACKED -> "<mfrac>${expr(unwrap(a[0]))}${expr(unwrap(a[1]))}</mfrac>"
+                Division.OBELUS -> binary("÷")
+                Division.SLASH -> binary("/")
+            }
             Op.POW -> "<msup>${x(0)}${expr(unwrap(a[1]))}</msup>"
             Op.NEG -> row(mo("−") + x(0))
             Op.POS -> row(mo("+") + x(0))

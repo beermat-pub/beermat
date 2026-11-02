@@ -130,7 +130,8 @@ Decided by Dan on 2026-10-29: stacked by default, and inline as an option, chose
 - **`÷` is an inline division drawn as ÷** (a ÷ b), and **`∕`** (U+2215, the division slash) **an inline division drawn as a slash** (a/b, on one line). `÷` and `∕` have the precedence of `/`.
 - **Right-click on a division**: Stacked, Inline ÷ or Inline /. Typing `/` makes a stacked fraction and `Ctrl+/` an inline one (÷) †.
 - **No sheet default**, unlike multiplication: a fraction is the common case, and the inline forms are for the odd one that should stay on the line. (One can be added later if sheets want it.)
-- **Exports follow**: `\frac`, `\div` or `/` in LaTeX; `<mfrac>`, `÷` or `/` in MathML. The `.xmcd` import maps inline division to `÷`.
+- **Exports follow**: `\frac`, `\div` or `/` in LaTeX; `<mfrac>`, `÷` or `/` in MathML. The `.xmcd` import maps inline division to `÷` (`<ml:div inline="true"/>`).
+- Built on 2026-11-02: the tree keeps the style (`Apply.division`), the printer writes `÷` and `∕` without spaces, as it does `/` (`(a + b)÷c`), and a division on the line is drawn with the parentheses its operands need.
 
 ## 6. Functions
 

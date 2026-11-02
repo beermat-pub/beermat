@@ -1,6 +1,7 @@
 package pub.beermat.export
 
 import pub.beermat.engine.eval.Builtins
+import pub.beermat.engine.syntax.Division
 import pub.beermat.engine.syntax.Apply
 import pub.beermat.engine.syntax.Break
 import pub.beermat.engine.syntax.Call
@@ -108,7 +109,11 @@ class Latex(private val units: Units = Units.BUILT_IN, private val multiplicatio
             Op.ADD -> "${x(0)} + ${x(1)}"
             Op.SUB -> "${x(0)} - ${x(1)}"
             Op.MUL -> if (e.implicit || (!e.dot && multiplication == Multiplication.SPACE)) "${x(0)}\\,${x(1)}" else "${x(0)} \\cdot ${x(1)}"
-            Op.DIV -> "\\frac{${expr(unwrap(a[0]))}}{${expr(unwrap(a[1]))}}"
+            Op.DIV -> when (e.division) {
+                Division.STACKED -> "\\frac{${expr(unwrap(a[0]))}}{${expr(unwrap(a[1]))}}"
+                Division.OBELUS -> "${x(0)} \\div ${x(1)}"
+                Division.SLASH -> "${x(0)}/${x(1)}"
+            }
             Op.POW -> "${group(x(0))}^{${expr(unwrap(a[1]))}}"
             Op.NEG -> "-${x(0)}"
             Op.POS -> "+${x(0)}"
