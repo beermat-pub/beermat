@@ -9,6 +9,7 @@ Each version's section here becomes the notes of its release on GitHub ([docs/re
 - **The manual**: the logo leads back to beermat.pub.
 - **Big arrays are tables**: an array with more than 20 rows or columns, a result or one written in the sheet, shows 20 at a time with row and column numbers; the mouse wheel over it scrolls it. **Fixed**: `.xmcd` sheets with big input tables stopped the desktop app ("Can't represent a width … in Constraints").
 - **Fixed**: regions past the page's right edge couldn't be scrolled to.
+- **The system's own file dialogs**: on Windows, Open, Save As, Insert Picture and Export now use the modern Explorer dialog.
 - **A word and a space make text**: typing a word and then a space at the crosshair turns the new region into a text region, and the typing goes on there.
 
 ## 1.0.0-dev2 (developer preview)

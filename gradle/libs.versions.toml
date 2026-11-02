@@ -11,6 +11,8 @@ pdfbox = "3.0.3"
 # Reading Excel workbooks inside .xmcd components (classic .xls, HSSF), and data files later.
 poi = "5.3.0"
 # The bundled Python and SymPy (docs/symbolic.md#bundled-sympy): a python-build-standalone release.
+# The desktop's file dialogs, the system's own (Windows's modern one through JNA; FileKit, MIT).
+filekit = "0.17.0"
 python-standalone = "20261026"
 python = "3.13.18"
 sympy = "1.14.0"
@@ -22,6 +24,7 @@ snakeyaml-engine = { module = "org.snakeyaml:snakeyaml-engine", version.ref = "s
 snakeyaml-engine-kmp = { module = "it.krzeminski:snakeyaml-engine-kmp", version.ref = "snakeyaml-engine-kmp" }
 pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
 poi = { module = "org.apache.poi:poi", version.ref = "poi" }
+filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

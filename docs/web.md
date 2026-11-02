@@ -14,7 +14,7 @@ Compose Multiplatform runs in the browser through Kotlin/Wasm, drawing with the 
 | symbolic | `BigInteger` (exact rationals) | a small multiplatform big-integer library (Apache-2.0) or our own |
 | format | SnakeYAML (frontmatter, plots), `MessageDigest` (the results hash) | a multiplatform YAML library (kaml, Apache-2.0) or a small parser for our subset; a tiny SHA-256 |
 | export | nothing special | as is |
-| app | AWT (clipboard, file dialogs, the window), `HttpServer` (MCP) | browser equivalents; no MCP server in the browser |
+| app | AWT (clipboard, the window), FileKit (file dialogs), `HttpServer` (MCP) | browser equivalents; no MCP server in the browser |
 | xmcd, cli, mcp | JDK XML, files, stdio | desktop only |
 
 ## Steps

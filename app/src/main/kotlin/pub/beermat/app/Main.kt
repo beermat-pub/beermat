@@ -35,7 +35,12 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import java.awt.FileDialog
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.dialogs.openFileSaver
 import java.awt.Frame
 import java.awt.Toolkit
 import java.awt.event.KeyEvent as AwtKeyEvent
@@ -267,24 +272,40 @@ fun main(args: Array<String>) {
     }
 }
 
+/**
+ * Shows one of the system's file dialogs ([block]: FileKit, Windows's modern one rather than the old
+ * one AWT opens) and waits for the answer, the window still drawing meanwhile, as under a modal dialog.
+ */
+private fun <T> waitFor(block: suspend () -> T): T {
+    val loop = Toolkit.getDefaultToolkit().systemEventQueue.createSecondaryLoop()
+    var result: Result<T>? = null
+    Thread {
+        result = runCatching { kotlinx.coroutines.runBlocking { block() } }
+        loop.exit()
+    }.apply { isDaemon = true }.start()
+    loop.enter()
+    // The loop may have been left before it was entered; the answer is there either way.
+    while (result == null) Thread.onSpinWait()
+    return result!!.getOrThrow()
+}
+
+private fun dialog(title: String) = FileKitDialogSettings(title = title)
+
 /** A worksheet to open, or (with [save]) where to save one: `.bbm` is added to a name without it. */
-private fun chooseFile(save: Boolean): File? {
-    val dialog = FileDialog(null as Frame?, if (save) "Save the worksheet" else "Open a worksheet", if (save) FileDialog.SAVE else FileDialog.LOAD)
-    dialog.setFilenameFilter { _, name -> name.endsWith(".bbm") || name.endsWith(".bbm.md") }
-    if (save) dialog.file = "Untitled.bbm"
-    dialog.isVisible = true
-    val name = dialog.file ?: return null
-    val f = File(dialog.directory, name)
-    return if (save && !name.endsWith(".bbm") && !name.endsWith(".bbm.md")) File(f.path + ".bbm") else f
+private fun chooseFile(save: Boolean): File? = waitFor {
+    if (save) {
+        FileKit.openFileSaver("Untitled", "bbm", dialogSettings = dialog("Save the worksheet"))?.file?.let { f ->
+            if (f.name.endsWith(".bbm") || f.name.endsWith(".bbm.md")) f else File(f.path + ".bbm")
+        }
+    } else {
+        FileKit.openFilePicker(FileKitType.File(setOf("bbm", "md")), dialogSettings = dialog("Open a worksheet"))?.file
+    }
 }
 
 /** A picture file to insert (Insert → Picture…), looked for beside the sheet first. */
-private fun choosePicture(sheet: File?): File? {
-    val dialog = FileDialog(null as Frame?, "Insert a picture", FileDialog.LOAD)
-    dialog.setFilenameFilter { _, name -> name.substringAfterLast('.').lowercase() in PICTURE_TYPES }
-    sheet?.absoluteFile?.parentFile?.let { dialog.directory = it.path }
-    dialog.isVisible = true
-    return dialog.file?.let { File(dialog.directory, it) }
+private fun choosePicture(sheet: File?): File? = waitFor {
+    val folder = sheet?.absoluteFile?.parentFile?.let { PlatformFile(it) }
+    FileKit.openFilePicker(FileKitType.File(PICTURE_TYPES.keys), directory = folder, dialogSettings = dialog("Insert a picture"))?.file
 }
 
 private val PICTURE_TYPES = mapOf("png" to "image/png", "jpg" to "image/jpeg", "jpeg" to "image/jpeg", "gif" to "image/gif", "webp" to "image/webp", "svg" to "image/svg+xml")
@@ -304,14 +325,12 @@ private fun insertPicture(session: Session, file: File) {
 }
 
 /** Where to export (as [extension], "pdf" or "md"): beside the sheet, with its name, by default. */
-private fun chooseExport(sheet: File?, extension: String, title: String): File? {
-    val dialog = FileDialog(null as Frame?, title, FileDialog.SAVE)
-    dialog.setFilenameFilter { _, name -> name.endsWith(".$extension") }
-    sheet?.parentFile?.let { dialog.directory = it.path }
-    dialog.file = (sheet?.name?.substringBefore(".bbm") ?: "Untitled") + ".$extension"
-    dialog.isVisible = true
-    val name = dialog.file ?: return null
-    return File(dialog.directory, if (name.endsWith(".$extension")) name else "$name.$extension")
+private fun chooseExport(sheet: File?, extension: String, title: String): File? = waitFor {
+    val folder = sheet?.absoluteFile?.parentFile?.let { PlatformFile(it) }
+    val name = sheet?.name?.substringBefore(".bbm") ?: "Untitled"
+    FileKit.openFileSaver(name, extension, folder, dialog(title))?.file?.let { f ->
+        if (f.name.endsWith(".$extension")) f else File(f.path + ".$extension")
+    }
 }
 
 private fun saveTo(session: Session, file: File) = file.writeText(session.save())

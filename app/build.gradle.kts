@@ -22,6 +22,7 @@ dependencies {
     implementation(project(":export"))
     implementation(project(":mcp"))
     implementation(compose.desktop.currentOs)
+    implementation(libs.filekit.dialogs)
     testImplementation(kotlin("test"))
     testImplementation(libs.pdfbox)
 }
