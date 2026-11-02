@@ -39,8 +39,11 @@ import pub.beermat.engine.Version
 import pub.beermat.web.resources.Res
 import kotlin.io.encoding.Base64
 
-/** Where the desktop versions are, for what the browser can't do. */
-private const val DOWNLOAD = "https://beermat.pub/download"
+/** Where the desktop versions are, for what the browser can't do: the releases, previews included, until the site has a download page. */
+private const val DOWNLOAD = "https://github.com/beermat-pub/beermat/releases"
+
+/** The website, which the page's name and a button lead back to. */
+private const val SITE = "https://beermat.pub"
 
 /** The browser's storage keys: the sheet and its name, kept between visits. */
 private const val SHEET = "beermat.sheet"
@@ -86,7 +89,7 @@ private fun WebApp() {
     LaunchedEffect(Unit) { onPaste { text -> session.guard(Unit) { session.paste(text) }; changed() } }
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().background(Color(0xFF2B2118)).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            BasicText("Beermat", style = TextStyle(color = Color(0xFFF2B33D), fontSize = 16.sp))
+            BasicText("Beermat", Modifier.clickable { goTo(SITE) }, style = TextStyle(color = Color(0xFFF2B33D), fontSize = 16.sp))
             Spacer(Modifier.width(16.dp))
             BasicText(name, style = TextStyle(color = Color(0xFFDDDDDD), fontSize = 13.sp))
             Spacer(Modifier.width(24.dp))
@@ -108,6 +111,7 @@ private fun WebApp() {
             // What only the desktop does, shown so a visitor knows it is there (docs/web.md#what-the-web-version-leaves-out).
             for (feature in listOf("Print", "PDF", "Import .xmcd", "AI assistant (MCP)")) Greyed(feature)
             Spacer(Modifier.weight(1f))
+            Button("beermat.pub") { goTo(SITE) }
             Button("Get the desktop app") { openPage(DOWNLOAD) }
         }
         if (examples) {

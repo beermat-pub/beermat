@@ -68,6 +68,9 @@ internal fun alert(message: String): Unit = js("window.alert(message)")
 
 internal fun openPage(url: String): Unit = js("window.open(url, '_blank', 'noopener')")
 
+/** Leaves the page for [url], in the same tab (the sheet stays in the browser's storage). */
+internal fun goTo(url: String): Unit = js("window.location.href = url")
+
 /** Calls [onText] with the text of every paste on the page (Ctrl+V): the browser gives it only there. */
 internal fun onPaste(onText: (String) -> Unit): Unit = js(
     """document.addEventListener('paste', e => {

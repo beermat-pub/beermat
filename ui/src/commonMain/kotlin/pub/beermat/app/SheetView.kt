@@ -249,6 +249,9 @@ fun SheetView(
                             }
                         },
                 ) {
+                    // Read here so the page is drawn again at every change, also one that leaves the layout as
+                    // it was: the crosshair or a selection moved by the arrow keys.
+                    revision
                     drawIntoCanvas {
                         val c = it.nativeCanvas
                         c.save()

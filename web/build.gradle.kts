@@ -56,3 +56,10 @@ kotlin {
 compose.resources {
     packageOfResClass = "pub.beermat.web.resources"
 }
+
+// The tab's icons, from branding/ (one source; see branding/README.md).
+tasks.named<ProcessResources>("wasmJsProcessResources") {
+    from(rootProject.file("branding")) {
+        include("logo-small.svg", "icon-32.png", "apple-touch-icon.png")
+    }
+}

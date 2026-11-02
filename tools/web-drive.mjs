@@ -57,7 +57,8 @@ if (keys.length) {
   const [cx, cy] = keys[0].startsWith('@') ? keys.shift().slice(1).split(',').map(Number) : [400, 600];
   await click(cx, cy);
   await sleep(300);
-  const named = { Enter: [13, 'Enter', '\r'], Tab: [9, 'Tab', '\t'], Escape: [27, 'Escape', ''], Backspace: [8, 'Backspace', ''] };
+  const named = { Enter: [13, 'Enter', '\r'], Tab: [9, 'Tab', '\t'], Escape: [27, 'Escape', ''], Backspace: [8, 'Backspace', ''],
+    ArrowLeft: [37, 'ArrowLeft', ''], ArrowUp: [38, 'ArrowUp', ''], ArrowRight: [39, 'ArrowRight', ''], ArrowDown: [40, 'ArrowDown', ''] };
   for (const k of keys) {
     const parts = k.match(/\{[^}]+\}|[^{]+/g);
     for (const part of parts) {

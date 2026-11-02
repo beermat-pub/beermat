@@ -5,6 +5,8 @@ Each version's section here becomes the notes of its release on GitHub ([docs/re
 ## 1.0.0-dev2 (not released yet)
 
 - **The `beermat` command comes with the desktop app**: no separate download and no Java to install. On Windows the installer adds it to the PATH; on macOS and Linux, Tools → Install the beermat command.
+- **Fixed**: the arrow keys moved the crosshair (and selected regions) without the page showing it until the next edit, in the browser and on the desktop.
+- **The web version**: the name in the top bar and a beermat.pub button lead back to the website; "Get the desktop app" opens the releases page; the browser tab has Beermat's icon.
 
 ## 1.0.0-dev1 (developer preview)
 
