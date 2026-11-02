@@ -65,6 +65,10 @@ object Keys {
     }
 
     /** In the browser, the character a key-down event types: printable, without Ctrl. */
+    /** The character a key event types, if any: a typed event on the desktop, the key-down in the browser. */
+    fun character(e: KeyEvent): Char? =
+        if (e.type == KeyEventType.Unknown || (typedOnKeyDown && e.type == KeyEventType.KeyDown) && !e.isCtrlPressed) typed(e) else null
+
     private fun typed(e: KeyEvent): Char? {
         val code = e.utf16CodePoint
         return if (code < 32 || code == 127 || code == 0xFFFF) null else code.toChar()

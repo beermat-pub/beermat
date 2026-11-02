@@ -250,6 +250,25 @@ class SessionTest {
     }
 
     @Test
+    fun `a word and a space in a new region make it text`() {
+        val s = Session("", math)
+        s.type("the")
+        assertTrue(s.key(Key.Space))
+        assertIs<TextRegion>(s.regions.single())
+        assertEquals(0 to null, s.textEditing)
+        assertEquals("the ", s.textOf(0, null))
+        // A keyword still makes its structure, and a name in a statement stays math.
+        val k = Session("", math)
+        k.type("if")
+        k.key(Key.Space)
+        assertIs<MathRegion>(k.regions.single())
+        val m = Session("", math)
+        m.type("x:a")
+        m.key(Key.Space)
+        assertIs<MathRegion>(m.regions.single())
+    }
+
+    @Test
     fun `a click on empty paper moves the crosshair, snapped to the grid`() {
         val s = Session("", math)
         s.click(s.format.margin + 100f, s.format.margin + 50f)

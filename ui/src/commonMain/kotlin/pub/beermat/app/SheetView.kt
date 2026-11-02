@@ -29,12 +29,15 @@ import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -161,7 +164,13 @@ fun SheetView(
                     .focusRequester(focus)
                     .focusable()
                     .onPreviewKeyEvent { e ->
-                        if (session.textEditing != null) return@onPreviewKeyEvent false
+                        if (session.textEditing != null) {
+                            // Typed before the text field has the keyboard (a word that has just become text): kept for it.
+                            val c = Keys.character(e) ?: return@onPreviewKeyEvent false
+                            session.pendingText += c
+                            onChange()
+                            return@onPreviewKeyEvent true
+                        }
                         val done = session.guard(false) { Keys.handle(e, session, host, onSave) }
                         if (done) onChange()
                         done
@@ -425,11 +434,12 @@ private fun TextEditor(session: Session, index: Int, statement: Int?, scale: Flo
     val piece = layout.pieces[index].firstOrNull() ?: return
     val (ox, oy) = layout.origin(view, piece)
     val y = oy + if (view is MathView && statement != null) view.statements.getOrNull(statement)?.top ?: 0f else 0f
-    var text by remember(index, statement) { mutableStateOf(session.textOf(index, statement)) }
+    // The caret at the end, where typing goes on (a word typed as math that became text, docs/editor.md).
+    var text by remember(index, statement) { mutableStateOf(session.textOf(index, statement).let { TextFieldValue(it, TextRange(it.length)) }) }
     val focus = remember { FocusRequester() }
     var focused by remember { mutableStateOf(false) }
     fun done() {
-        session.guard(Unit) { session.setText(index, statement, text) }
+        session.guard(Unit) { session.setText(index, statement, text.text) }
         onChange()
     }
     BasicTextField(
@@ -451,6 +461,14 @@ private fun TextEditor(session: Session, index: Int, statement: Int?, scale: Flo
         textStyle = TextStyle(fontSize = (11f * scale / density).sp),
     )
     LaunchedEffect(index, statement) { focus.requestFocus() }
+    // What was typed while the field was opening goes on its end.
+    SideEffect {
+        if (session.pendingText.isNotEmpty()) {
+            val t = text.text + session.pendingText
+            session.pendingText = ""
+            text = TextFieldValue(t, TextRange(t.length))
+        }
+    }
 }
 
 /**

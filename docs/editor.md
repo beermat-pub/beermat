@@ -135,6 +135,7 @@ Built on 2026-10-29.
 
 ## Choices made while building (approved by Dan, 2026-10-29)
 
+- **A word and a space become text** (as in Mathcad; Dan, 2026-11-02): in a new math region that holds only a name being typed, Space turns the region into a text region with that word and the space, and the typing goes on there. Keywords (`if`, `for`, `given`…) still make their structures, and a name inside a statement (`x := a`) stays math.
 - **New math is one statement per region.** Typing at the crosshair makes a new region; Enter leaves it and puts the crosshair below. Regions loaded from a file keep their several statements, and each statement is edited on its own.
 - **A region is dragged from anywhere on it** (not only by its border); a click without movement edits it.
 - **Text regions are edited as their Markdown**, in a plain text field over the region, and drawn formatted when left (Escape or Ctrl+Enter, or clicking elsewhere). Plots are edited the same way (their YAML), and so is a statement that doesn't parse.

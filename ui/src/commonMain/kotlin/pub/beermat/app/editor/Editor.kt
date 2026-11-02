@@ -818,6 +818,9 @@ object Editor {
 
     private val LINE_WORDS = setOf("if", "for", "while", "otherwise", "return", "break", "continue")
 
+    /** Every word that a Space after it makes into a structure. */
+    val KEYWORDS = LINE_WORDS + setOf("given", "try")
+
     /** Removes the (empty) program line at [p]; the last line of a program leaves an empty value. */
     private fun removeLine(s: EditState, p: Path): EditState? {
         val (holder, first, i) = lines(s.statement, p + 0) ?: return null

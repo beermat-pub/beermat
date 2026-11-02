@@ -1,5 +1,6 @@
 package pub.beermat.app.page
 
+import pub.beermat.app.editor.Draft
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import pub.beermat.app.editor.Cursor
@@ -363,6 +364,7 @@ class Session(text: String, private val math: MathLayout) {
     /** A key for the statement being edited, or for a new region at the crosshair. Returns false when it does nothing. */
     fun key(k: Key): Boolean {
         val e = editing
+        if (k == Key.Space && wordToText()) return true
         if (e == null) {
             val c = crosshair ?: return false
             if (k !is Key.Type && k !is Key.Ctrl) return false
@@ -383,6 +385,29 @@ class Session(text: String, private val math: MathLayout) {
             if (k is Key.Type && k.c == ' ') return false
         }
         return edit(typing = k is Key.Type) { Editor.key(it, k) }
+    }
+
+    /**
+     * A word and then a space, alone in a new math region: it becomes a text region, the typing going
+     * on there (as in Mathcad; Dan, 2026-11-02). A keyword (`if`, `for`, `given`…) still makes its structure.
+     */
+    /** Characters typed while a text region's field was opening, before it had the keyboard; the field takes them. */
+    var pendingText = ""
+
+    private fun wordToText(): Boolean {
+        val e = editing ?: return false
+        val r = regions.getOrNull(e.region) as? MathRegion ?: return false
+        if (r.lines.size > 1 || e.state.statement !is ExprStatement || e.state.cursor.path != listOf(0)) return false
+        val d = e.state.cursor.draft ?: return false
+        if (d.kind != Draft.Kind.NAME || d.literal || d.text.isEmpty() || d.text in Editor.KEYWORDS) return false
+        snapshot()
+        val text = TextRegion(r.attributes, listOf(d.text + " "))
+        regions = regions.toMutableList().also { it[e.region] = text }
+        editing = null
+        textEditing = e.region to null
+        crosshair = null
+        changed()
+        return true
     }
 
     /**
