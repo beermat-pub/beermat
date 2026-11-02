@@ -123,6 +123,26 @@ class EvaluatorTest {
     }
 
     @Test
+    fun `a global can't be redefined`() {
+        // Not by `:=`, above it or below it; the global keeps its value everywhere.
+        val below = run("a ::= 5", "a := 6", "a = ?")
+        assertEquals("a is defined globally (≡); it can't be redefined", (below[1] as Outcome.Failed).error.message)
+        assertEquals(5.0, ((below[2] as Outcome.Evaluated).shown.value as Scalar).q.value.re)
+        assertIs<Outcome.Failed>(run("a := 6", "a ::= 5")[0])
+        // Nor as a function, an element or one of several names.
+        assertIs<Outcome.Failed>(run("f(x) ::= x", "f(x) := 2*x")[1])
+        assertIs<Outcome.Failed>(run("v ::= [1; 2]", "v[0] := 3")[1])
+        assertIs<Outcome.Failed>(run("b ::= 1", "[a; b] := [1; 2]")[1])
+        // A second global of the same name is an error; the first one stands.
+        val twice = run("a ::= 5", "a ::= 6", "a = ?")
+        assertIs<Outcome.Failed>(twice[1])
+        assertEquals(5.0, ((twice[2] as Outcome.Evaluated).shown.value as Scalar).q.value.re)
+        // A program's local and a function's parameter may still use the name.
+        assertEquals(3.0, real("x ::= 1", "f(x) := x + 1", "f(2) = ?"))
+        assertEquals(7.0, real("x ::= 1", "y := program\n  x <- 7\n  x", "y = ?"))
+    }
+
+    @Test
     fun `user functions`() {
         assertEquals(10.0, real("f(x) := x^2 + 1", "f(3) = ?"))
         val g = value("g(x, y) := sqrt(x^2 + y^2)", "g(3 m, 4 m) = ?")

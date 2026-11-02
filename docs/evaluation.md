@@ -6,7 +6,7 @@
 
 - A sheet is evaluated in order: each statement sees the definitions above it. A later definition of the same name replaces the earlier one from that point on.
 - **Global definitions** (`::=`) are evaluated first, top to bottom, in a separate pass. Each global sees only the globals above it (and the built-ins). Every ordinary statement then sees all the globals.
-- **A global is really global** (Dan, 2026-10-29): an ordinary definition (`:=`) of a name the sheet defines globally is an error, wherever it is: "x is defined globally (≡); it can't be redefined". So is a second global of the same name. (Letting an ordinary definition shadow a global from where it appeared † made a global mean different things in different places.) A local in a program (`<-`) and a function's parameter may still use the name, inside their own scope.
+- **A global is really global** (Dan, 2026-10-29): an ordinary definition (`:=`) of a name the sheet defines globally is an error, wherever it is: "x is defined globally (≡); it can't be redefined". So is a second global of the same name. (Letting an ordinary definition shadow a global from where it appeared † made a global mean different things in different places.) A local in a program (`<-`) and a function's parameter may still use the name, inside their own scope. Built on 2026-11-02: the definition that breaks the rule shows the error and changes nothing, so the global keeps its value everywhere; it covers every form of definition (a function, an element, names in a matrix).
 
 ## Values
 

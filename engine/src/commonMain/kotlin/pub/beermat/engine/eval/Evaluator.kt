@@ -124,11 +124,19 @@ class Evaluator(
         random = SheetRandom(1)
         var globals = builtins
         val globalOutcomes = mutableMapOf<Int, Outcome>()
+        // A global is really global (docs/evaluation.md#order): defined once, and never by `:=`.
+        val globalNames = mutableSetOf<Id>()
         statements.forEachIndexed { k, s ->
             if (s is Define && s.global) {
+                val again = s.names.firstOrNull { it in globalNames }
+                if (again != null) {
+                    globalOutcomes[k] = Outcome.Failed(EvalException("${display(again)} is already defined globally (≡) above; a global is defined once", s.target, listOf(again)))
+                    return@forEachIndexed
+                }
                 val (outcome, next) = define(s, globals)
                 globalOutcomes[k] = outcome
                 globals = next
+                globalNames += s.names
             }
         }
         var scope = globals
@@ -138,7 +146,9 @@ class Evaluator(
             steps[k]?.forEach { scope = it(scope) }
             scopes += scope
             val outcome = globalOutcomes[k] ?: when (s) {
-                is Define -> define(s, scope).let { (outcome, next) -> scope = next; outcome }
+                is Define -> s.names.firstOrNull { it in globalNames }?.let { x ->
+                    Outcome.Failed(EvalException("${display(x)} is defined globally (≡); it can't be redefined", s.target, listOf(x)))
+                } ?: define(s, scope).let { (outcome, next) -> scope = next; outcome }
                 is Evaluate -> attempt { Outcome.Evaluated(show(iterated(s.expr, scope), s.result, scope)) }
                 is ExprStatement -> {
                     // In a solve block, a comparison is a constraint, kept with the definitions above it.

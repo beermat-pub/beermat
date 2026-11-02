@@ -317,6 +317,17 @@ data class Define(
         require(isDefinitionTarget(target)) { "cannot define $target" }
     }
 
+    /** The names this defines: `x`, `f` of `f(x)`, `M` of `M[i]` or `M^<j>`, each name of `[a; b]`. */
+    val names: List<Id>
+        get() = when (val t = target) {
+            is Id -> listOf(t)
+            is Call -> listOf(t.fn as Id)
+            is Index -> listOf(t.target as Id)
+            is Apply -> listOf(t.args[0] as Id)
+            is Matrix -> t.rows.flatten().map { it as Id }
+            else -> emptyList()
+        }
+
     companion object {
         /**
          * A name, a function head, an element, a column (`M^<j>`), names in a matrix (`[a; b]`, each
