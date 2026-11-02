@@ -28,7 +28,7 @@ class ArrayTest {
     fun literals() {
         assertEquals("[1, 2; 3, 4]", text("[1, 2; 3, 4] = ?"))
         assertEquals("[1; 2; 3]*m", text("[1; 2; 3]*1 m = ?"))
-        assertEquals("[3000 N; 2000 N*m]", text("[3 kN; 2 kN*m] = ?"))
+        assertEquals("[3 kN; 2 kN*m]", text("[3 kN; 2 kN*m] = ?"))
         assertEquals("[\"a\", 1]", text("[\"a\", 1] = ?"))
         assertEquals("[1000, 2000]*mm", text("[1, 2]*1 m = ? mm"))
     }
@@ -115,7 +115,7 @@ class ArrayTest {
     fun `a stiffness matrix with mixed units inverts`() {
         // [F; M] = K [u; θ]: K has units [N/m, N; N, N*m], so K^-1 has [m/N, 1/N; 1/N, 1/(N*m)].
         val k = "K := [12 N/m, 6 N; 6 N, 4 N*m]"
-        assertEquals("[0.333 m/N, -0.5/N; -0.5/N, 1/(N*m)]", text(k, "K^-1 = ?"))
+        assertEquals("[333.333 mm/N, -0.5/N; -0.5/N, 1/(N*m)]", text(k, "K^-1 = ?"))
         assertEquals("[1, 0/m; 0 m, 1]", text(k, "K*K^-1 = ?")) // the zeros keep their units
         assertEquals("12 N^2", text(k, "|K| = ?"))
         assertEquals("the inverse: the units of the matrix are not consistent (element [1, 1] is L)", error("[1, 1 m; 1 m, 1 m]^-1 = ?"))

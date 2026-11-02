@@ -44,7 +44,7 @@ class SolveBlockTest {
     fun `units, inequalities and a definition from the result`() {
         // A beam depth for a given stress: M/(b d²/6) = σ.
         assertEquals(
-            "0.3 m",
+            "300 mm",
             text("M := 30 kN*m", "b := 0.2 m", "σ := 10 MPa", "d := 0.5 m", "given", "M/(b*d^2/6) == σ", "d_req := find(d) = ?"),
         )
         // Many solutions (x + y = 10); the inequality, active at the solution, picks one end.

@@ -29,17 +29,17 @@ Below both, type:
 M:q*L^2/8=
 ```
 
-Beermat shows **M := q·L²/8 = 54000 N·m**: a definition, and its result after the `=`. The result has units, worked out from the units you typed.
+Beermat shows **M := q·L²/8 = 54 kN·m**: a definition, and its result after the `=`. The result has units, worked out from the units you typed, with the prefix that keeps the number readable.
 
 ## Show it in other units
 
 Type the unit you want right after the `=`. Below, type:
 
 ```
-M=kN*m
+M=N*m
 ```
 
-The page shows **M = 54 kN·m**. A unit that doesn't fit (`kN` alone, for a moment) shows an error instead of a wrong number.
+The page shows **M = 54000 N·m**. A unit that doesn't fit (`kN` alone, for a moment) shows an error instead of a wrong number.
 
 ## Change a value
 

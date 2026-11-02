@@ -35,7 +35,7 @@ class CliTest {
     fun `eval prints results`() {
         val r = run("eval", sheet(beam))
         assertEquals(0, r.code)
-        assertEquals("6: M := q*L^2/8 = ? kN*m   #= 54 kN*m\n7: q*L/2 = ?               #= 36000 N\n", r.out)
+        assertEquals("6: M := q*L^2/8 = ? kN*m   #= 54 kN*m\n7: q*L/2 = ?               #= 36 kN\n", r.out)
     }
 
     @Test

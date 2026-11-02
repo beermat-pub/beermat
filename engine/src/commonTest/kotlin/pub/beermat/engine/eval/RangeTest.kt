@@ -40,7 +40,7 @@ class RangeTest {
         assertEquals("[0; 1; 2; 3]", text("i := 0..3", "i = ?"))
         assertEquals("[3; 2; 1]", text("i := 3..1", "i = ?"))
         assertEquals("[0; 0.1; 0.2; 0.3]", text("x := 0, 0.1..0.3", "x = ?"))
-        assertEquals("[0; 0.25; 0.5]*m", text("x := 0 m, 0.25 m..0.5 m", "x = ?"))
+        assertEquals("[0; 250; 500]*mm", text("x := 0 m, 0.25 m..0.5 m", "x = ?"))
         assertEquals("[0; 1; 4; 9]", text("i := 0..3", "i^2 = ?"))
         assertEquals("[1; 2; 5]", text("f(x) := x^2 + 1", "i := 0..2", "f(i) = ?"))
         assertEquals("[0; 1; 2]", text("i := 0..2", "i := 0..2 = ?"))

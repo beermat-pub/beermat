@@ -30,7 +30,7 @@ When a result is evaluated:
 
 1. **If the user typed a unit in the placeholder** (`M = ? kN*m`), the value is divided by that unit and displayed with it. The dimensions must match, or it is an error.
 2. **Otherwise** the worksheet's unit system (frontmatter `units:`) picks a unit: a named derived unit, a derived unit combined with `m` or `s` (`N/m`, `Pa*s`), or base units. Moments show as `N*m`, not `J`. The exact rules are in [results.md](results.md#unit).
-3. **Engineering prefixes** (Dan, 2026-10-29): with no unit asked for, the unit gets the prefix that puts the number between 1 and 1000: `54000 N·m` shows as `54 kN·m`, `2.1e11 Pa` as `210 GPa`, `0.012 m` as `12 mm`. The frontmatter `result.prefixes: false` turns it off (the `.xmcd` import leaves it on).
+3. **Engineering prefixes** (Dan, 2026-10-29): with no unit asked for, the unit gets the prefix that puts the number between 1 and 1000: `54000 N·m` shows as `54 kN·m`, `2.1e11 Pa` as `210 GPa`, `0.012 m` as `12 mm`. The frontmatter `result.prefixes: false` turns it off (the `.xmcd` import leaves it on). Built on 2026-11-02; the exact rule is in [results.md](results.md#unit).
    - Only steps of a thousand (no `cm`, `dm`), and only prefixed units in the built-in table, so a result never shows a unit the user couldn't type. If the right one isn't there, the next one that is, or the plain unit with an exponent as before.
    - The prefix goes on the first unit of a compound (`kN·m`, `kN/m`, `MPa`), never on a denominator alone.
    - Mass uses grams' prefixes up to `kg`, then `t` (tonne). Time, angles, temperatures and USCS units never get prefixes; neither do dimensionless results.

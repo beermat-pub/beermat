@@ -9,6 +9,8 @@ data class ResultFormat(
     val zeroThreshold: Int = 15,
     /** In a complex number, a part smaller than 10^-n of the other part is hidden. */
     val complexThreshold: Int = 10,
+    /** Engineering prefixes on a unit no one asked for: `54 kN*m` rather than `54000 N*m` (docs/units.md#display). */
+    val prefixes: Boolean = true,
 )
 
 sealed interface Rounding {

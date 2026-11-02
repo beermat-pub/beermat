@@ -18,6 +18,14 @@ Forms 2 to 4 are only used when the base-unit form has at least two factors.
 
 Units that share a dimension with something else (Hz and Bq with 1/s; Gy and Sv with m²/s²) are never chosen automatically.
 
+Then the first unit of that form gets an **engineering prefix** ([units.md](units.md#display), rule 3; `result.prefixes`, on by default): `54 kN*m`, `12 kN/m`, `210 GPa`, `12 mm`, `1500 mm^2`, `7.85 t/m^3`, `250 \rm g`. In detail (built 2026-11-02):
+
+- The prefix is the largest one in the unit table that leaves the number at 1 or more; a number smaller than every prefixed form takes the smallest one (`0.5 N`, there being no `mN`). Past the largest, the largest (`5000 GPa`), then the exponent as usual.
+- A power of the first unit takes the prefix to that power (`mm^2`); a fractional power, a reciprocal (`5000/s`), time (`s`), temperature (`K`) and dimensionless numbers never get one.
+- An array is prefixed by its largest element, all elements in the one unit (`[0.5; 2.5]*kN`); arrays whose elements have their own units prefix each one (`[3 kN; 2 kN*m]`).
+- Zero keeps the plain unit.
+- It can be set for a sheet (`result: {prefixes: false}`) or for one region (`{prefixes=false}`), like the other `result.*` settings.
+
 ## Number
 
 The examples in this section are below the exponential threshold (see below).

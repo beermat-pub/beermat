@@ -18,6 +18,7 @@ import pub.beermat.engine.units.Complex
 import pub.beermat.engine.units.Dimension
 import pub.beermat.engine.units.Quantity
 import pub.beermat.engine.units.Rational
+import kotlin.math.pow
 
 /**
  * The text form of a result (docs/results.md): the number, a space, and the unit in linear
@@ -58,8 +59,10 @@ object ResultText {
         }
         val dims = a.elements.map { (it as? Scalar)?.q?.dimension }.distinct()
         val dim = dims.singleOrNull() ?: return Parts(matrix(a) { format(Shown(it), f) }, null)
-        val numbers = matrix(a) { NumberFormat.format((it as Scalar).q.value, f) }
-        return Parts(numbers, if (dim.isNone) null else AutoUnit.text(dim))
+        if (dim.isNone) return Parts(matrix(a) { NumberFormat.format((it as Scalar).q.value, f) }, null)
+        val largest = a.elements.maxOf { (it as Scalar).q.value.abs() }
+        val (unit, factor) = Prefixes.unit(AutoUnit.text(dim), largest, f)
+        return Parts(matrix(a) { NumberFormat.format((it as Scalar).q.value / Complex(factor), f) }, unit)
     }
 
     /**
@@ -80,10 +83,53 @@ object ResultText {
         val (number, unitText) = when {
             unit != null -> ((q.value - Complex(shown.zero)) / unit.value) to Printer.print(shown.unitExpr ?: error("a unit needs its expression"))
             q.dimension.isNone -> q.value to null
-            else -> q.value to AutoUnit.text(q.dimension)
+            else -> Prefixes.unit(AutoUnit.text(q.dimension), q.value.abs(), f).let { (text, factor) -> q.value / Complex(factor) to text }
         }
         val n = NumberFormat.format(number, f)
         return Parts(if (unitText != null && ' ' in n) "($n)" else n, unitText)
+    }
+}
+
+/**
+ * Engineering prefixes on an automatic unit (docs/units.md#display, rule 3): its first unit gets
+ * the prefix that puts the number between 1 and 1000, from the prefixed units in the built-in
+ * table only, in steps of a thousand. Mass goes from mg to t. Time, temperatures, and units that
+ * start with a reciprocal or a fractional power, never get one.
+ */
+internal object Prefixes {
+    private val steps = listOf("p" to -12, "n" to -9, "μ" to -6, "m" to -3, "k" to 3, "M" to 6, "G" to 9, "T" to 12)
+
+    private val mass = listOf("mg" to 1e-6, "\\rm g" to 1e-3, "kg" to 1.0, "t" to 1e3)
+
+    private val never = setOf("s", "K")
+
+    private val forms = mutableMapOf<String, List<Pair<String, Double>>>()
+
+    /** The unit [unit] with a prefix for a number of size [magnitude], and what the number is divided by. */
+    fun unit(unit: String, magnitude: Double, f: ResultFormat): Pair<String, Double> {
+        if (!f.prefixes || magnitude == 0.0 || !magnitude.isFinite()) return unit to 1.0
+        val first = unit.takeWhile { it != '*' && it != '/' && it != '^' }
+        val rest = unit.substring(first.length)
+        val power = if (rest.startsWith("^")) rest.drop(1).takeWhile { it.isDigit() }.toIntOrNull() ?: return unit to 1.0 else 1
+        val candidates = forms.getOrPut(first) { candidates(first) }
+        if (candidates.size < 2) return unit to 1.0
+        val scaled = candidates.map { (name, factor) -> Triple(name, factor, magnitude / factor.pow(power)) }
+        // The largest unit that leaves at least 1; for a number smaller than every one, the smallest unit.
+        val (name, factor) = scaled.filter { it.third >= 1 - 1e-9 }.maxByOrNull { it.second }?.let { it.first to it.second }
+            ?: scaled.minBy { it.second }.let { it.first to it.second }
+        return name + rest to factor.pow(power)
+    }
+
+    /** The unit itself and its prefixed forms in the table, with their factors. */
+    private fun candidates(symbol: String): List<Pair<String, Double>> {
+        if (symbol == "kg") return mass
+        if (symbol in never || symbol.isEmpty() || symbol[0].isDigit()) return emptyList()
+        val one = (Builtins.units[Id(symbol)] as? Scalar)?.q ?: return emptyList()
+        return listOf(symbol to 1.0) + steps.mapNotNull { (prefix, exponent) ->
+            val q = (Builtins.units[Id(prefix + symbol)] as? Scalar)?.q ?: return@mapNotNull null
+            val factor = 10.0.pow(exponent)
+            (prefix + symbol to factor).takeIf { q.dimension == one.dimension && kotlin.math.abs(q.value.re / one.value.re / factor - 1) < 1e-12 }
+        }
     }
 }
 

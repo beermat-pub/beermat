@@ -35,7 +35,7 @@ data class Settings(
     companion object {
         private val resultKeys = setOf(
             "decimals", "significant", "strict", "trailing_zeros",
-            "exponential_threshold", "zero_threshold", "complex_threshold",
+            "exponential_threshold", "zero_threshold", "complex_threshold", "prefixes",
         )
 
         /** Known keys that don't affect evaluation yet. */
@@ -122,6 +122,7 @@ data class Settings(
                 exponentialThreshold = int("exponential_threshold", 0) ?: base.exponentialThreshold,
                 zeroThreshold = int("zero_threshold", 0) ?: base.zeroThreshold,
                 complexThreshold = int("complex_threshold", 0) ?: base.complexThreshold,
+                prefixes = flag("prefixes") ?: base.prefixes,
             )
         }
 

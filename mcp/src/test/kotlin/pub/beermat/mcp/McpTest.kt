@@ -53,7 +53,7 @@ class McpTest {
     fun `read and evaluate`() {
         val (text, error) = call("read_worksheet")
         assertTrue(!error && "[calc 1, #r1]" in text && "M := q*L^2/8 = ? kN*m   #= 54 kN*m" in text, text)
-        assertEquals("72000 N" to false, call("evaluate", "expression" to "q*L"))
+        assertEquals("72 kN" to false, call("evaluate", "expression" to "q*L"))
         assertEquals("3*x^2" to false, call("evaluate", "expression" to "diff(x^3, x) -> ?"))
         assertEquals("6000 mm" to false, call("evaluate", "expression" to "L = ? mm", "region" to "r1"))
         assertEquals("M is not defined" to true, call("evaluate", "expression" to "M", "region" to "#r1"))

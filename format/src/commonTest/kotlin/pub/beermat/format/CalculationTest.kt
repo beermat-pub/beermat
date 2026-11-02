@@ -27,7 +27,7 @@ class CalculationTest {
             |""",
         )
         assertEquals(
-            listOf(null, null, Annotation.Result("54 kN*m"), Annotation.Result("54000 N*m")),
+            listOf(null, null, Annotation.Result("54 kN*m"), Annotation.Result("54 kN*m")),
             Calculation.of(sheet).lines.map { it.annotation },
         )
     }
@@ -118,6 +118,16 @@ class CalculationTest {
         assertEquals(listOf("", "Checked by DC", ""), s.footer!!.filled(1, 1, s.title))
         assertEquals(listOf("", "2026-10-29", ""), PageText(centre = "{date}").filled(1, 1, null, "2026-10-29"))
         assertEquals(listOf("unknown setting: header.middle"), Settings.of(sheet("---\nheader: {middle: x}\n---\n")).problems)
+    }
+
+    @Test
+    fun `engineering prefixes, on unless the sheet or a region turns them off`() {
+        val body = "```calc\nM := 54000 N*m = ?\n```\n```calc {prefixes=true}\nM = ?\n```\n"
+        assertEquals(listOf(Annotation.Result("54 kN*m"), Annotation.Result("54 kN*m")), annotations(body))
+        assertEquals(
+            listOf(Annotation.Result("54000 N*m"), Annotation.Result("54 kN*m")),
+            annotations("---\nresult:\n  prefixes: false\n---\n$body"),
+        )
     }
 
     @Test

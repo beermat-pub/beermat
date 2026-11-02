@@ -8,7 +8,8 @@ import kotlin.test.assertEquals
 
 class ResultTextTest {
 
-    private val plain = ResultFormat(exponentialThreshold = 99)
+    // Without prefixes, so the tests of the automatic unit see its plain form.
+    private val plain = ResultFormat(exponentialThreshold = 99, prefixes = false)
 
     /** The text of the last statement's result. */
     private fun text(vararg lines: String, f: ResultFormat = plain): String {
@@ -56,7 +57,7 @@ class ResultTextTest {
         assertEquals("V/m", text("1 V/(1 m) = ?").substringAfter(' '))
         assertEquals("kg/m^3", text("1 kg/(1 m^3) = ?").substringAfter(' '))
         assertEquals("kg*m^2", text("1 kg*(1 m)^2 = ?").substringAfter(' '))
-        assertEquals("2.1e11 Pa", text("E := 210 GPa = ?", f = ResultFormat()))
+        assertEquals("2.1e11 Pa", text("E := 210 GPa = ?", f = ResultFormat(prefixes = false)))
         assertEquals("9.807 m/s^2", text("g = ?"))
         assertEquals("1/s", text("1/(1 s) = ?").substringAfter(' '))
         assertEquals("Pa*s", text("1 kg/(1 m*1 s) = ?").substringAfter(' '))
@@ -64,6 +65,42 @@ class ResultTextTest {
         assertEquals("m^(1/2)", text("sqrt(4 m) = ?").substringAfter(' '))
         assertEquals("2 m^(1/2)", text("sqrt(4 m) = ?"))
         assertEquals("0.5", text("sin(30 deg) = ?"))
+    }
+
+    @Test
+    fun `engineering prefixes`() {
+        val on = plain.copy(prefixes = true)
+        fun shown(vararg lines: String) = text(*lines, f = on)
+        assertEquals("54 kN*m", shown("q := 12 kN/m", "L := 6 m", "M := q*L^2/8 = ?"))
+        assertEquals("12 kN/m", shown("q := 12 kN/m = ?"))
+        assertEquals("210 GPa", shown("E := 210 GPa = ?"))
+        assertEquals("12 mm", shown("0.012 m = ?"))
+        assertEquals("3.5 km", shown("3500 m = ?"))
+        assertEquals("5 μm", shown("0.000005 m = ?"))
+        assertEquals("250 N", shown("250 N = ?"))
+        // No mN in the table: the plain unit.
+        assertEquals("0.5 N", shown("0.5 N = ?"))
+        // Past the largest prefix in the table, the largest.
+        assertEquals("5000 GPa", shown("5e12 Pa = ?"))
+        // A squared unit takes the prefix squared.
+        assertEquals("1500 mm^2", shown("0.0015 m^2 = ?"))
+        assertEquals("[3 kN; 2 kN*m]", shown("[3000 N; 2000 N*m] = ?"))
+        assertEquals("[0.5; 2.5]*kN", shown("[500; 2500]*N = ?"))
+        // Mass: grams up to kg, then tonnes.
+        assertEquals("250 \\rm g", shown("0.25 kg = ?"))
+        assertEquals("75 kg", shown("75 kg = ?"))
+        assertEquals("7.85 t/m^3", shown("7850 kg/m^3 = ?"))
+        // Never on time, temperature, reciprocals or plain numbers, nor on zero.
+        assertEquals("7200 s", shown("2 hr = ?"))
+        assertEquals("300 K", shown("300 K = ?"))
+        assertEquals("5000/s", shown("5 kHz = ?"))
+        assertEquals("12000", shown("12000 = ?"))
+        assertEquals("0 N", shown("0 kN = ?"))
+        // A unit asked for wins; off, the plain unit.
+        assertEquals("54000 N*m", shown("M := 54 kN*m = ? N*m"))
+        assertEquals("54000 N*m", text("M := 54 kN*m = ?"))
+        // What it writes reads back as the same value.
+        for (s in listOf("250 \\rm g", "7.85 t/m^3", "[0.5; 2.5]*kN", "1500 mm^2", "5 μm")) Parser.parseExpression(s)
     }
 
     @Test

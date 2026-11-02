@@ -61,7 +61,8 @@ class StyleTest {
 
     @Test
     fun `the gram is the upright g, gravity the plain one`() {
-        assertEquals("0.25 kg", text("250 \\rm g = ?"))
+        assertEquals("0.25 kg", text("250 \\rm g = ? kg"))
+        assertEquals("250 \\rm g", text("250 \\rm g = ?"))
         assertEquals("250 \\rm g", text("0.25 kg = ? \\rm g"))
         assertEquals("1500 mg", text("1.5 \\rm g = ? mg"))
         assertEquals("9.807 m/s^2", text("g = ? m/s^2"))
