@@ -27,6 +27,8 @@ data class Settings(
     val footer: PageText? = null,
     /** Angle and currency as dimensions (`angle: dimension`, `currency: AUD`; docs/units.md#angle-and-currency-as-dimensions). */
     val units: UnitOptions = UnitOptions(),
+    /** Printing leaves out what is past the right margin (`single_page_width: true`; docs/editor.md#printing). */
+    val singlePageWidth: Boolean = false,
 ) {
     /** The result format for a block, after its attribute overrides (`decimals=2`, `significant=3`, `strict`, …). */
     fun formatFor(attributes: Attributes, problems: MutableList<String>): ResultFormat {
@@ -63,6 +65,7 @@ data class Settings(
             var footer: PageText? = null
             var units = UnitOptions()
             var angleInDegrees = true
+            var singlePageWidth = false
             for ((key, value) in yaml) {
                 when (key) {
                     "result" ->
@@ -92,6 +95,8 @@ data class Settings(
                     }
                     "currency" -> value?.toString()?.trim()?.takeIf { it.isNotEmpty() && '`' !in it && '\n' !in it }?.let { units = units.copy(currency = it) }
                         ?: run { problems += "currency: expected the name of a currency, such as AUD, not '$value'" }
+                    "single_page_width" -> (value as? Boolean)?.let { singlePageWidth = it }
+                        ?: run { problems += "single_page_width: expected true or false, not '$value'" }
                     "title" -> title = value?.toString()
                     "header" -> header = PageText.of(value, "header", problems)
                     "footer" -> footer = PageText.of(value, "footer", problems)
@@ -100,7 +105,7 @@ data class Settings(
                 }
             }
             format = format.copy(angleInDegrees = angleInDegrees, currency = units.currency)
-            return Settings(format, tolerance, origin, multiplication, problems, title, header, footer, units)
+            return Settings(format, tolerance, origin, multiplication, problems, title, header, footer, units, singlePageWidth)
         }
 
         /** Applies `result.*` style [values] (from YAML or from attributes) on top of [base]. */

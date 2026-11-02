@@ -23,7 +23,7 @@ class PdfTest {
             val layout = Session(f.readText(), math).layout
             val bytes = Pdf.write(layout, f.nameWithoutExtension)
             Loader.loadPDF(bytes).use { doc ->
-                assertEquals(layout.pages, doc.numberOfPages, f.name)
+                assertEquals(layout.printed.size, doc.numberOfPages, f.name)
                 assertEquals(f.nameWithoutExtension, doc.documentInformation.title)
                 val box = doc.getPage(0).mediaBox
                 assertEquals(layout.format.width, box.width, f.name)
@@ -36,6 +36,24 @@ class PdfTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun `what is past the right margin prints on a page of its own, unless the sheet says single width`() {
+        val body = "```calc {#a x=0 y=0}\na := 111\n```\n```calc {#b x=700 y=0}\nb := 222\n```\n```calc {#c x=0 y=900}\nc := 333\n```\n"
+        val layout = Session(body, math).layout
+        // Page 1 and its part to the right; page 2 has nothing past its margin.
+        assertEquals(listOf(pub.beermat.app.page.PrintedPage(0, 0), pub.beermat.app.page.PrintedPage(0, 1), pub.beermat.app.page.PrintedPage(1, 0)), layout.printed)
+        Loader.loadPDF(Pdf.write(layout)).use { doc ->
+            assertEquals(3, doc.numberOfPages)
+            val stripper = org.apache.pdfbox.text.PDFTextStripper()
+            fun page(n: Int) = stripper.apply { startPage = n; endPage = n }.getText(doc)
+            assertTrue("111" in page(1) && "222" !in page(1), page(1))
+            assertTrue("222" in page(2) && "111" !in page(2), page(2))
+            assertTrue("333" in page(3), page(3))
+        }
+        val single = Session("---\nsingle_page_width: true\n---\n$body", math).layout
+        assertEquals(2, single.printed.size)
     }
 
     @Test

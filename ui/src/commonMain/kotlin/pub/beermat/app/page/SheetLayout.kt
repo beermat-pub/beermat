@@ -78,6 +78,9 @@ class MarkerView(index: Int, region: Region, x: Float, y: Float, width: Float, h
  * without a position) and paginated. Rebuilt after every change; the painter draws it and the
  * window hit-tests it. Screen coordinates are points, pages stacked [PAGE_GAP] apart.
  */
+/** A page as printed: page [page] of the sheet, or with [column] above 0 its part that many page widths to the right. */
+data class PrintedPage(val page: Int, val column: Int = 0)
+
 class SheetLayout(
     val format: PageFormat,
     val views: List<RegionView>,
@@ -91,6 +94,20 @@ class SheetLayout(
     val pages: Int = maxOf(1, (pieces.flatten().maxOfOrNull { it.page } ?: 0) + 1)
 
     val totalHeight: Float get() = pages * (format.height + PAGE_GAP)
+
+    /**
+     * The pages printed and exported, in order (docs/editor.md#printing): each page, then its parts
+     * past the right margin, a page width at a time, where regions reach there; only the pages
+     * themselves when the sheet says `single_page_width: true`.
+     */
+    val printed: List<PrintedPage> by lazy {
+        val single = calculation.settings.singlePageWidth
+        (0 until pages).flatMap { page ->
+            val reach = views.filter { v -> !v.hidden && pieces[v.index].any { it.page == page } }.maxOfOrNull { it.x + it.width } ?: 0f
+            val columns = if (single) 1 else maxOf(1, kotlin.math.ceil((reach - 0.5f) / format.contentWidth).toInt())
+            (0 until columns).map { PrintedPage(page, it) }
+        }
+    }
 
     /** The page's width, or more where regions reach past its right edge (docs/editor.md#the-page). */
     val totalWidth: Float get() = maxOf(format.width, (views.filter { !it.hidden }.maxOfOrNull { format.margin + it.x + it.width } ?: 0f) + format.margin)

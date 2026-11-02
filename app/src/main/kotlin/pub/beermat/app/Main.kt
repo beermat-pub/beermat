@@ -164,6 +164,11 @@ fun main(args: Array<String>) {
                     Item("Export to PDF…", onClick = {
                         chooseExport(file, "pdf", "Export to PDF")?.let { target -> session.guard(Unit) { target.writeBytes(Pdf.write(session.layout, file?.name?.substringBefore(".bbm"))) } }
                     })
+                    // What is past the right margin prints on pages of its own, unless the sheet says not to (docs/editor.md#printing).
+                    CheckboxItem("Print single page width", session.layout.calculation.settings.singlePageWidth, onCheckedChange = { on ->
+                        session.guard(Unit) { session.setFrontmatter("single_page_width", if (on) "true" else null) }
+                        revision++
+                    })
                     Item("Print…", shortcut = KeyShortcut(K.P, ctrl = true), onClick = {
                         session.guard(Unit) { Printing.print(session.layout, file?.name ?: "Untitled") }
                     })

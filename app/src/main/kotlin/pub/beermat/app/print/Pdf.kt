@@ -25,20 +25,20 @@ object Pdf {
 
     fun write(layout: SheetLayout, title: String? = null): ByteArray {
         val resources = Resources()
-        val pages = (0 until layout.pages).map { page ->
+        val pages = layout.printed.map { (page, column) ->
             // The page as drawn, then its text again, invisible, so it can be selected, copied and searched.
-            content(svg(layout, page), layout.format.height, resources) +
-                textLayer(svg(layout, page, outlines = false), layout.format.width, layout.format.height, resources)
+            content(svg(layout, page, column = column), layout.format.height, resources) +
+                textLayer(svg(layout, page, outlines = false, column = column), layout.format.width, layout.format.height, resources)
         }
         return file(layout.format.width, layout.format.height, pages, resources, title)
     }
 
     /** One page as SVG, its text turned into outlines (or, with [outlines] false, kept as text). */
-    fun svg(layout: SheetLayout, page: Int, outlines: Boolean = true): String {
+    fun svg(layout: SheetLayout, page: Int, outlines: Boolean = true, column: Int = 0): String {
         val out = ByteArrayOutputStream()
         val stream = OutputWStream(out)
         val canvas = SVGCanvas.make(Rect.makeWH(layout.format.width, layout.format.height), stream, outlines, false)
-        PagePainter.paintPage(canvas, layout, page)
+        PagePainter.paintPage(canvas, layout, page, column)
         canvas.close()
         stream.close()
         return out.toString(Charsets.UTF_8)

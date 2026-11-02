@@ -96,11 +96,14 @@ object PagePainter {
      * One page as printed (docs/editor.md#printing), in page points from its top-left corner: its
      * regions only, without the screen's paper, guides, page-break lines and overlap marks.
      */
-    fun paintPage(canvas: Canvas, layout: SheetLayout, page: Int) {
+    fun paintPage(canvas: Canvas, layout: SheetLayout, page: Int, column: Int = 0) {
         margins(canvas, layout, page, 0f)
         val top = layout.pageTop(page)
+        val f = layout.format
         canvas.save()
-        canvas.translate(0f, -top)
+        // A page printed in more than one width is cut at its margins, each part on its own sheet of paper.
+        if (layout.printed.count { it.page == page } > 1) canvas.clipRect(SkRect.makeLTRB(f.margin, 0f, f.width - f.margin, f.height))
+        canvas.translate(-column * f.contentWidth, -top)
         for (v in layout.views) {
             if (v.hidden) continue
             for (piece in layout.pieces[v.index]) {

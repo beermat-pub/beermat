@@ -41,22 +41,22 @@ object Printing {
     }
 
     private fun pages(layout: SheetLayout) = Printable { graphics: Graphics, _: PageFormat, index: Int ->
-        if (index >= layout.pages) return@Printable Printable.NO_SUCH_PAGE
+        val printed = layout.printed.getOrNull(index) ?: return@Printable Printable.NO_SUCH_PAGE
         val g = graphics as Graphics2D
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
         val w = layout.format.width
         val h = layout.format.height
-        g.drawImage(image(layout, index), 0, 0, w.roundToInt(), h.roundToInt(), null)
+        g.drawImage(image(layout, printed.page, printed.column), 0, 0, w.roundToInt(), h.roundToInt(), null)
         Printable.PAGE_EXISTS
     }
 
     /** One page as an image at [DPI]. */
-    private fun image(layout: SheetLayout, page: Int): java.awt.image.BufferedImage {
+    private fun image(layout: SheetLayout, page: Int, column: Int): java.awt.image.BufferedImage {
         val scale = DPI / 72f
         val surface = Surface.makeRasterN32Premul((layout.format.width * scale).roundToInt(), (layout.format.height * scale).roundToInt())
         surface.canvas.clear(0xFFFFFFFF.toInt())
         surface.canvas.scale(scale, scale)
-        PagePainter.paintPage(surface.canvas, layout, page)
+        PagePainter.paintPage(surface.canvas, layout, page, column)
         val png = surface.makeImageSnapshot().encodeToData(EncodedImageFormat.PNG)!!.bytes
         return ImageIO.read(png.inputStream())
     }
