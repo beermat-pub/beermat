@@ -649,6 +649,19 @@ class Session(text: String, private val math: MathLayout) {
         changed()
     }
 
+    /** The sheet's angle and currency dimensions (docs/units.md#angle-and-currency-as-dimensions). */
+    val units: pub.beermat.engine.eval.UnitOptions get() = layout.calculation.settings.units
+
+    /** A one-line frontmatter setting, `key: value`, replaced, or removed when [value] is null (Format → Units). */
+    fun setFrontmatter(key: String, value: String?) {
+        val kept = frontmatter.orEmpty().filterNot { it.trimStart().startsWith("$key:") }
+        val next = (if (value == null) kept else kept + "$key: $value").ifEmpty { null }
+        if (next == frontmatter) return
+        snapshot()
+        frontmatter = next
+        changed()
+    }
+
     // Tables as grids (TableEditor).
 
     /** The table in region [region], if it is a table region. */

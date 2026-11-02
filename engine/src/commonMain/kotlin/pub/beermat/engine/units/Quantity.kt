@@ -94,7 +94,7 @@ data class Quantity(val value: Complex, val dimension: Dimension = Dimension.NON
 
     private fun requireComparable(other: Quantity) {
         if (dimension != other.dimension && value != Complex.ZERO && other.value != Complex.ZERO) {
-            throw UnitsException("units do not match: $dimension vs ${other.dimension}")
+            throw UnitsException("units do not match: $dimension vs ${other.dimension}" + angleHint(dimension / other.dimension))
         }
     }
 
@@ -102,3 +102,12 @@ data class Quantity(val value: Complex, val dimension: Dimension = Dimension.NON
 
     override fun toString(): String = if (dimension.isNone) "$value" else "$value $dimension"
 }
+
+/**
+ * With angles as a dimension, the radian no longer disappears from formulas where it used to
+ * (docs/units.md#angle-and-currency-as-dimensions): a mismatch by powers of an angle says how to fix it.
+ */
+internal fun angleHint(ratio: Dimension): String =
+    if (!ratio.isNone && BaseDimension.entries.all { it == BaseDimension.ANGLE || ratio[it].isZero })
+        " (with angles as a dimension, multiply or divide by rad: an arc length is r*θ/rad, ω = 2*π*f*rad)"
+    else ""

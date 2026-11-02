@@ -44,12 +44,13 @@ MHz := 1e6 Hz
 
 ## Angle
 
-Angles are dimensionless.
+Angles are dimensionless, unless a sheet makes them a dimension (`angle: dimension`), when `rad` is its unit.
 
 ```calc
 rad := 1
 deg := π/180
 rev := 2*π
+gon := π/200
 ```
 
 ## Ratios

@@ -209,6 +209,16 @@ fun main(args: Array<String>) {
                         RadioButtonItem("Dot   a·b", session.multiplication == Multiplication.DOT, onClick = { session.guard(Unit) { session.setMultiplication(Multiplication.DOT) }; revision++ })
                         RadioButtonItem("Thin space   a b", session.multiplication == Multiplication.SPACE, onClick = { session.guard(Unit) { session.setMultiplication(Multiplication.SPACE) }; revision++ })
                     }
+                    // Angle and currency as dimensions (docs/units.md#angle-and-currency-as-dimensions), off by default.
+                    Menu("Units") {
+                        val units = session.units
+                        CheckboxItem("Angles as a dimension (rad)", units.angle, onCheckedChange = { on -> session.guard(Unit) { session.setFrontmatter("angle", if (on) "dimension" else null) }; revision++ })
+                        Item(units.currency?.let { "Currency: $it…" } ?: "Currency…", onClick = {
+                            val name = javax.swing.JOptionPane.showInputDialog(null, "The currency of this sheet's money, such as AUD (empty for none):", units.currency ?: "")
+                            if (name != null) session.guard(Unit) { session.setFrontmatter("currency", name.trim().ifEmpty { null }) }
+                            revision++
+                        })
+                    }
                 }
                 Menu("Tools") {
                     val command = mcp.command

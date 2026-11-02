@@ -66,6 +66,9 @@ YAML between `---` lines at the top. All keys are optional.
 | `beermat` | `1` | Format version |
 | `title` | file name | Worksheet title |
 | `units` | `SI` | Unit system for displaying results: `SI`, `USCS`, `CGS`, `MKS`, or `none` |
+| `angle` | `none` | `dimension` makes angles a dimension, `rad` its unit ([units.md](units.md#angle-and-currency-as-dimensions)); Format → Units |
+| `angle_display` | `deg` | With `angle: dimension`, an angle no unit was asked for shows in `deg` or `rad` |
+| `currency` | none | A currency dimension whose unit has this name (`AUD`, `€`); Format → Units |
 | `angle` | `dimensionless` | `dimension` makes angle a dimension of its own ([units.md](units.md#angle-and-currency-as-dimensions)) |
 | `angle_display` | `deg` | With `angle: dimension`: how angle results show, `deg` or `rad` |
 | `currency` | — | A currency name (`AUD`) turns on the currency dimension, with that unit |

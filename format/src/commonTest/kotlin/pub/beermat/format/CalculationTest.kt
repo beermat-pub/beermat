@@ -131,6 +131,18 @@ class CalculationTest {
     }
 
     @Test
+    fun `angle and currency as dimensions, from the frontmatter`() {
+        val body = "```calc\nθ := asin(0.5) = ?\ncost := 120 AUD/m^3*4 m^3 = ?\n```\n"
+        assertEquals(
+            listOf(Annotation.Result("30 deg"), Annotation.Result("480 AUD")),
+            annotations("---\nangle: dimension\ncurrency: AUD\n---\n$body"),
+        )
+        assertEquals(Annotation.Result("0.524 rad"), annotations("---\nangle: dimension\nangle_display: rad\ncurrency: AUD\n---\n$body")[0])
+        assertEquals(Annotation.Result("0.524"), annotations("---\ncurrency: AUD\n---\n$body")[0])
+        assertEquals(listOf("angle: expected dimension or none, not 'yes'"), Settings.of(sheet("---\nangle: yes\n---\n")).problems)
+    }
+
+    @Test
     fun `setting problems`() {
         val settings = Settings.of(sheet("---\nunits: USCS\nresult:\n  decimals: -1\ncolour: red\n---\n"))
         assertEquals(

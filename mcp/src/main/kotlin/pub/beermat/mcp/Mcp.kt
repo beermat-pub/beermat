@@ -362,10 +362,11 @@ class Mcp(
             } ?: calc.lines.size
             val statements = calc.lines.take(upTo).mapNotNull { it.parsed } + statement
             val settings = calc.settings
-            val builtins = Builtins.scope
+            val (sheetScope, units) = Builtins.forSheet(settings.units)
+            val builtins = sheetScope
                 .with(Id("TOL"), Scalar(Quantity(settings.tolerance)))
                 .with(Id("ORIGIN"), Scalar(Quantity(settings.origin.toDouble())))
-            val outcome = Evaluator(builtins, symbolic = pub.beermat.symbolic.Symbolics, folder = folder).run(statements).last()
+            val outcome = Evaluator(builtins, units, symbolic = pub.beermat.symbolic.Symbolics, folder = folder).run(statements).last()
             return when (outcome) {
                 is pub.beermat.engine.eval.Outcome.Evaluated -> ResultText.format(outcome.shown, calc.settings.format)
                 is pub.beermat.engine.eval.Outcome.Defined -> outcome.shown?.let { ResultText.format(it, calc.settings.format) } ?: "defined"

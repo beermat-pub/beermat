@@ -1,6 +1,9 @@
 package pub.beermat.engine.units
 
-/** The seven SI base dimensions, in the order used by [Dimension]. */
+/**
+ * The seven SI base dimensions, in the order used by [Dimension], and the two a sheet can turn on
+ * (docs/units.md#angle-and-currency-as-dimensions): angle and currency.
+ */
 enum class BaseDimension(val symbol: String) {
     LENGTH("L"),
     MASS("M"),
@@ -9,6 +12,8 @@ enum class BaseDimension(val symbol: String) {
     TEMPERATURE("Θ"),
     AMOUNT("N"),
     LUMINOSITY("J"),
+    ANGLE("∠"),
+    CURRENCY("¤"),
 }
 
 /**
@@ -70,5 +75,7 @@ class Dimension private constructor(private val exponents: List<Rational>) {
         val TEMPERATURE = of(BaseDimension.TEMPERATURE to 1)
         val AMOUNT = of(BaseDimension.AMOUNT to 1)
         val LUMINOSITY = of(BaseDimension.LUMINOSITY to 1)
+        val ANGLE = of(BaseDimension.ANGLE to 1)
+        val CURRENCY = of(BaseDimension.CURRENCY to 1)
     }
 }

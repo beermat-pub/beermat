@@ -32,9 +32,9 @@ internal object Library {
         Builtin("sign", 1..1) { a -> Scalar(Quantity(kotlin.math.sign(a[0]().quantity("sign").realValue("sign")))) },
         Builtin("signum", 1..1) { a -> a[0]().quantity("signum").let { q -> Scalar(Quantity(if (q.value == Complex.ZERO) Complex.ZERO else q.value / Complex(q.value.abs()))) } },
         // Trigonometry and hyperbolic functions.
-        complex("sec") { Complex.ONE / it.cos() },
-        complex("csc") { Complex.ONE / it.sin() },
-        complex("cot") { it.cos() / it.sin() },
+        angular("sec") { Complex.ONE / it.cos() },
+        angular("csc") { Complex.ONE / it.sin() },
+        angular("cot") { it.cos() / it.sin() },
         real("sech") { 1 / kotlin.math.cosh(it) },
         real("csch") { 1 / kotlin.math.sinh(it) },
         real("coth") { 1 / kotlin.math.tanh(it) },
@@ -232,6 +232,9 @@ internal object Library {
     }
 
     private fun complex(name: String, f: (Complex) -> Complex) = Builtin(name, 1..1) { a -> Scalar(Quantity(f(a[0]().quantity(name).requireNone(name).value))) }
+
+    /** sec, csc, cot: of a plain number or an angle, as sin, cos and tan. */
+    private fun angular(name: String, f: (Complex) -> Complex) = Builtin(name, 1..1) { a -> Scalar(Quantity(f(a[0]().quantity(name).requireAngle(name).value))) }
 
     private fun real(name: String, f: (Double) -> Double) = Builtin(name, 1..1) { a ->
         val y = f(a[0]().real(name, dimensionless = true))

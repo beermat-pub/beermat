@@ -55,9 +55,9 @@ object Builtins {
             val base = if (a.size == 2) a[1]().quantity("log").requireNone("log").value else Complex(10.0)
             Scalar(Quantity(if (base == Complex(10.0) && x.isReal && x.re >= 0) Complex(kotlin.math.log10(x.re)) else x.ln() / base.ln()))
         },
-        dimensionless("sin") { it.sin() },
-        dimensionless("cos") { it.cos() },
-        dimensionless("tan") { it.sin() / it.cos() },
+        angular("sin") { it.sin() },
+        angular("cos") { it.cos() },
+        angular("tan") { it.sin() / it.cos() },
         realFunction("asin") { kotlin.math.asin(it) },
         realFunction("acos") { kotlin.math.acos(it) },
         realFunction("atan") { kotlin.math.atan(it) },
@@ -153,6 +153,40 @@ object Builtins {
         Builtin("if", 3..3) { a -> if (a[0]().truth("if")) a[1]() else a[2]() },
     ).plus(Fitting.functions).plus(Library.functions).plus(Numerics.functions).plus(DataFiles.functions).associateBy { Id(it.name) }
 
+    /**
+     * The built-ins for a sheet with [options] (docs/units.md#angle-and-currency-as-dimensions):
+     * with angles as a dimension, `rad` is its unit and the inverse trigonometric functions return
+     * angles; with a currency, its name is a unit of a currency dimension. The scope, and the units.
+     */
+    fun forSheet(options: UnitOptions): Pair<Scope, Map<Id, Value>> = sheets.getOrPut(options) {
+        var extra = mapOf<Id, Value>()
+        var fns = mapOf<Id, Value>()
+        if (options.angle) {
+            extra = extra + ANGLE_UNITS.associate { name ->
+                val q = (units.getValue(Id(name)) as Scalar).q
+                Id(name) to Scalar(Quantity(q.value, Dimension.ANGLE))
+            }
+            fns = ANGLE_RESULTS.associate { name ->
+                val f = functions.getValue(Id(name)) as Builtin
+                Id(name) to Builtin(name, f.arity) { a ->
+                    val q = (f.impl(this, a) as Scalar).q
+                    Scalar(Quantity(q.value, Dimension.ANGLE))
+                }
+            }
+        }
+        options.currency?.let { extra = extra + (Id(it) to Scalar(Quantity(1.0, Dimension.CURRENCY))) }
+        val all = units + extra
+        scope.withAll(extra).withAll(fns) to all
+    }
+
+    private val sheets = mutableMapOf<UnitOptions, Pair<Scope, Map<Id, Value>>>()
+
+    /** The units of an angle, from `units.bbm`. */
+    private val ANGLE_UNITS = listOf("rad", "deg", "rev", "gon")
+
+    /** The functions that return an angle. */
+    private val ANGLE_RESULTS = listOf("asin", "acos", "atan", "atan2", "arg", "acot", "asec", "acsc")
+
     /** Everything but the unit table: the scope the unit table is evaluated in. */
     private val core: Scope = Scope.EMPTY.withAll(baseUnits).withAll(constants).withAll(functions)
 
@@ -163,6 +197,10 @@ object Builtins {
 
     private fun unary(name: String, f: (Quantity) -> Quantity) =
         Builtin(name, 1..1) { a -> Scalar(f(a[0]().quantity(name))) }
+
+    /** A trigonometric function: of a plain number, read as radians, or of an angle. */
+    private fun angular(name: String, f: (Complex) -> Complex) =
+        unary(name) { Quantity(f(it.requireAngle(name).value)) }
 
     private fun dimensionless(name: String, f: (Complex) -> Complex) =
         unary(name) { Quantity(f(it.requireNone(name).value)) }
@@ -233,5 +271,14 @@ internal fun Quantity.requireNone(context: String): Quantity {
     return this
 }
 
+/** A plain number or an angle (docs/units.md#angle-and-currency-as-dimensions): what sin, cos and tan take. */
+internal fun Quantity.requireAngle(context: String): Quantity {
+    if (!dimension.isNone && dimension != Dimension.ANGLE) throw EvalException("$context: the argument must be dimensionless or an angle, not $dimension")
+    return this
+}
+
 /** Truth: any non-zero number is true. */
 internal fun Value.truth(context: String): Boolean = quantity(context).requireNone(context).value != Complex.ZERO
+
+/** The dimensions a sheet can add to the seven (docs/units.md#angle-and-currency-as-dimensions): frontmatter `angle: dimension`, `currency: AUD`. */
+data class UnitOptions(val angle: Boolean = false, val currency: String? = null)

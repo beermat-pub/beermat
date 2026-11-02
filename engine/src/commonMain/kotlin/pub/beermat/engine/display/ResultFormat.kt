@@ -11,6 +11,10 @@ data class ResultFormat(
     val complexThreshold: Int = 10,
     /** Engineering prefixes on a unit no one asked for: `54 kN*m` rather than `54000 N*m` (docs/units.md#display). */
     val prefixes: Boolean = true,
+    /** With angles as a dimension, an angle is shown in degrees (`angle_display: deg`, the default) or radians. */
+    val angleInDegrees: Boolean = true,
+    /** The sheet's currency (`currency: AUD`), the name its money is shown in. */
+    val currency: String? = null,
 )
 
 sealed interface Rounding {

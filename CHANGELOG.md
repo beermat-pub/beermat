@@ -8,6 +8,7 @@ Each version's section here becomes the notes of its release on GitHub ([docs/re
 - **Fixed**: the arrow keys moved the crosshair (and selected regions) without the page showing it until the next edit, in the browser and on the desktop.
 - **Results with engineering prefixes**: with no unit asked for, `54 kN·m` rather than `54000 N·m`, `210 GPa`, `12 mm`. A sheet that prefers the plain units sets `result: {prefixes: false}`.
 - **Divisions on the line**: `Ctrl+/` (or typing `÷`) gives a ÷ b, and right-click on any division chooses Stacked, Inline ÷ or Inline /. Imported `.xmcd` sheets keep their inline divisions.
+- **Angles and money as dimensions**, for sheets that want them checked: `angle: dimension` makes `rad` a unit (a rotation stiffness is `kN·m/rad`, not a moment; `asin` gives degrees), and `currency: AUD` makes money a unit (`120 AUD/m^3 · 4 m^3 = 480 AUD`). Both are off by default; Format → Units turns them on.
 - **A global (≡) is defined once**: redefining it with `:=`, or a second `≡` of the same name, is now an error, so a global means the same everywhere in the sheet.
 - **The manual** has begun, at [beermat.pub/docs](https://beermat.pub/docs/): installing, your first worksheet, the command line. Help → Manual or F1 opens it, and so does the web version's Manual button.
 - **The website** has a [download page](https://beermat.pub/download) for the newest version, and links to the web version and the manual. What's coming is in [ROADMAP.md](ROADMAP.md).

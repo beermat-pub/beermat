@@ -61,7 +61,7 @@ object ResultText {
         val dim = dims.singleOrNull() ?: return Parts(matrix(a) { format(Shown(it), f) }, null)
         if (dim.isNone) return Parts(matrix(a) { NumberFormat.format((it as Scalar).q.value, f) }, null)
         val largest = a.elements.maxOf { (it as Scalar).q.value.abs() }
-        val (unit, factor) = Prefixes.unit(AutoUnit.text(dim), largest, f)
+        val (unit, factor) = auto(dim, largest, f)
         return Parts(matrix(a) { NumberFormat.format((it as Scalar).q.value / Complex(factor), f) }, unit)
     }
 
@@ -75,6 +75,16 @@ object ResultText {
         else -> "$number $unit"
     }
 
+    /**
+     * The unit for a result of dimension [dim] that no one asked for, and what its numbers are
+     * divided by: an angle in degrees or radians, as the sheet says; otherwise the automatic unit
+     * with its prefix for numbers up to [magnitude].
+     */
+    private fun auto(dim: Dimension, magnitude: Double, f: ResultFormat): Pair<String, Double> = when (dim) {
+        Dimension.ANGLE -> if (f.angleInDegrees) "deg" to kotlin.math.PI / 180 else "rad" to 1.0
+        else -> Prefixes.unit(AutoUnit.text(dim, f.currency), magnitude, f)
+    }
+
     private fun matrix(a: ArrayValue, element: (Value) -> String): String =
         (0 until a.rows).joinToString("; ", "[", "]") { r -> (0 until a.cols).joinToString(", ") { c -> element(a[r, c]) } }
 
@@ -83,7 +93,7 @@ object ResultText {
         val (number, unitText) = when {
             unit != null -> ((q.value - Complex(shown.zero)) / unit.value) to Printer.print(shown.unitExpr ?: error("a unit needs its expression"))
             q.dimension.isNone -> q.value to null
-            else -> Prefixes.unit(AutoUnit.text(q.dimension), q.value.abs(), f).let { (text, factor) -> q.value / Complex(factor) to text }
+            else -> auto(q.dimension, q.value.abs(), f).let { (text, factor) -> q.value / Complex(factor) to text }
         }
         val n = NumberFormat.format(number, f)
         return Parts(if (unitText != null && ' ' in n) "($n)" else n, unitText)
@@ -123,7 +133,7 @@ internal object Prefixes {
     /** The unit itself and its prefixed forms in the table, with their factors. */
     private fun candidates(symbol: String): List<Pair<String, Double>> {
         if (symbol == "kg") return mass
-        if (symbol in never || symbol.isEmpty() || symbol[0].isDigit()) return emptyList()
+        if (symbol in never || !Id.isPlainName(symbol)) return emptyList()
         val one = (Builtins.units[Id(symbol)] as? Scalar)?.q ?: return emptyList()
         return listOf(symbol to 1.0) + steps.mapNotNull { (prefix, exponent) ->
             val q = (Builtins.units[Id(prefix + symbol)] as? Scalar)?.q ?: return@mapNotNull null
@@ -173,7 +183,34 @@ internal object AutoUnit {
         BaseDimension.LUMINOSITY to "cd",
     )
 
-    fun text(d: Dimension): String {
+    /**
+     * The unit for [d]; an angle or a [currency] (docs/units.md#angle-and-currency-as-dimensions) is
+     * written beside the unit of the rest: `N*m/rad`, `AUD/m^3`.
+     */
+    fun text(d: Dimension, currency: String? = null): String {
+        val extras = listOf(BaseDimension.ANGLE to "rad", BaseDimension.CURRENCY to (currency?.let { Printer.print(Id(it)) } ?: "¤"))
+            .filter { !d[it.first].isZero }
+        if (extras.isEmpty()) return plain(d)
+        val rest = extras.fold(d) { r, (base, _) -> r / Dimension.of(base to 1).pow(d[base]) }
+        val (num, den) = if (rest.isNone) "1" to null else split(plain(rest))
+        val nums = listOfNotNull(num.takeIf { it != "1" }) + extras.filter { d[it.first] > Rational.ZERO }.map { (b, s) -> power(s, d[b]) }
+        val dens = listOfNotNull(den) + extras.filter { d[it.first] < Rational.ZERO }.map { (b, s) -> power(s, -d[b]) }
+        val top = nums.ifEmpty { listOf("1") }.joinToString("*")
+        return when (dens.size) {
+            0 -> top
+            1 -> "$top/${dens[0]}"
+            else -> "$top/(${dens.joinToString("*")})"
+        }
+    }
+
+    /** `N/(m*s)` as `N` and `m*s`; a unit with no `/` has no denominator. */
+    private fun split(unit: String): Pair<String, String?> {
+        val k = unit.indexOf('/').takeIf { it >= 0 } ?: return unit to null
+        return unit.substring(0, k) to unit.substring(k + 1).removeSurrounding("(", ")")
+    }
+
+    /** The unit for [d] in the seven SI dimensions, by the rules above. */
+    private fun plain(d: Dimension): String {
         derived[d]?.let { return it }
         if (BaseDimension.entries.count { !d[it].isZero } >= 2) {
             named(d)?.let { return it.text }

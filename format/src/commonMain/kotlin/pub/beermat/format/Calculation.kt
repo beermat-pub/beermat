@@ -76,7 +76,9 @@ class Calculation private constructor(
             val settings = Settings.of(sheet)
             val problems = settings.problems.toMutableList()
             // The built-ins, with READEXCEL (here, not in the engine: it needs POI) and the sheet's TOL and ORIGIN.
-            val builtins = Builtins.scope.withAll(platformFunctions.associateBy { Id(it.name) })
+            // With angle or currency as dimensions, their units and functions (docs/units.md#angle-and-currency-as-dimensions).
+            val (sheetScope, units) = Builtins.forSheet(settings.units)
+            val builtins = sheetScope.withAll(platformFunctions.associateBy { Id(it.name) })
                 .with(Id("TOL"), Scalar(Quantity(settings.tolerance)))
                 .with(Id("ORIGIN"), Scalar(Quantity(settings.origin.toDouble())))
 
@@ -100,7 +102,7 @@ class Calculation private constructor(
                     is Markdown -> {}
                 }
             }
-            val evaluator = Evaluator(builtins, symbolic = pub.beermat.symbolic.Symbolics, folder = folder, modules = PythonConsent.modules)
+            val evaluator = Evaluator(builtins, units, symbolic = pub.beermat.symbolic.Symbolics, folder = folder, modules = PythonConsent.modules)
             val tableOutcomes = arrayOfNulls<TableOutcome>(tablePositions.size)
             val steps = tablePositions.withIndex().groupBy({ it.value.second }) { (k, p) ->
                 { scope: pub.beermat.engine.eval.Scope ->

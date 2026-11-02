@@ -68,15 +68,18 @@ By default angles are dimensionless (rad = 1): `deg = π/180`. `sin(30 deg)` wor
 
 Decided by Dan on 2026-10-29: both can be turned on per sheet, as extra dimensions beside the seven. Both are off by default, so ordinary sheets work.
 
+Built on 2026-11-02 (`UnitOptions`, `Builtins.forSheet`): `∠` and `¤` are the two extra base dimensions, as messages write them.
+
 **Angle** (`angle: dimension` in the frontmatter; Format → Units):
 
-- `rad` is the base unit of an angle dimension, and `deg`, `°`, `rev`, `gon` are angles. So an angle can't be added to a length, torque (N·m) and energy (J) still match, but a moment and a rotation stiffness (N·m/rad) don't.
-- `sin`, `cos`, `tan` take an angle, or a plain number read as radians; `asin`, `acos`, `atan`, `atan2`, `arg` return angles. An angle result shows in `deg` or `rad` as the frontmatter `angle_display` says (`deg` by default).
+- `rad` is the base unit of an angle dimension, and `deg`, `rev`, `gon` are angles (`gon` added to the table on 2026-11-02; `°` alone is not a unit, as it is a letter of names). So an angle can't be added to a length, torque (N·m) and energy (J) still match, but a moment and a rotation stiffness (N·m/rad) don't.
+- `sin`, `cos`, `tan` (and `sec`, `csc`, `cot`) take an angle, or a plain number read as radians; `asin`, `acos`, `atan`, `atan2`, `arg` (and `acot`, `asec`, `acsc`) return angles. An angle result shows in `deg` or `rad` as the frontmatter `angle_display` says (`deg` by default).
 - The cost, and the reason it's off by default: formulas where the radian silently disappears need it removed by hand. Arc length `s := r θ` is `m·rad`, written `r θ / rad`; `ω := 2 π f` in Hz needs `rad` added. The error message says so.
 
 **Currency** (`currency: AUD` in the frontmatter, any name):
 
 - A currency dimension whose base unit has that name (`AUD`, `€`, `$`). Other currencies are ordinary definitions with the user's rate, `USD := 1.52 AUD`: no exchange rates from the internet.
+- The automatic unit writes the angle or the currency beside the rest: `N*m/rad`, `rad/s`, `AUD/m^3`.
 - Then `cost := 120 AUD/m^3` and `V := 4 m^3` give `cost V = 480 AUD`, and adding money to a length is an error. Prefixes never apply (no "kAUD").
 - Without `currency`, money is plain numbers.
 

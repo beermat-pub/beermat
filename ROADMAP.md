@@ -7,10 +7,6 @@ What's coming to Beermat, roughly in order. Plans change; [issues](https://githu
 Today's previews already have the worksheet, the editor, units, plots, symbolic algebra, printing and PDF, `.xmcd` import, the command line, AI assistants through MCP, and the web version. Before 1.0:
 
 - **The manual** at [beermat.pub/docs](https://beermat.pub/docs/): getting started, tutorials, how-to guides, and a reference of every function, unit and keystroke, with examples drawn by Beermat itself. F1 on a function opens its page.
-- **Results with engineering prefixes** by default (`54 kN·m` rather than `54000 N·m`), as a sheet setting.
-- **Angles and currency as dimensions**, for sheets that want them checked (`angle: dimension`, `currency: AUD`).
-- **Division styles**: `/`, `÷` and `∕`, chosen per operator or for the sheet.
-- **Built-in globals that a sheet can't redefine by mistake.**
 - **Spreadsheet components** from `.xmcd` files whose formulas run, not only their last values.
 - **Python packages of your own** for Python functions in a sheet.
 - **Short videos** showing how it works.

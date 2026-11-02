@@ -6,6 +6,7 @@ import it.krzeminski.snakeyaml.engine.kmp.exceptions.YamlEngineException
 import kotlin.math.floor
 import pub.beermat.engine.display.ResultFormat
 import pub.beermat.engine.display.Rounding
+import pub.beermat.engine.eval.UnitOptions
 import pub.beermat.engine.syntax.Multiplication
 
 /**
@@ -24,6 +25,8 @@ data class Settings(
     val title: String? = null,
     val header: PageText? = null,
     val footer: PageText? = null,
+    /** Angle and currency as dimensions (`angle: dimension`, `currency: AUD`; docs/units.md#angle-and-currency-as-dimensions). */
+    val units: UnitOptions = UnitOptions(),
 ) {
     /** The result format for a block, after its attribute overrides (`decimals=2`, `significant=3`, `strict`, …). */
     fun formatFor(attributes: Attributes, problems: MutableList<String>): ResultFormat {
@@ -58,6 +61,8 @@ data class Settings(
             var title: String? = null
             var header: PageText? = null
             var footer: PageText? = null
+            var units = UnitOptions()
+            var angleInDegrees = true
             for ((key, value) in yaml) {
                 when (key) {
                     "result" ->
@@ -75,6 +80,18 @@ data class Settings(
                     "units" -> if (value != "SI") problems += "units: '$value' is not supported yet; results are shown in SI"
                     "multiplication" -> Multiplication.entries.firstOrNull { it.key == value }?.let { multiplication = it }
                         ?: run { problems += "multiplication: expected dot or space, not '$value'" }
+                    "angle" -> when (value) {
+                        "dimension" -> units = units.copy(angle = true)
+                        "none" -> units = units.copy(angle = false)
+                        else -> problems += "angle: expected dimension or none, not '$value'"
+                    }
+                    "angle_display" -> when (value) {
+                        "deg" -> angleInDegrees = true
+                        "rad" -> angleInDegrees = false
+                        else -> problems += "angle_display: expected deg or rad, not '$value'"
+                    }
+                    "currency" -> value?.toString()?.trim()?.takeIf { it.isNotEmpty() && '`' !in it && '\n' !in it }?.let { units = units.copy(currency = it) }
+                        ?: run { problems += "currency: expected the name of a currency, such as AUD, not '$value'" }
                     "title" -> title = value?.toString()
                     "header" -> header = PageText.of(value, "header", problems)
                     "footer" -> footer = PageText.of(value, "footer", problems)
@@ -82,7 +99,8 @@ data class Settings(
                     else -> problems += "unknown setting: $key"
                 }
             }
-            return Settings(format, tolerance, origin, multiplication, problems, title, header, footer)
+            format = format.copy(angleInDegrees = angleInDegrees, currency = units.currency)
+            return Settings(format, tolerance, origin, multiplication, problems, title, header, footer, units)
         }
 
         /** Applies `result.*` style [values] (from YAML or from attributes) on top of [base]. */
