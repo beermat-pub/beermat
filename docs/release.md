@@ -47,6 +47,8 @@ These only work once the repository is public (a private repository's releases n
 
 Every release also builds the web version ([web.md](web.md)): the `web` job zips the page as `beermat-web.zip` on the release, and on a tagged release the `site` job publishes it to **beermat.pub/try**, replacing the `try/` folder of the site's repository (`beermat-pub/beermat.pub`, served by GitHub Pages) with one commit. From 1.0.0-dev1 on, previews publish it too (Dan, 2026-11-01), so it can be tried before 1.0.
 
+The manual goes the same way ([manual.md](manual.md)): the `manual` job builds it (Node 24, `npm ci && npm run build` in `manual/`) and the `site` job replaces the site's `docs/` folder with it, in the same commit as `try/`, so **beermat.pub/docs** is always the newest release's. CI builds it on every push too. The site's own pages (the home page, **beermat.pub/download**, terms, beer) are kept by hand in its repository; the download page asks GitHub for the newest release, previews included, and links its files.
+
 The `site` job pushes with a **deploy key**: an SSH key that can write to `beermat-pub/beermat.pub` and nothing else, its private half the `SITE_DEPLOY_KEY` secret of this repository. Without it the job fails with a note, and is re-run once the key is in. Setting it up, once (by an owner):
 
 ```bash

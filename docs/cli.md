@@ -59,7 +59,7 @@ The desktop installers bring the `beermat` command with them (from 1.0.0-dev2; D
 
 | System | The script | On the PATH |
 |---|---|---|
-| Windows | `bineermat.cmd` in the app's folder | the installer's "Add the beermat command to the PATH" (ticked by default; the user's PATH, or the system's for an install for everyone; the uninstaller takes it out). The portable zip has the same `bin` folder, to add by hand |
+| Windows | `bin\beermat.cmd` in the app's folder | the installer's "Add the beermat command to the PATH" (ticked by default; the user's PATH, or the system's for an install for everyone; the uninstaller takes it out). The portable zip has the same `bin` folder, to add by hand |
 | macOS | `Beermat.app/Contents/app/bin/beermat` (not beside the `Beermat` launcher: macOS names ignore case) | Tools → Install the beermat command…: a link in `/usr/local/bin`, after macOS asks for the password |
 | Linux | `/opt/beermat/bin/beermat` | Tools → Install the beermat command…: a link in `~/.local/bin`, no password |
 

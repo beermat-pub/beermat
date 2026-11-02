@@ -1,6 +1,6 @@
 # The manual
 
-> Status: **plan** (with Dan, 2026-10-29). Nothing built yet.
+> Status: **step 1 done** (2026-11-02, for 1.0.0-dev2): the Starlight project in `manual/`, built in CI and published to beermat.pub/docs by releases; a shell of a few pages (start, install, first worksheet, the command line, What's new); Help → Manual and F1 open it. The rest of the plan below is to do: Dan's idea (2026-11-02) is to write it on the released dev2, recording the first videos as we go.
 
 The user's manual, for 1.0: a documentation website at **beermat.pub/docs**, written in Markdown in this repository, built by the release workflow, and opened from the app's Help menu. **Public-facing**: no other product is named or compared; pages may say that Beermat imports `.xmcd` files.
 
@@ -84,9 +84,9 @@ Four parts (the usual split of tutorials, how-to guides, reference and explanati
 
 ## Steps
 
-1. The Starlight project in `manual/`, the build in CI, publishing to beermat.pub/docs on release, the page skeleton above with "to be written" pages hidden. `ROADMAP.md`.
+1. Done: the Starlight project in `manual/` (`npm run dev` to work on it, `npm run build`; `prepare.mjs` first copies the icons from `branding/` and writes What's new from `CHANGELOG.md`, leaving out versions not released yet, so neither is kept twice), the build in CI, publishing to beermat.pub/docs on release, the first pages (only written pages are in the sidebar, rather than "to be written" ones), `ROADMAP.md`.
 2. Doc entries for every built-in, and the generated reference pages.
 3. The ```` ```beermat ```` fence: rendered to SVG, evaluated, published as `.bbm`, the "Open this example" button.
 4. The pages, written as each feature settles, all before the first 1.0 beta: Getting started first, then the reference's hand-written parts, then tutorials and how-tos.
-5. Help → Manual and F1 in the app.
+5. Help → Manual and F1 in the app. Done for the start page (2026-11-02: Help → Manual, F1, and a Manual button in the web version's top bar); F1 on a function, unit or keyword opens its reference page once those pages exist (step 2). The app opens beermat.pub/docs, the newest manual, until there are versions of it.
 6. (1.x) The offline copy in the app; translations, with the app's.

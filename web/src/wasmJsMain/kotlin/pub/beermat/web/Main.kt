@@ -39,8 +39,11 @@ import pub.beermat.engine.Version
 import pub.beermat.web.resources.Res
 import kotlin.io.encoding.Base64
 
-/** Where the desktop versions are, for what the browser can't do: the releases, previews included, until the site has a download page. */
-private const val DOWNLOAD = "https://github.com/beermat-pub/beermat/releases"
+/** Where the desktop versions are, for what the browser can't do: the site's download page, which lists the latest release. */
+private const val DOWNLOAD = "https://beermat.pub/download"
+
+/** The manual (docs/manual.md). */
+private const val MANUAL = "https://beermat.pub/docs/"
 
 /** The website, which the page's name and a button lead back to. */
 private const val SITE = "https://beermat.pub"
@@ -111,6 +114,7 @@ private fun WebApp() {
             // What only the desktop does, shown so a visitor knows it is there (docs/web.md#what-the-web-version-leaves-out).
             for (feature in listOf("Print", "PDF", "Import .xmcd", "AI assistant (MCP)")) Greyed(feature)
             Spacer(Modifier.weight(1f))
+            Button("Manual") { openPage(MANUAL) }
             Button("beermat.pub") { goTo(SITE) }
             Button("Get the desktop app") { openPage(DOWNLOAD) }
         }

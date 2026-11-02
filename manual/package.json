@@ -1,0 +1,15 @@
+{
+  "name": "beermat-manual",
+  "private": true,
+  "type": "module",
+  "description": "The user's manual, published at beermat.pub/docs (docs/manual.md)",
+  "scripts": {
+    "dev": "node prepare.mjs && astro dev",
+    "build": "node prepare.mjs && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.42.8",
+    "astro": "7.4.4"
+  }
+}

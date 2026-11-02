@@ -227,6 +227,7 @@ fun main(args: Array<String>) {
                     }
                 }
                 Menu("Help") {
+                    Item("Manual", shortcut = KeyShortcut(K.F1), onClick = { Brand.open(Brand.MANUAL) })
                     Item("Keyboard shortcuts", onClick = { Brand.open(Brand.SHORTCUTS) })
                     Item("Support Beermat: buy us a beer", onClick = { Brand.open(Brand.BEER) })
                     Item("Check for updates now", onClick = { scope.launch { checkForUpdates(quietIfLatest = false) } })

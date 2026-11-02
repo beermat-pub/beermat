@@ -1,0 +1,11 @@
+/* Beermat's amber, as on beermat.pub. */
+:root {
+  --sl-color-accent-low: #3a2a12;
+  --sl-color-accent: #c27d18;
+  --sl-color-accent-high: #f1d8a8;
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: #f6e3c2;
+  --sl-color-accent: #8f5810;
+  --sl-color-accent-high: #4a2e08;
+}

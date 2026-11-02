@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+# Written by prepare.mjs at every build: What's new from ../CHANGELOG.md, the icons from ../branding.
+src/content/docs/whats-new.md
+public/
+src/assets/

@@ -18,3 +18,12 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew build
+
+  # The manual builds, so a broken page fails here rather than at a release (docs/manual.md).
+  manual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm, cache-dependency-path: manual/package-lock.json }
+      - run: cd manual && npm ci && npm run build

@@ -45,6 +45,8 @@ object Brand {
 
     /** One link for donations, which lists GitHub Sponsors and Ko-fi: the providers can change without a new app. */
     const val BEER = "https://beermat.pub/beer"
+    /** The manual (docs/manual.md): Help → Manual and F1. */
+    const val MANUAL = "https://beermat.pub/docs/"
     const val SOURCE = "https://github.com/beermat-pub/beermat"
     const val SHORTCUTS = "https://github.com/beermat-pub/beermat/blob/main/docs/editor.md"
     const val TERMS = "https://beermat.pub/terms"

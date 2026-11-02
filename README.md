@@ -4,7 +4,7 @@
 
 Beermat is an engineering worksheet. You click anywhere on the page and type math that looks like math. It evaluates top to bottom, handles units properly, and supports programming inside functions. On top of that, worksheets are plain text files you can diff, read on GitHub, export to LaTeX or Word, and hand to an AI assistant.
 
-> **Status:** developer preview ([1.0.0-dev0](https://github.com/beermat-pub/beermat/releases)): try it, and report what you find in [Issues](https://github.com/beermat-pub/beermat/issues).
+> **Status:** developer preview: [try it in your browser](https://beermat.pub/try) or [download it](https://beermat.pub/download), read the [manual](https://beermat.pub/docs/), and report what you find in [Issues](https://github.com/beermat-pub/beermat/issues). What's coming: [ROADMAP.md](ROADMAP.md).
 
 ## What a worksheet looks like
 

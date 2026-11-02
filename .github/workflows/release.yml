@@ -12,7 +12,7 @@ on:
         description: Version to stamp on a trial build (nothing is published)
         default: 1.0.0-trial
       only:
-        description: Build only this system (windows, macos, linux or web); empty for all
+        description: Build only this system (windows, macos, linux, web or manual); empty for all
         default: ""
 
 permissions:
@@ -140,9 +140,22 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: web, path: beermat-web.zip }
 
+  # The manual (docs/manual.md): Starlight's HTML, published to beermat.pub/docs with the web version.
+  manual:
+    if: ${{ !inputs.only || inputs.only == 'manual' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm, cache-dependency-path: manual/package-lock.json }
+      - run: cd manual && npm ci && npm run build
+      - run: cd manual/dist && zip -qr "$GITHUB_WORKSPACE/beermat-manual.zip" .
+      - uses: actions/upload-artifact@v4
+        with: { name: manual, path: beermat-manual.zip }
+
   publish:
     if: github.ref_type == 'tag'
-    needs: [windows, macos, linux, web]
+    needs: [windows, macos, linux, web, manual]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -158,7 +171,7 @@ jobs:
           body_path: notes.md
           prerelease: ${{ contains(github.ref_name, '-') }}
 
-  # beermat.pub/try: the released page, in the site's repository (beermat-pub/beermat.pub, served by
+  # beermat.pub/try and beermat.pub/docs: the released page and its manual, in the site's repository (beermat-pub/beermat.pub, served by
   # GitHub Pages), pushed with a deploy key that can write there and nowhere else (docs/release.md#web-version).
   site:
     if: github.ref_type == 'tag'
@@ -174,14 +187,17 @@ jobs:
           fi
       - uses: actions/download-artifact@v4
         with: { name: web }
+      - uses: actions/download-artifact@v4
+        with: { name: manual }
       - uses: actions/checkout@v4
         with: { repository: beermat-pub/beermat.pub, ssh-key: "${{ secrets.SITE_DEPLOY_KEY }}", path: site }
-      - name: Publish to try/
+      - name: Publish to try/ and docs/
         run: |
           rm -rf site/try && mkdir site/try && unzip -q beermat-web.zip -d site/try
+          rm -rf site/docs && mkdir site/docs && unzip -q beermat-manual.zip -d site/docs
           cd site
           git config user.name "Beermat release"
           git config user.email "hello@beermat.pub"
-          git add -A try
-          git diff --cached --quiet || git commit -m "try: Beermat ${GITHUB_REF_NAME#v}"
+          git add -A try docs
+          git diff --cached --quiet || git commit -m "try, docs: Beermat ${GITHUB_REF_NAME#v}"
           git push
