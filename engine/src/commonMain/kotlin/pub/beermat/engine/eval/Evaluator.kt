@@ -1039,7 +1039,7 @@ class Evaluator(
     /** `use "file.py"`: the module of Python functions in that file, found next to the sheet. */
     private fun use(e: Call, scope: Scope): Value {
         val path = (eval(e.args[0], scope) as? Text)?.value ?: throw EvalException("use takes the file's name, in quotes: use \"tools.py\"", e.args[0])
-        val loader = modules ?: throw EvalException("Python functions need the desktop version of Beermat, with its Python", e)
+        val loader = modules ?: throw EvalException("Python functions aren't available in the web version: install Beermat on your computer (beermat.pub/download) for them", e)
         val file = hostFile(folder, path)
         if (!isHostFile(file)) throw EvalException("there is no file $path${folder?.let { " next to the sheet" } ?: ""}", e.args[0])
         return loader.load(file)

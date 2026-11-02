@@ -2,6 +2,12 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
+## 1.0.0-dev3 (not released yet)
+
+- **Making room on the page**: with the crosshair on the page, Enter pushes everything below it down a line; Backspace and Delete take a blank line out above or below it.
+- **The web version** says what needs the desktop app, and where to get it, rather than naming what's inside it.
+- **The manual**: the logo leads back to beermat.pub.
+
 ## 1.0.0-dev2 (developer preview)
 
 The third preview: everything a first public version needs, put out the way 1.0 will be, with the [download page](https://beermat.pub/download), the [manual](https://beermat.pub/docs/) and [Beermat in the browser](https://beermat.pub/try). Please try it and report what you find.

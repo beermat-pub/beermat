@@ -36,8 +36,12 @@ import pub.beermat.symbolic.Sym.Companion.simplify
  */
 object Cas : SymbolicBackend {
 
-    /** Something only SymPy can do: [what] it is, as the message says where there's no SymPy. */
-    class Beyond(what: String, node: Expr? = null) : EvalException("$what needs SymPy, which this version doesn't include", node)
+    /**
+     * Something only SymPy can do: [what] it is, as the message says where there's no SymPy, which
+     * for users means the web version. It points to the desktop versions, not to SymPy (issue #6).
+     */
+    class Beyond(what: String, node: Expr? = null) :
+        EvalException("$what isn't available in the web version: install Beermat on your computer (beermat.pub/download) for all of it", node)
 
     override fun evaluate(expr: Expr, keywords: List<Expr>, defined: (Id) -> Value?): Expr {
         var s = simplify(Convert(defined).sym(expr))

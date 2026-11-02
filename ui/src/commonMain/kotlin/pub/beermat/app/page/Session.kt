@@ -432,12 +432,46 @@ class Session(text: String, private val math: MathLayout) {
         relayout()
     }
 
-    /** Enter: leave the region, the crosshair below it; with only the crosshair, the crosshair down a line. */
+    /**
+     * Enter: leave the region, the crosshair below it. With only the crosshair, the crosshair down a
+     * line, and every region from there down with it, making room (docs/editor.md#the-page).
+     */
     fun enter() {
         val v = (editing?.region ?: textEditing?.first)?.let { layout.views.getOrNull(it) }
-        if (v == null && selected.isEmpty()) crosshair?.let { (x, y) -> crosshair = x to y + LINE }
+        if (v == null && selected.isEmpty()) crosshair?.let { (x, y) ->
+            shiftFrom(y, LINE)
+            crosshair = x to y + LINE
+        }
         leave()
         if (v != null) crosshair = v.x.snap() to (v.y + v.height + SheetLayout.FLOW_GAP).snap()
+    }
+
+    /**
+     * Backspace (or, [forward], Delete) with only the crosshair: the blank line above it (below it)
+     * taken out, everything from there down moving up a line. Where the line isn't blank nothing
+     * moves, quietly (Dan: no beep). False only without a crosshair alone.
+     */
+    fun removeLine(forward: Boolean): Boolean {
+        if (editing != null || textEditing != null || selected.isNotEmpty()) return false
+        val (x, y) = crosshair ?: return false
+        val top = if (forward) y else y - LINE
+        if (top < 0f) return true
+        val bottom = top + LINE
+        if (layout.views.any { !it.hidden && it.y < bottom && it.y + it.height > top }) return true
+        shiftFrom(bottom, -LINE)
+        if (!forward) crosshair = x to top
+        return true
+    }
+
+    /** Moves every region that starts at [y] or below by [dy], as one undoable step. */
+    private fun shiftFrom(y: Float, dy: Float) {
+        val below = layout.views.filter { it.y >= y }
+        if (below.isEmpty()) return
+        snapshot()
+        val moved = below.associate { v -> v.region to v.region.movedTo(v.x, v.y + dy) }
+        regions = regions.map { moved[it] ?: it }
+        sortRegions()
+        changed()
     }
 
     /** An arrow key off the math: the selected regions, or else the crosshair, one grid step that way. */

@@ -44,8 +44,9 @@ object Keys {
                 true
             }
             K.Escape -> session.leave().also { session.deselect() }.let { true }
-            K.Backspace -> session.deleteSelected() || session.key(Key.Backspace)
-            K.Delete -> session.deleteSelected() || session.key(Key.Delete)
+            // With only the crosshair, they take out a blank line (issue #5).
+            K.Backspace -> session.deleteSelected() || session.key(Key.Backspace) || session.removeLine(forward = false)
+            K.Delete -> session.deleteSelected() || session.key(Key.Delete) || session.removeLine(forward = true)
             K.DirectionLeft -> session.key(Key.Left) || session.nudge(-1, 0)
             K.DirectionUp -> session.vertical(up = true) || session.nudge(0, -1)
             K.DirectionDown -> session.vertical(up = false) || session.nudge(0, 1)

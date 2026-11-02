@@ -9,7 +9,7 @@
 The engine defines the interface (`SymbolicBackend`); the `symbolic` module answers through `Symbolics`, which asks two engines in turn:
 
 1. **Our own small engine** (`Cas`), MIT, in the same process and instant. It does what the table below lists, and is the only one in the web version.
-2. **SymPy** (`SymPyBackend`), for everything else: when our engine meets something it can't do (a keyword, an integral, a limit, `solve` beyond degree 2, complex numbers, `∞`), it says so (`Cas.Beyond`) and the whole statement goes to SymPy. Without SymPy (the web), that is the error: "factor needs SymPy, which this version doesn't include".
+2. **SymPy** (`SymPyBackend`), for everything else: when our engine meets something it can't do (a keyword, an integral, a limit, `solve` beyond degree 2, complex numbers, `∞`), it says so (`Cas.Beyond`) and the whole statement goes to SymPy. Without SymPy (the web), that is the error, which names the desktop versions rather than SymPy (Dan, issue #6, 2026-11-02): "factor isn't available in the web version: install Beermat on your computer (beermat.pub/download) for all of it".
 
 Our engine works on its own tree of sums, products and powers, kept in a canonical form: flattened, numbers exact (rationals of any size), like terms and like factors collected, in a fixed order (higher powers first). Results are written back as readable expressions: `5*x/6`, `x*cos(x) + sin(x)`, `(-b - sqrt(b^2 - 4*a*c))/(2*a)`. SymPy's results are written back the same way, so both read alike.
 
@@ -45,7 +45,8 @@ Names defined above are put in (confirmed by Dan, 2026-10-29): a number without 
 
 Decided by Dan on 2026-10-29 (milestone 18): units go through symbolic evaluation as symbols †, with the numeric engine's checks wherever the units are known. Both engines get the same treatment, in a layer around them (`SymbolicUnits`), so neither handles units itself.
 
-- **In:** a name defined with units is put in as its value in SI times base-unit symbols: `L := 6 m` goes in as `6·m`, `q := 12 kN/m` as `12000·kg·s⁻²`. The unit symbols are upright names (`m m`), so they never merge with a variable called `m`. A temperature on a scale goes in absolute, as everywhere: `20 °C` is 293.15 K. Units written in the symbolic statement itself stay variables, as before (`t` and `s` in `laplace(t)`).
+- **In:** a name defined with units is put in as its value in SI times base-unit symbols: `L := 6 m` goes in as `6·m`, `q := 12 kN/m` as `12000·kg·s⁻²`. The unit symbols are upright names (`
+m m`), so they never merge with a variable called `m`. A temperature on a scale goes in absolute, as everywhere: `20 °C` is 293.15 K. Units written in the symbolic statement itself stay variables, as before (`t` and `s` in `laplace(t)`).
 - **Checked:** before the engine runs, the numeric engine's dimension rules are applied wherever the dimensions are known: a sum or comparison of a length and a time, `sin(6 m)`, `e^(2 s)` are errors (`units do not match`). Names not defined have no known dimension and pass.
 - **Out:** a result that is a product with units in it is shown with its unit, chosen as for `=` without a placeholder (docs/units.md#display): `q*L^2/8 -> ?` gives `54000 N*m`, and `L/x -> ?` gives `6/x m`. Units that cancel disappear. A result where units sit inside a sum (`x + 6 m`, with `x` not defined) keeps the unit symbols where they are.
 

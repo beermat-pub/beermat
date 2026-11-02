@@ -11,6 +11,7 @@ export default defineConfig({
       description: 'How to use Beermat, the open-source engineering worksheet.',
       logo: { src: './src/assets/logo.svg', alt: 'Beermat' },
       customCss: ['./src/beermat.css'],
+      components: { SiteTitle: './src/components/SiteTitle.astro' },
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/beermat-pub/beermat' }],
       editLink: { baseUrl: 'https://github.com/beermat-pub/beermat/edit/main/manual/' },
       sidebar: [

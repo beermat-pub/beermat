@@ -53,7 +53,7 @@ class CasTest {
         assertEquals("[-2; 2]", sym("x^2 - 4 -> solve(x) -> ?"))
         assertEquals("-3", sym("2*x + 6 -> solve(x) -> ?"))
         assertEquals("[-sqrt(2); sqrt(2)]", sym("x^2 == 2 -> solve(x) -> ?"))
-        assertEquals("solving with complex roots needs SymPy, which this version doesn't include", error("x^2 + 1 -> solve(x) -> ?"))
+        assertEquals("solving with complex roots isn't available in the web version: install Beermat on your computer (beermat.pub/download) for all of it", error("x^2 + 1 -> solve(x) -> ?"))
     }
 
     @Test
@@ -74,7 +74,7 @@ class CasTest {
     @Test
     fun `unknown keywords and what isn't done yet`() {
         assertEquals("frobnicate is not a symbolic keyword", error("x -> frobnicate -> ?"))
-        assertEquals("factor needs SymPy, which this version doesn't include", error("x -> factor -> ?"))
+        assertEquals("factor isn't available in the web version: install Beermat on your computer (beermat.pub/download) for all of it", error("x -> factor -> ?"))
     }
 
     @Test

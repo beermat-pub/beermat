@@ -1,0 +1,40 @@
+---
+// The manual's title (docs/manual.md): the logo leads back to the website, beermat.pub (issue #7);
+// the words "Beermat manual" to the manual's own start page, as Starlight's title does.
+import { logos } from 'virtual:starlight/user-images';
+import config from 'virtual:starlight/user-config';
+const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<div class="site-title sl-flex">
+	{
+		config.logo && logos.dark && (
+			<a href="https://beermat.pub" title="beermat.pub" class="sl-flex">
+				<img alt="beermat.pub" src={logos.dark.src} width={logos.dark.width} height={logos.dark.height} />
+			</a>
+		)
+	}
+	<a href={siteTitleHref} class="title" translate="no">{siteTitle}</a>
+</div>
+
+<style>
+	.site-title {
+		align-items: center;
+		gap: var(--sl-nav-gap);
+		font-size: var(--sl-text-h4);
+		font-weight: 600;
+		white-space: nowrap;
+		min-width: 0;
+	}
+	.title {
+		color: var(--sl-color-text-accent);
+		text-decoration: none;
+		overflow: hidden;
+	}
+	img {
+		height: calc(var(--sl-nav-height) - 2 * var(--sl-nav-pad-y));
+		width: auto;
+		max-width: 100%;
+		object-fit: contain;
+	}
+</style>

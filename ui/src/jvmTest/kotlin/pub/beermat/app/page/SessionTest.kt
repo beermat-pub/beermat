@@ -199,6 +199,35 @@ class SessionTest {
     }
 
     @Test
+    fun `Enter makes room below the crosshair, Backspace and Delete take blank lines out`() {
+        val s = Session("```calc {#a x=0 y=0}\na := 1\n```\n```calc {#b x=0 y=120}\nb := 2\n```\n", math)
+        fun yOf(name: String) = s.layout.views.single { it.region.attributes.id == name }.y
+        s.click(s.format.margin + 0f, s.format.margin + 60f)
+        val (_, y) = s.crosshair!!
+        s.enter()
+        assertEquals(y + Session.LINE, s.crosshair!!.second)
+        assertEquals(120f + Session.LINE, yOf("b"), "the region below moves down with the crosshair")
+        assertEquals(0f, yOf("a"), "the region above stays")
+        s.enter()
+        assertEquals(120f + 2 * Session.LINE, yOf("b"))
+        // Backspace: the blank line above the crosshair goes, and the crosshair and the region below come up.
+        assertTrue(s.removeLine(forward = false))
+        assertEquals(y + Session.LINE, s.crosshair!!.second)
+        assertEquals(120f + Session.LINE, yOf("b"))
+        // Delete: the blank line below the crosshair goes; the crosshair stays.
+        assertTrue(s.removeLine(forward = true))
+        assertEquals(y + Session.LINE, s.crosshair!!.second)
+        assertEquals(120f, yOf("b"))
+        // Not where a region is: nothing moves, and no beep.
+        s.click(s.format.margin + 0f, s.format.margin + 120f + Session.LINE)
+        assertTrue(s.removeLine(forward = false))
+        assertEquals(120f, yOf("b"))
+        // One undo step each.
+        s.undo()
+        assertEquals(120f + Session.LINE, yOf("b"))
+    }
+
+    @Test
     fun `a click on empty paper moves the crosshair, snapped to the grid`() {
         val s = Session("", math)
         s.click(s.format.margin + 100f, s.format.margin + 50f)
