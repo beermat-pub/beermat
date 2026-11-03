@@ -61,8 +61,8 @@ Built 2026-11-03.
 Prepared 2026-11-03; waiting on Dan's accounts.
 
 - The Release workflow's `vscode` job publishes the release's `.vsix` (the one on GitHub) with `vsce publish --packagePath` to the **VS Code Marketplace**, and `ovsx publish` to **Open VSX** (for VSCodium, Cursor and other editors built on VS Code), for versions without a suffix only: the Marketplace takes `x.y.z`, so previews (`1.0.0-dev3`) stay a `.vsix` on GitHub.
-- It needs two secrets, and passes with a warning without them:
-  - `VSCE_PAT`: the publisher `beermat-pub`, made at marketplace.visualstudio.com/manage (a Microsoft account; free; separate from Partner Center), and a Personal Access Token from Azure DevOps (dev.azure.com; organisation "All accessible organizations", scope Marketplace, Manage).
+- **The Marketplace by trusted publishing** (Dan, 2026-11-03): no token. The publisher `beermat-pub` (marketplace.visualstudio.com/manage; separate from Partner Center) has a Trusted Publishing policy for the repository `beermat-pub/beermat` and the workflow `release.yml`, no environment; the job asks GitHub for an OIDC token (`permissions: id-token: write`) and runs `vsce publish --oidc`, which the Marketplace exchanges for a session of up to 15 minutes.
+- **Open VSX** needs a secret, and the step passes with a warning without it:
   - `OVSX_PAT`: an account at open-vsx.org (signing in with GitHub), the Eclipse publisher agreement, the namespace `beermat-pub` (`npx ovsx create-namespace beermat-pub`), and an access token.
 - Our `.vsix` is packed by Gradle, not `vsce`; the Marketplace checks its manifest at the first publish, which may ask for a field `vsce` would have written.
 

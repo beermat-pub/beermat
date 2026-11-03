@@ -187,16 +187,15 @@ jobs:
     if: github.ref_type == 'tag' && !contains(github.ref_name, '-')
     needs: [publish]
     runs-on: ubuntu-latest
+    # Trusted publishing: GitHub's OIDC token, exchanged by the Marketplace for a short session; no secret.
+    permissions: { id-token: write, contents: read }
     steps:
       - uses: actions/download-artifact@v4
         with: { name: web, path: dist }
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
       - name: VS Code Marketplace
-        env: { VSCE_PAT: "${{ secrets.VSCE_PAT }}" }
-        run: |
-          if [ -z "$VSCE_PAT" ]; then echo "::warning::No VSCE_PAT secret: not published on the Marketplace (docs/vscode.md#step-5-in-detail)."; exit 0; fi
-          npx --yes @vscode/vsce publish --packagePath dist/beermat-*.vsix
+        run: npx --yes @vscode/vsce publish --oidc --packagePath dist/beermat-*.vsix
       - name: Open VSX
         env: { OVSX_PAT: "${{ secrets.OVSX_PAT }}" }
         run: |
