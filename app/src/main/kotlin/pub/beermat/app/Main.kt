@@ -211,6 +211,7 @@ fun main(args: Array<String>) {
                 }
                 Menu("Insert") {
                     Item("X-Y plot    @", onClick = { session.guard(Unit) { session.insertPlot() }; revision++ })
+                    Item("Table", onClick = { session.guard(Unit) { session.insertTable() }; revision++ })
                     Item("Picture…", onClick = { choosePicture(file)?.let { p -> session.guard(Unit) { insertPicture(session, p) } }; revision++ })
                     Item("Page break    Ctrl+Enter", onClick = { session.guard(Unit) { session.pageBreak() }; revision++ })
                     Item("Area", onClick = { session.guard(Unit) { session.insertArea() }; revision++ })

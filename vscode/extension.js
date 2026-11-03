@@ -94,8 +94,13 @@ async function saveWord(document, base64) {
   if (target) await vscode.workspace.fs.writeFile(target, Buffer.from(base64, 'base64'));
 }
 
-/** The page's questions, which a web view can't ask itself: a matrix's size, or how to resize one. */
+/** The page's questions, which a web view can't ask itself: a line of text, a matrix's size, or how to resize one. */
 async function ask(kind) {
+  if (kind.startsWith('text\n')) {
+    const [, prompt, value] = kind.split('\n');
+    const text = await vscode.window.showInputBox({ prompt, value });
+    return { text: text ?? '', yes: text !== undefined };
+  }
   if (kind === 'matrix') {
     const text = await vscode.window.showInputBox({ title: 'Insert matrix', prompt: 'Rows and columns', value: '3, 1' });
     return { text: text ?? '', yes: false };

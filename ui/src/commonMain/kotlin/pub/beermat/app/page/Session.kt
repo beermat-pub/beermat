@@ -789,6 +789,36 @@ class Session(text: String, private val math: MathLayout) {
         changed()
     }
 
+    /**
+     * A small table at the crosshair (docs/tables.md#editing), named `T1` (or the next free name) so
+     * that its columns are vectors below it (`x_T1`), with the cell cursor in its first cell.
+     */
+    fun insertTable() {
+        val c = crosshair ?: return
+        leave()
+        snapshot()
+        val names = regions.filterIsInstance<TableRegion>().mapNotNull { it.attributes["name"] }.toSet()
+        val name = generateSequence(1) { it + 1 }.map { "T$it" }.first { it !in names }
+        val r = TableRegion(Attributes.NONE.with("name", name), TABLE_TEMPLATE.lines()).movedTo(c.first, c.second)
+        regions = regions + r
+        sortRegions()
+        crosshair = null
+        table = TableCursor(regions.indexOfFirst { it === r }, 1, 0)
+        changed()
+    }
+
+    /** The table [region]'s name, which defines its columns below it (`q_Loads`); blank removes it. False for a name that isn't one. */
+    fun nameTable(region: Int, name: String): Boolean {
+        val r = regions.getOrNull(region) as? TableRegion ?: return false
+        val n = name.trim()
+        if (n.isNotEmpty() && !Id.isPlainName(n)) return false
+        if (n == (r.attributes["name"] ?: "")) return true
+        snapshot()
+        regions = regions.toMutableList().also { it[region] = r.withAttributes(if (n.isEmpty()) r.attributes.without("name") else r.attributes.with("name", n)) }
+        changed()
+        return true
+    }
+
     /** The table at the cursor edited as its Markdown instead, as text regions are. */
     fun editTableText() {
         val c = table ?: return
@@ -1094,6 +1124,13 @@ class Session(text: String, private val math: MathLayout) {
         private val RESULT_KEYS = listOf("decimals", "significant", "strict", "trailing_zeros", "exponential_threshold", "zero_threshold", "complex_threshold")
 
         /** A new plot: one that draws, showing the keys to change. */
+        /** A new table: two columns and a row, to type over (Insert → Table). */
+        val TABLE_TEMPLATE = """
+            | x | y |
+            |--:|--:|
+            | 1 | 2 |
+        """.trimIndent()
+
         val PLOT_TEMPLATE = """
             x: 0 .. 2*π
             traces:

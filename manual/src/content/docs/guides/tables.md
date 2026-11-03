@@ -7,7 +7,9 @@ A table shows inputs and results as a neat grid. Its computed cells are Beermat 
 
 ## Making a table
 
-A table is written in the worksheet file as a Markdown table inside a `table` fence (open the `.bbm` file in a text editor, or ask an AI assistant to add one). Once it is there, the app edits it as a grid.
+Click where the table should go, then **Insert → Table** (or the ▦ button in the Insert palette). A small table appears, named `T1`, with the cursor in its first cell: type over it, and add rows with **Enter** past the last one. To rename it, right-click it and choose **Name…**.
+
+In the file, a table is a Markdown table inside a `table` fence, so it can also be written in a text editor or by an AI assistant:
 
 ````markdown
 ```calc
@@ -55,4 +57,4 @@ With a name (`{name=Loads}` after `table`), each named column is a vector for th
 
 ## Editing in the app
 
-Click a cell to put the cell cursor on it, and type to replace what it holds; **F2** or a double-click edits it instead. The arrows, **Tab** and **Enter** move between cells, and **Enter** or **Tab** past the last row adds a row. Right-click to insert or delete rows and columns, or to edit the table as Markdown. **Ctrl+V** pastes cells copied from a spreadsheet.
+Click a cell to put the cell cursor on it, and type to replace what it holds; **F2** or a double-click edits it instead. The arrows, **Tab** and **Enter** move between cells, and **Enter** or **Tab** past the last row adds a row. Right-click to insert or delete rows and columns, to name the table, or to edit it as Markdown. **Ctrl+V** pastes cells copied from a spreadsheet.

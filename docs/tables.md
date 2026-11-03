@@ -60,6 +60,7 @@ In the app, a table region edits as a grid: Tab and arrows between cells, Enter 
 - **A cell holds its linear text:** a number, a word, or `= expression`; the header cell is the column's name and unit (`q [kN/m]`).
 - **Right-click:** insert a row above or below, delete a row, insert a column left or right (named `c1`, `c2` …, right-aligned), delete a column, or edit the table as its Markdown.
 - **Paste** (`Ctrl+V`) of tab-separated text, as Excel and other spreadsheets copy cells, fills cells from the cursor, adding rows and columns as needed; `Ctrl+C` copies the cell's text.
+- **Insert → Table** (and ▦ in the Insert palette; 2026-11-03): a two-column table at the crosshair, named `T1` (the next free name), the cell cursor in its first cell. **Name…** in the right-click menu renames it, or removes the name (empty), asked through the host (`Host.askText`: a Swing box, the browser's prompt, VS Code's input box).
 - Not yet: expressions drawn as math while typing (the math editor in the cell), selecting several cells, dragging column widths.
 
 ## Import from `.mcdx` and `.xmcd`

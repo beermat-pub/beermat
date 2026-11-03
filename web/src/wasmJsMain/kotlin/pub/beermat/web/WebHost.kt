@@ -33,6 +33,12 @@ internal object WebHost : Host {
         if (n.size == 2) answer(n[0], n[1], confirm("OK to insert them, Cancel to delete them."))
     }
 
+    override fun askText(question: String, initial: String, answer: (String) -> Unit) {
+        // The extension reads the question and the starting text from the lines after the kind.
+        if (inVsCode()) return ask("text\n$question\n$initial") { text, yes -> if (yes) answer(text) }
+        prompt(question, initial)?.let(answer)
+    }
+
     /** Questions sent to VS Code, waiting for their answers, by number. */
     private val waiting = mutableMapOf<Int, (String, Boolean) -> Unit>()
     private var asked = 0

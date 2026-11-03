@@ -21,6 +21,7 @@ Each version's section here becomes the notes of its release on GitHub ([docs/re
 - **Functions on arrays**: a function that takes one number (`sqrt`, `sin`, `ln`, `round`…) works on every element of an array by itself, `sqrt(v)` without `vec()`.
 - **Symbolic results with units** are written as units are, `q*L^2/8 -> ?` giving `54 kN*m` in the file and on the command line (it was `54000 \rm N*\rm m`), with the engineering prefix as for `=`.
 - **A warning for a variable that hides a unit**: after `m := 5`, writing `3 m` (meaning metres) shows an orange warning under the statement, and `beermat check` reports it.
+- **Insert → Table**: a new table at the crosshair (also ▦ on the toolbar), named so its columns can be used below it; right-click → **Name…** renames it.
 - **Fixed**: `nthroot` of a negative number gave a complex root; an odd root is now the real one (`nthroot(-8, 3)` is −2).
 
 ## 1.0.0-dev2 (developer preview)

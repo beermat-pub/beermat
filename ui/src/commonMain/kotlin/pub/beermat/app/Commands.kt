@@ -126,6 +126,7 @@ object Commands {
             listOf(
                 cmd("T", "Text region", "\" at the crosshair", type('"')),
                 cmd("∿", "X-Y plot", "@ at the crosshair", type('@')),
+                cmd("▦", "Table", "Insert menu", { s -> s.crosshair != null && s.insertTable().let { true } }),
                 cmd("⤓", "Page break", "Ctrl+Enter", { s -> s.pageBreak(); true }),
                 cmd("▾", "Area (collapsible)", "Insert menu", { s -> s.insertArea(); true }),
             ),

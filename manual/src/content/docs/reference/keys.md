@@ -141,5 +141,6 @@ Each toolbar button does exactly what its keys do, and its tooltip shows them.
 |---|---|---|
 | T | Text region | " at the crosshair |
 | ∿ | X-Y plot | @ at the crosshair |
+| ▦ | Table | Insert menu |
 | ⤓ | Page break | Ctrl+Enter |
 | ▾ | Area (collapsible) | Insert menu |

@@ -36,6 +36,9 @@ interface Host {
     /** Asks how to resize the matrix at the cursor: rows, columns, and whether to insert (or delete) them; answered as [askMatrix] is. */
     fun askMatrixResize(answer: (rows: Int, cols: Int, insert: Boolean) -> Unit)
 
+    /** Asks for a line of text ([question], starting from [initial]), as a table's name; answered as [askMatrix] is, not when cancelled. */
+    fun askText(question: String, initial: String, answer: (String) -> Unit)
+
     /** The Result Format dialog (docs/editor.md#result-format) for [statement] of [region], applying what is chosen. */
     fun editResultFormat(session: Session, region: Int, statement: Int)
 }

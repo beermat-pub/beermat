@@ -323,6 +323,13 @@ fun SheetView(
                                 "Insert column left" -> TableEditor.insertColumn(session, right = false)
                                 "Insert column right" -> TableEditor.insertColumn(session, right = true)
                                 "Delete column" -> TableEditor.deleteColumn(session)
+                                // The name defines the columns below the table, as x_Loads (docs/tables.md).
+                                "Name…" -> session.table?.region?.let { region ->
+                                    val now = (session.regions.getOrNull(region) as? pub.beermat.format.TableRegion)?.attributes?.get("name") ?: ""
+                                    host.askText("The table's name, which makes its columns vectors below it (x_$now); empty for none:", now) { name ->
+                                        if (!session.guard(false) { session.nameTable(region, name) }) host.beep()
+                                    }
+                                }
                                 else -> session.editTableText()
                             }
                         }
@@ -361,7 +368,7 @@ fun regionPng(session: Session, view: RegionView): ByteArray {
 private fun TableMenu(
     at: Offset,
     title: String = "Table",
-    items: List<String> = listOf("Insert row above", "Insert row below", "Delete row", "Insert column left", "Insert column right", "Delete column", "Edit as Markdown"),
+    items: List<String> = listOf("Insert row above", "Insert row below", "Delete row", "Insert column left", "Insert column right", "Delete column", "Name…", "Edit as Markdown"),
     onDismiss: () -> Unit,
     onPick: (String) -> Unit,
 ) {

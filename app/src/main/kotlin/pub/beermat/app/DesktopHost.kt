@@ -55,6 +55,10 @@ object DesktopHost : Host {
         if (n.size == 2) answer(n[0], n[1])
     }
 
+    override fun askText(question: String, initial: String, answer: (String) -> Unit) {
+        (JOptionPane.showInputDialog(null, question, "Beermat", JOptionPane.QUESTION_MESSAGE, null, null, initial) as? String)?.let(answer)
+    }
+
     override fun askMatrixResize(answer: (Int, Int, Boolean) -> Unit) {
         val field = JTextField("1, 0", 8)
         val panel = JPanel(BorderLayout(0, 6)).apply {

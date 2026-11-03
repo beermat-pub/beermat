@@ -260,6 +260,30 @@ class SessionTest {
     }
 
     @Test
+    fun `Insert Table puts a named table at the crosshair, which can be renamed`() {
+        val s = Session("", math)
+        s.insertTable()
+        val first = s.regions.indexOfFirst { it is pub.beermat.format.TableRegion }
+        assertEquals("T1", s.regions[first].attributes["name"])
+        assertEquals(pub.beermat.app.page.TableCursor(first, 1, 0), s.table)
+        // Its columns are vectors below it.
+        assertTrue("x_T1" in s.text() || "name=T1" in s.text(), s.text())
+        assertTrue(s.nameTable(first, "Loads"))
+        assertEquals("Loads", s.regions[first].attributes["name"])
+        assertTrue(!s.nameTable(first, "2 loads"))
+        assertTrue(s.nameTable(first, ""))
+        assertEquals(null, s.regions[first].attributes["name"])
+        // The next new table takes the next free name.
+        s.table = null
+        s.click(0f, 300f)
+        s.insertTable()
+        s.table = null
+        s.click(0f, 500f)
+        s.insertTable()
+        assertEquals(listOf("T1", "T2"), s.regions.filterIsInstance<pub.beermat.format.TableRegion>().mapNotNull { it.attributes["name"] })
+    }
+
+    @Test
     fun `a word and a space in a new region make it text`() {
         val s = Session("", math)
         s.type("the")
