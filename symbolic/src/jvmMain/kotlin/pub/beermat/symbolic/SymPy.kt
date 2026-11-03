@@ -12,7 +12,31 @@ import java.util.concurrent.TimeUnit
  * first request and kept until the app closes, talking JSON lines (`bridge.py`). A request that takes
  * longer than [timeoutSeconds] stops the process; the next request starts a new one.
  */
-class SymPy(private val home: File, private val timeoutSeconds: Long = 30) {
+class SymPy(
+    private val command: (Array<String>) -> ProcessBuilder,
+    private val name: String = "SymPy",
+    private val timeoutSeconds: Long = 30,
+) {
+    /** The bundled Python at [home]. */
+    constructor(home: File, timeoutSeconds: Long = 30) : this({ args -> Python.process(home, *args) }, "SymPy", timeoutSeconds)
+
+    companion object {
+        /** The user's own [interpreter], for the sheets' Python functions only (docs/symbolic.md#the-users-own-python). */
+        fun own(interpreter: File) = SymPy({ args -> OwnPython.process(interpreter, *args) }, "Your Python (${interpreter.path})")
+
+        private const val END = "\u0000end"
+
+        /** `bridge.py`, copied out of the jar once, into a folder of its own: Python imports from a script's folder. */
+        private val script: File by lazy {
+            val dir = Files.createTempDirectory("beermat-bridge").toFile()
+            val file = File(dir, "bridge.py")
+            dir.deleteOnExit()
+            file.deleteOnExit()
+            SymPy::class.java.getResourceAsStream("bridge.py")!!.use { input -> file.outputStream().use { input.copyTo(it) } }
+            file
+        }
+    }
+
     private var process: Process? = null
     private var input: Writer? = null
     // A new queue for each process, so a stopped one can't answer for the next.
@@ -35,9 +59,9 @@ class SymPy(private val home: File, private val timeoutSeconds: Long = 30) {
             writer.flush()
         } catch (x: java.io.IOException) {
             stop()
-            throw EvalException("SymPy stopped${lastError()}")
+            throw EvalException("$name stopped${lastError()}")
         }
-        val reply = next(timeoutSeconds, "SymPy took longer than $timeoutSeconds s and was stopped")
+        val reply = next(timeoutSeconds, "$name took longer than $timeoutSeconds s and was stopped")
         cache[request] = reply
         return reply
     }
@@ -58,7 +82,7 @@ class SymPy(private val home: File, private val timeoutSeconds: Long = 30) {
         }
         if (line == END) {
             stop()
-            throw EvalException("SymPy stopped${lastError()}")
+            throw EvalException("$name stopped${lastError()}")
         }
         return line
     }
@@ -67,7 +91,11 @@ class SymPy(private val home: File, private val timeoutSeconds: Long = 30) {
 
     private fun start(): Writer {
         val queue = LinkedBlockingQueue<String>().also { lines = it }
-        val p = Python.process(home, "-X", "utf8", "-u", script.path).start()
+        val p = try {
+            command(arrayOf("-X", "utf8", "-u", script.path)).start()
+        } catch (x: java.io.IOException) {
+            throw EvalException("$name couldn't start: ${x.message}")
+        }
         process = p
         Runtime.getRuntime().addShutdownHook(Thread { p.destroyForcibly() })
         thread("SymPy output") { p.inputStream.bufferedReader().useLines { all -> all.forEach(queue::put) }; queue.put(END) }
@@ -78,8 +106,8 @@ class SymPy(private val home: File, private val timeoutSeconds: Long = 30) {
         }
         val writer = p.outputStream.bufferedWriter(Charsets.UTF_8)
         input = writer
-        // The first line says SymPy is loaded.
-        next(60, "SymPy took too long to start")
+        // The first line says the bridge is ready.
+        next(60, "$name took too long to start")
         return writer
     }
 
@@ -92,16 +120,4 @@ class SymPy(private val home: File, private val timeoutSeconds: Long = 30) {
     }
 
     private fun thread(name: String, body: () -> Unit) = Thread(body, name).apply { isDaemon = true }.start()
-
-    private companion object {
-        const val END = "\u0000end"
-
-        /** `bridge.py`, copied out of the jar once. */
-        val script: File by lazy {
-            val file = Files.createTempFile("beermat-bridge", ".py").toFile()
-            file.deleteOnExit()
-            SymPy::class.java.getResourceAsStream("bridge.py")!!.use { input -> file.outputStream().use { input.copyTo(it) } }
-            file
-        }
-    }
 }

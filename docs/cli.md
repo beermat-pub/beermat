@@ -49,6 +49,10 @@ Serves worksheets to MCP clients such as Claude Code on standard input and outpu
 
 The user's own Python packages, which the Python files a sheet uses can import ([symbolic.md](symbolic.md#the-users-own-packages)); the same as Tools → Python packages… in the app. `list` (the default) shows what is installed and where, and what was asked for but isn't there; `install numpy scipy` installs with the bundled pip (requirements as pip takes them, `scipy==1.14`); `remove` takes a package out; `reinstall` installs again what was asked for but is missing, after an update brought a new Python.
 
+## `beermat python [<python>|bundled]`
+
+Which Python runs the Python files sheets use ([symbolic.md](symbolic.md#the-users-own-python)); the same as the choice at the top of Tools → Python packages…. With no argument it says which; `beermat python ~/venvs/calc` (an interpreter, or a venv's or Conda environment's folder) checks that it runs (Python 3.9 or newer) and uses it from then on; `beermat python bundled` goes back to Beermat's own. SymPy stays in Beermat's own Python either way.
+
 ## Exit codes
 
 | Code | Meaning |

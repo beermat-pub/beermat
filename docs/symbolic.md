@@ -121,10 +121,22 @@ g(x) := bt.deflection(x, 6 m)
 
 ### The user's own packages
 
-Proposed 2026-10-29, after Dan asked whether `pip install` would work and survive updates; approved by Dan the same day. **Built 2026-11-03** (for 1.0.0-dev3), all but the last point. Before, it couldn't work: pip was removed from the bundle, the interpreter runs isolated (`-I`), and the app folder is read-only in practice and replaced at every update.
+Proposed 2026-10-29, after Dan asked whether `pip install` would work and survive updates; approved by Dan the same day. **Built 2026-11-03** (for 1.0.0-dev3); the last point, the user's own Python, below. Before, it couldn't work: pip was removed from the bundle, the interpreter runs isolated (`-I`), and the app folder is read-only in practice and replaced at every update.
 
 - Packages go in a folder of the user's, outside the app: `~/.beermat/python/3.13/site-packages`, which the bridge adds to Python's path after the bundled packages (`bridge.py`, from `BEERMAT_PACKAGES`, which `Python.process` sets, since `-I` ignores the user site). Updates never touch it. A package installed while Python is running is found by the next `use` (the import caches are cleared).
 - **Tools → Python packages…** (`PythonPackages`, a Swing dialog like the other small ones) installs and removes them with the bundled pip, now kept for this (13 MB on disk), into that folder (`pip install --target --upgrade`); no terminal, no admin rights. pip's output shows below, and a sheet is calculated again when the dialog closes. The command line does the same: `beermat packages` ([cli.md](cli.md#beermat-packages-listinstall-nameremove-namereinstall)). The code is `Packages` in the symbolic module.
 - The folder is per Python minor version, because compiled wheels (NumPy, SciPy) only fit the version they were built for. `~/.beermat/python/packages.txt` keeps the list of what the user asked for, and when an update brings a new Python, the dialog's "Install again" button (or `beermat packages reinstall`) installs the same list again. Removing a package leaves what it brought along, as pip does.
 - Checked by `PackagesTest` (a wheel made by the test, so no network: installed, imported by a sheet's Python file, removed), by hand with NumPy from PyPI (2026-11-03), and by the Release workflow, which imports pip in every package.
-- To come (1.x): a setting that points Beermat at the user's own Python (a venv, Anaconda); its packages are then entirely the user's.
+- The user's own Python, for those who have one set up: [below](#the-users-own-python).
+
+### The user's own Python
+
+Brought into 1.0 by Dan on 2026-11-03 (it was 1.x); built the same day. A setting points Beermat at an interpreter of the user's (a venv, a Conda environment, the system's Python), and the sheets' Python functions run there, with whatever packages it has. For those who already keep a Python with their packages (and their own modules) set up.
+
+- **A setting of the machine, not of the sheet**, kept in `~/.beermat/python/own-python.txt` (the interpreter's path), so a sheet stays portable: the same sheet runs in the bundled Python on a machine without the setting, as long as the packages it imports are there too.
+- **Only the Python functions move.** SymPy stays in the bundled Python, so symbolic results don't depend on whichever SymPy (if any) the user's Python has; the functions run in a second process, the same `bridge.py` (which then works without SymPy). Two processes is the cost: about 20 MB of memory, only while a sheet uses Python functions.
+- **Run as the user has it set up**: not isolated (`-I` is left out, so `PYTHONPATH`, the user's site-packages and `.pth` files count), no `PYTHONHOME`, and Beermat's own packages folder left out: the packages are entirely the user's, installed with their pip or conda. The bridge script runs from a temporary folder holding only itself, so nothing beside it is imported by mistake.
+- **Python 3.9 or newer**, checked when it is chosen (`OwnPython.check` runs it and reads its version); choosing a venv's or Conda environment's folder finds the interpreter inside.
+- **Where**: Tools → Python packages… has the choice at the top (Beermat's own Python, or yours with a path and Choose…; the package list is off while yours is in use), and `beermat python <path>` / `beermat python bundled` on the command line ([cli.md](cli.md#python)).
+- If the interpreter is gone (a deleted venv), the statements that use a Python file say so ("couldn't start"); the rest of the sheet is unaffected.
+- Checked by `OwnPythonTest` (the bundled interpreter run as a user's would be, told apart by `sys.flags.isolated`; a missing interpreter; the version check), and by hand (2026-11-03) with a venv holding NumPy, the symbolic example running in the bundled SymPy at the same time.

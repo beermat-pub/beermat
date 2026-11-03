@@ -55,6 +55,7 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
                 return 0
             }
             "packages" -> return packages(args.drop(1))
+            "python" -> return python(args.drop(1))
             "help", "--help", "-h" -> { usage(out); return 0 }
             "version", "--version", "-v" -> { out.println("beermat ${pub.beermat.engine.Version.current}"); return 0 }
             else -> return usage("unknown command '$command'")
@@ -171,6 +172,9 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             return 2
         }
         val P = pub.beermat.symbolic.Packages
+        pub.beermat.symbolic.OwnPython.interpreter()?.let {
+            out.println("Python functions run in your own Python, $it, with its own packages (its pip or conda installs them); these are for Beermat's Python.")
+        }
         fun done(o: pub.beermat.symbolic.Packages.Outcome): Int {
             (if (o.ok) out else err).print(o.output)
             return if (o.ok) 0 else 1
@@ -186,6 +190,33 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             "remove" -> args.drop(1).takeIf { it.isNotEmpty() }?.let { names -> names.map { done(P.remove(home, it)) }.max() } ?: usage("packages remove needs a package name")
             "reinstall" -> P.missing(home).takeIf { it.isNotEmpty() }?.let { done(P.install(home, it)) } ?: 0.also { out.println("Every package asked for is installed.") }
             else -> usage("packages takes list, install, remove or reinstall")
+        }
+    }
+
+    /** `beermat python`: which Python runs the sheets' Python functions (docs/cli.md#python). */
+    private fun python(args: List<String>): Int {
+        val own = pub.beermat.symbolic.OwnPython
+        return when (val what = args.firstOrNull()) {
+            null -> {
+                out.println(own.interpreter()?.let { "Your own Python: $it" } ?: "Beermat's own Python (bundled)")
+                0
+            }
+            "bundled" -> {
+                own.set(null)
+                out.println("Python functions run in Beermat's own Python again.")
+                0
+            }
+            else -> {
+                val interpreter = own.resolve(java.io.File(what).absoluteFile)
+                own.check(interpreter).fold(
+                    { version ->
+                        own.set(interpreter)
+                        out.println("Python functions now run in Python $version, $interpreter. SymPy stays in Beermat's own Python.")
+                        0
+                    },
+                    { x -> err.println("beermat: ${x.message}"); 1 },
+                )
+            }
         }
     }
 
@@ -208,6 +239,7 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             |  beermat mcp                              serve worksheets to MCP clients (Claude Code) on stdin/stdout
             |  beermat packages [list|install <name>…|remove <name>…|reinstall]
             |                                           Python packages for the Python files sheets use
+            |  beermat python [<python>|bundled]        run those files in your own Python (a venv, Conda), or the bundled one
             |  beermat --version                        print the version
             |
             |  --allow-python   let the worksheet run the Python files it uses (use "file.py")

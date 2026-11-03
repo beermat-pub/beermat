@@ -22,7 +22,20 @@ import sys
 if os.environ.get("BEERMAT_PACKAGES"):
     sys.path.append(os.path.join(os.environ["BEERMAT_PACKAGES"], "%d.%d" % sys.version_info[:2], "site-packages"))
 
-import sympy as sp
+try:
+    import sympy as sp
+    HAS_SYMPY = True
+except ImportError:
+    # The user's own Python (docs/symbolic.md#the-users-own-python) runs Python functions only, and
+    # may have no SymPy: the tables below are then made of names that nothing uses.
+    class NoSymPy:
+        __version__ = ""
+
+        def __getattr__(self, name):
+            return name
+
+    sp = NoSymPy()
+    HAS_SYMPY = False
 
 names = {}
 
@@ -459,7 +472,7 @@ def value_out(v):
         if items and all(isinstance(x, (list, tuple)) for x in items):
             return {"m": [[value_out(x) for x in row] for row in items]}
         return {"m": [[value_out(x)] for x in items]}
-    if isinstance(v, sp.Basic):
+    if HAS_SYMPY and isinstance(v, sp.Basic):
         return value_out(complex(v)) if not v.is_real else float(v)
     raise ValueError("a Python function returned %s, which a sheet can't hold (numbers, lists and strings can)" % type(v).__name__)
 
