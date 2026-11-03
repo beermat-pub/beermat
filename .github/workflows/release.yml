@@ -61,12 +61,11 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: windows, path: "build/installers/Beermat-windows-setup.exe\nbuild/installers/Beermat-windows-portable.zip\nbuild/installers/beermat-cli-windows.zip" }
       # For the Microsoft Store, uploaded by hand to Partner Center; not on the GitHub release (unsigned,
-      # it doesn't install from a download). The identity is in the repository's Actions variables.
+      # it doesn't install from a download). The identity is msix.ps1's; the Store ID, the Actions variable MSIX_STORE_ID.
       - name: Store package (MSIX)
         shell: pwsh
         run: |
           $id = @{ Version = "${{ env.V }}"; StoreId = "${{ vars.MSIX_STORE_ID }}" }
-          if ("${{ vars.MSIX_NAME }}") { $id.Name = "${{ vars.MSIX_NAME }}"; $id.Publisher = "${{ vars.MSIX_PUBLISHER }}"; $id.PublisherName = "${{ vars.MSIX_PUBLISHER_NAME }}" }
           packaging\windows\msix.ps1 @id
       - uses: actions/upload-artifact@v4
         with: { name: microsoft-store, path: build/installers/Beermat-windows.msix }

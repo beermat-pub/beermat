@@ -4,12 +4,12 @@
 #
 #   .\packaging\windows\msix.ps1 -Version 1.0.0
 #
-# Without the Partner Center identity (-Name, -Publisher, -PublisherName) it uses placeholders: the
-# package builds and installs locally, but the Store rejects it.
+# The identity is Partner Center's (App management > Product identity; Dan, 2026-11-03). It is public:
+# every package the Store publishes carries it.
 param(
     [Parameter(Mandatory)] [string] $Version,
-    [string] $Name = "Beermat",
-    [string] $Publisher = "CN=Beermat",
+    [string] $Name = "beermat.pub.Beermat",
+    [string] $Publisher = "CN=B791A185-BC04-43FC-9002-02CC5FEBA6FA",
     [string] $PublisherName = "beermat.pub",
     [string] $StoreId = "",
     [string] $Out = "build\installers\Beermat-windows.msix"
