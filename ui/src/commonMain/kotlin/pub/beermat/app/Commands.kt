@@ -86,7 +86,7 @@ object Commands {
         Palette(
             "Programming",
             listOf(
-                cmd("▕", "Add program line", "]", type(']')),
+                cmd("⎸", "Add program line", "]", type(']')),
                 cmd("←", "Local assignment", "{", type('{')),
                 cmd("if", "If", "}", type('}')),
                 cmd("otherwise", "Otherwise", "otherwise, then Space", word("otherwise")),

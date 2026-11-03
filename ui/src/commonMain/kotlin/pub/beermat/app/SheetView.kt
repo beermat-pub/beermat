@@ -346,6 +346,46 @@ fun SheetView(
     LaunchedEffect(Unit) { focus.requestFocus() }
 }
 
+/**
+ * A toolbar label with its small letters (`Mᵀ`, `xᵢ`, `Σᵃᵇ`) drawn as superscripts and subscripts of
+ * ordinary letters: few fonts have those characters, and the web version has only the fonts it brings.
+ */
+fun toolbarLabel(label: String): androidx.compose.ui.text.AnnotatedString = androidx.compose.ui.text.buildAnnotatedString {
+    var k = 0
+    while (k < label.length) {
+        val c = label[k]
+        val small = SUPERSCRIPTS[c]?.let { it to androidx.compose.ui.text.style.BaselineShift.Superscript }
+            ?: SUBSCRIPTS[c]?.let { it to androidx.compose.ui.text.style.BaselineShift.Subscript }
+        // A whole character: one or two chars (𝐁 is two).
+        val one = label.substring(k, if (c.isHighSurrogate() && k + 1 < label.length) k + 2 else k + 1)
+        when {
+            small != null -> {
+                pushStyle(androidx.compose.ui.text.SpanStyle(fontSize = 9.sp, baselineShift = small.second))
+                append(small.first)
+                pop()
+            }
+            // Symbols (→, ⋮, ▦, 𝐁…) in the shell's symbol font, where it brings one.
+            toolbarSymbols != null && (c.code >= 0x2000 || c.isSurrogate()) -> {
+                pushStyle(androidx.compose.ui.text.SpanStyle(fontFamily = toolbarSymbols))
+                append(one)
+                pop()
+            }
+            else -> append(one)
+        }
+        k += one.length
+    }
+}
+
+/**
+ * The font for the toolbar's symbols, where the shell brings its own: the web version's math font,
+ * since a web page has no fonts but those it loads (and VS Code's web view may download none). Null
+ * for the system's fonts (the desktop).
+ */
+var toolbarSymbols: androidx.compose.ui.text.font.FontFamily? = null
+
+private val SUPERSCRIPTS = mapOf('ᵀ' to 'T', 'ᵃ' to 'a', 'ᵇ' to 'b')
+private val SUBSCRIPTS = mapOf('ᵢ' to 'i')
+
 /** What the screen marks on the page, from the session and the mouse: the cursor, the crosshair, a drag or a selection. */
 fun overlay(session: Session, drag: Triple<Set<Int>, Float, Float>? = null, band: List<Float>? = null, resize: Triple<Int, Float, Float>? = null, hover: Overlay.Tip? = null) =
     Overlay(session.editing, session.crosshair, session.textEditing?.first, drag, session.selected, band, resize, session.table, session.completion, hover)
@@ -510,7 +550,7 @@ private fun Toolbar(session: Session, palettes: List<Palette>, host: Host, onUse
                                 .padding(horizontal = 5.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            BasicText(c.label, style = TextStyle(fontSize = 13.sp, color = Color(0xFF222222)))
+                            BasicText(toolbarLabel(c.label), style = TextStyle(fontSize = 13.sp, color = Color(0xFF222222)))
                         }
                     }
                 }

@@ -81,7 +81,7 @@ Each toolbar button does exactly what its keys do, and its tooltip shows them.
 
 | Button | What it does | Keys |
 |---|---|---|
-| ▕ | Add program line | \] |
+| ⎸ | Add program line | \] |
 | ← | Local assignment | { |
 | if | If | } |
 | otherwise | Otherwise | otherwise, then Space |

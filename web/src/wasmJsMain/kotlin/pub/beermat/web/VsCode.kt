@@ -79,8 +79,9 @@ internal fun VsCodeApp() {
         delay(400)
         flush()
     }
+    val resolver = androidx.compose.ui.platform.LocalFontFamilyResolver.current
     LaunchedEffect(Unit) {
-        loadFonts()
+        loadFonts(resolver)
         ready = true
         WebHost.resultFormat = { region, statement -> resultFormat = region to statement }
         WebHost.answered = ::changed

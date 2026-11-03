@@ -61,17 +61,31 @@ fun main() {
     ComposeViewport(document.body!!) { if (inVsCode()) VsCodeApp() else WebApp() }
 }
 
-/** The math font, and the text fonts: the browser gives Skia none of its own. */
-internal suspend fun loadFonts() {
+/**
+ * The math font, and the text fonts: the browser gives Skia none of its own. They are also the
+ * fallback for the toolbar's and dialogs' text ([resolver]), so symbols such as → and ⋮ come from
+ * them, never from fonts downloaded from the internet (which VS Code's web view doesn't allow).
+ */
+internal suspend fun loadFonts(resolver: androidx.compose.ui.text.font.FontFamily.Resolver) {
     SkiaMath.load()
-    for (font in TEXT_FONTS) PageFonts.register(Res.readBytes("files/fonts/$font.ttf"))
+    val fonts = TEXT_FONTS.map { name -> name to Res.readBytes("files/fonts/$name.ttf") }
+    for ((_, bytes) in fonts) PageFonts.register(bytes)
+    val math = SkiaMath.fontBytes
+    val family = androidx.compose.ui.text.font.FontFamily(
+        fonts.map { (name, bytes) -> androidx.compose.ui.text.platform.Font(name, bytes) } +
+            listOfNotNull(math?.let { androidx.compose.ui.text.platform.Font("STIXTwoMath", it) }),
+    )
+    resolver.preload(family)
+    // The toolbar's symbols (⋮, ⟨⟩, ▦…) are the math font's.
+    pub.beermat.app.toolbarSymbols = math?.let { androidx.compose.ui.text.font.FontFamily(androidx.compose.ui.text.platform.Font("STIXTwoMath", it)) }
 }
 
 @Composable
 private fun WebApp() {
     var ready by remember { mutableStateOf(false) }
+    val resolver = androidx.compose.ui.platform.LocalFontFamilyResolver.current
     LaunchedEffect(Unit) {
-        loadFonts()
+        loadFonts(resolver)
         ready = true
     }
     if (!ready) {
