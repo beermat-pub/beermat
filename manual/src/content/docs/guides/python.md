@@ -61,4 +61,13 @@ def norm(x, y):
 - When an update brings a newer Python, the dialog offers **Install again** for the packages you had.
 - From a terminal: `beermat packages install numpy` (also `list`, `remove` and `reinstall`).
 
+## Your own Python
+
+If you already keep a Python of your own, a virtual environment or a Conda environment with your packages and modules in it, Beermat can run your sheets' Python files there instead. In **Tools → Python packages…**, choose **Your own Python** and pick its interpreter (`python.exe`, `python3`) or the environment's folder. It needs Python 3.9 or newer.
+
+- Your packages are then the ones in that Python: install them with its own `pip` or `conda`. The package list in the dialog is for Beermat's Python, so it is off meanwhile.
+- Symbolic algebra stays in Beermat's own Python, so its results don't depend on your Python.
+- It is a setting of your computer, not of the sheet: on another computer the sheet runs in Beermat's Python, so its packages need to be there.
+- From a terminal: `beermat python ~/envs/calc` uses an environment, `beermat python bundled` goes back, and `beermat python` says which is in use.
+
 Python functions are in the desktop app; the browser has no Python.

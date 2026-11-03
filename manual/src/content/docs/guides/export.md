@@ -1,6 +1,6 @@
 ---
 title: Export
-description: Copy equations as LaTeX or MathML, plots as images, and the whole sheet as Markdown, LaTeX or PDF.
+description: Copy equations as LaTeX or MathML, plots as images, and the whole sheet as Word, PDF, Markdown or LaTeX.
 ---
 
 ## One equation
@@ -20,10 +20,15 @@ Right-click a plot or a picture and choose **Copy as image**: a sharp PNG to pas
 
 | As | How |
 |---|---|
+| Word | **File → Export to Word…** (in the browser, the **Word** button): the text with its headings and formatting, every statement an equation you can edit in Word, with its result; tables, plots and pictures |
 | PDF | **File → Export to PDF…**: the pages as they look, with selectable text |
 | Markdown | **File → Export to Markdown…**: the text, each statement as display math with its result, plots as pictures inside the file |
-| Markdown or LaTeX | `beermat export sheet.bbm --to md` or `--to latex` from a [terminal](../../reference/command-line/) |
+| Markdown, LaTeX or Word | `beermat export sheet.bbm --to md`, `--to latex`, or `--to docx --out sheet.docx` from a [terminal](../../reference/command-line/) |
 
-A Markdown export is one file: plots go inside it as pictures, not in a folder beside it. The `beermat` command can't draw plots, so its Markdown has a line where each plot goes, and its LaTeX leaves plots out.
+A Markdown export is one file: plots go inside it as pictures, not in a folder beside it. The `beermat` command can't draw plots, so its Markdown and Word documents have a line where each plot goes, and its LaTeX leaves plots out.
+
+### In Word
+
+A Word document has no free-form page, so the regions follow one another in reading order: top to bottom, and left to right on a line. Headings use Word's own heading styles, so the navigation pane and a table of contents work. A collapsed area stays out, as when printing. An error is written in red under its equation.
 
 The `.bbm` file itself is Markdown too, readable as it is: see [Why a worksheet is a Markdown file](../../explanations/markdown/).
