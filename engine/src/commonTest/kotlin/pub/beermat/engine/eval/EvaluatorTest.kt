@@ -237,7 +237,7 @@ class EvaluatorTest {
         assertEquals(listOf(2.0, 3.0), elements("sqrt([4; 9]) = ?").map { it.value.re })
         // Units go through, each element on its own.
         assertEquals(Quantity(2.0, Dimension.LENGTH), elements("sqrt([4 m^2; 9 m^2]) = ?")[0])
-        assertEquals(listOf(0.0, 1.0), elements("sin([0, π/2]) = ?").map { Math.round(it.value.re * 1e12) / 1e12 })
+        assertEquals(listOf(0.0, 1.0), elements("sin([0, π/2]) = ?").map { kotlin.math.round(it.value.re * 1e12) / 1e12 })
         assertEquals(listOf(1.0, 2.0), elements("round([1.2; 1.6]) = ?").map { it.value.re })
         assertEquals(listOf(1.0, -1.0), elements("sign([3; -2]) = ?").map { it.value.re })
         assertEquals(listOf(0.0, 1.0), elements("erf([0; 10]) = ?").map { it.value.re })
