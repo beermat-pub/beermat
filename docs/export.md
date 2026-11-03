@@ -39,7 +39,7 @@ Decided by Dan on 2026-10-29: an exported sheet is **one file**, with no folder 
 
 ## Word
 
-> Status: **plan**, milestone 25 (Dan asked on 2026-10-30; placed after the VS Code extension on 2026-11-01).
+> Status: **built** (2026-11-03), milestone 25 (Dan asked on 2026-10-30; brought into 1.0 on 2026-11-03).
 
 File → Export → Word writes a `.docx` of the whole worksheet, for drafting reports and papers:
 
@@ -49,3 +49,14 @@ File → Export → Word writes a `.docx` of the whole worksheet, for drafting r
 - Regions in reading order, one paragraph each; side-by-side regions follow one another (Word has no free-form page).
 
 Written directly (a `.docx` is a zip of XML files), with no other program needed. `beermat export --to docx` does the same from the command line.
+
+How it is built:
+
+- `Docx` in the export module (common code, so the web version exports too): the regions in reading order (`Regions.of`), collapsed areas left out as when printing, page breaks kept, the page A4 or letter with ¾ inch margins as the sheet's. Text: headings (Word's Heading 1–3, so the navigation pane and a table of contents work), paragraphs, bulleted and numbered lists (each numbered list from 1), quotes, code, **bold**, *italic*, `code` and links. A `_` inside a word (`M_max`) is not emphasis.
+- `Omml`, beside `MathMl` and built the same way from the tree: fractions, powers, subscripts, roots, Σ and ∫ with their limits, matrices in brackets, programs (a left-aligned column with the bar), `≔` as one symbol (Word spaces `:` and `=` apart otherwise). Variables italic, units and built-in functions upright, as on the page; every run in Cambria Math. An error goes in a red paragraph after its equation (the style "Calculation Error").
+- Tables are Word tables (style "Calculation Table"), the header row repeated on each page, computed cells as their values.
+- Plots and pictures come from a painter the shell passes in (`WordPictures` in the ui module, for the desktop and the web): a plot drawn by `PlotPainter` as on the page, at 200 dpi, with a small margin for tick labels; a PNG, JPEG or GIF picture as it is; SVG and WebP drawn to a PNG. Each at its size on the page, scaled down to the text's width if wider.
+- The zip is our own (`Zip`, entries stored, CRC-32), as the web version has no `java.util.zip`.
+- The command line has no painter (it has no Skia), so there embedded PNG, JPEG and GIF pictures go in, and a plot is a line saying the app's Export to Word draws it.
+- Checked by `DocxTest` (every part well-formed, CRCs read back by the JDK's zip reader, equations, text, lists, tables, page breaks, collapsed areas, pictures) and `WordPicturesTest`, and by hand (2026-11-03) in Word 16 itself, run hidden: the examples open, every statement is an equation Word knows (`OMaths`), and the PDFs Word made from them look as on the page.
+- File → Export to Word… on the desktop, a Word button on the web version's bar.

@@ -4,12 +4,11 @@ What's coming to Beermat, roughly in order. Plans change; [issues](https://githu
 
 ## 1.0, the first public version
 
-Today's previews already have the worksheet, the editor, units, plots, symbolic algebra, printing and PDF, `.xmcd` import, the command line, AI assistants through MCP, the web version, Python packages of your own (or your own Python) for Python functions in a sheet, and the manual's reference of every function, unit, setting and key. Before 1.0:
+Today's previews already have the worksheet, the editor, units, plots, symbolic algebra, printing, PDF and Word export, `.xmcd` import, the command line, AI assistants through MCP, the web version, Python packages of your own (or your own Python) for Python functions in a sheet, and the manual's reference of every function, unit, setting and key. Before 1.0:
 
 - **The rest of the manual** at [beermat.pub/docs](https://beermat.pub/docs/): getting started, tutorials and how-to guides, with examples drawn by Beermat itself.
 - **Spreadsheet components** from `.xmcd` files whose formulas run, not only their last values.
 - **A VS Code extension**: `.bbm` files open on the page, as in the app, with the text one click away.
-- **Export to Word**: text, editable Word equations, results, plots and pictures.
 - **Short videos** showing how it works.
 
 ## After 1.0

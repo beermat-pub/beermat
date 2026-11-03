@@ -137,10 +137,21 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
     }
 
     private fun export(sheet: Worksheet, to: String, outFile: String?): Int {
+        // A Word document is a zip, so it goes to a file (docs/export.md#word).
+        if (to == "docx" || to == "word") {
+            outFile ?: return usage("export --to docx needs --out <file.docx>")
+            return try {
+                Files.write(Path.of(outFile), pub.beermat.export.Docx.write(sheet))
+                0
+            } catch (e: IOException) {
+                err.println("beermat: cannot write $outFile: ${e.message}")
+                2
+            }
+        }
         val text = when (to) {
             "md", "markdown" -> SheetExport.markdown(sheet)
             "latex", "tex" -> SheetExport.latex(sheet)
-            else -> return usage("export --to takes md or latex, not '$to'")
+            else -> return usage("export --to takes md, latex or docx, not '$to'")
         }
         if (outFile == null) {
             out.print(text)
@@ -232,8 +243,8 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             |Usage:
             |  beermat eval <file> [--write] [--json]   evaluate a worksheet and print its results
             |  beermat check <file>                     report errors and stale cached results
-            |  beermat export <file> [--to md|latex] [--out <file>]
-            |                                           write the worksheet as Markdown or LaTeX
+            |  beermat export <file> [--to md|latex|docx] [--out <file>]
+            |                                           write the worksheet as Markdown, LaTeX or Word
             |  beermat import <file.xmcd> [--out <file.bbm>]
             |                                           convert an .xmcd worksheet
             |  beermat mcp                              serve worksheets to MCP clients (Claude Code) on stdin/stdout

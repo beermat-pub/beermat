@@ -33,9 +33,9 @@ Reports problems without changing the file, one per line, as `file:line: message
 
 Prints `ok` when there is nothing to report.
 
-## `beermat export <file> [--to md|latex] [--out <file>]`
+## `beermat export <file> [--to md|latex|docx] [--out <file>]`
 
-Writes the worksheet as Markdown with display math (the default) or as a standalone LaTeX document; to standard output unless `--out` is given. See [export.md](export.md).
+Writes the worksheet as Markdown with display math (the default) or as a standalone LaTeX document; to standard output unless `--out` is given. `--to docx` writes a Word document, and needs `--out`; plots in it are drawn only by the app's Export to Word ([export.md](export.md#word)). See [export.md](export.md).
 
 ## `beermat import <file.xmcd> [--out <file.bbm>]`
 

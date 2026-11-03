@@ -13,6 +13,7 @@ Each version's section here becomes the notes of its release on GitHub ([docs/re
 - **A word and a space make text**: typing a word and then a space at the crosshair turns the new region into a text region, and the typing goes on there.
 - **The manual's reference**: every built-in [function](https://beermat.pub/docs/reference/functions/) with an example, every [unit](https://beermat.pub/docs/reference/units/), [worksheet setting](https://beermat.pub/docs/reference/settings/) and [key](https://beermat.pub/docs/reference/keys/). F1 on a function opens its page; Help → Keyboard shortcuts opens the keys.
 - **Your own Python packages**: Tools → Python packages… installs packages such as NumPy or SciPy for the Python files your sheets use, without a terminal or admin rights, into a folder of yours that updates leave alone (`beermat packages install numpy` from the command line).
+- **Export to Word**: File → Export to Word… (and a Word button in the web version) writes the sheet as a Word document: text with its formatting, every equation an editable Word equation with its result, tables, plots and pictures (`beermat export --to docx` too).
 - **Your own Python**: for those who keep a Python of their own (a venv, Conda), Tools → Python packages… (or `beermat python <path>`) runs the sheets' Python files there, with its packages. SymPy stays in Beermat's own Python.
 - **Fixed**: `nthroot` of a negative number gave a complex root; an odd root is now the real one (`nthroot(-8, 3)` is −2).
 

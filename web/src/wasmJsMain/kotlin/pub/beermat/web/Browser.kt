@@ -22,6 +22,18 @@ internal fun download(name: String, text: String): Unit = js(
     }""",
 )
 
+/** Offers [base64] bytes of the type [mime] as a file named [name] to save, as a download. */
+internal fun downloadBytes(name: String, mime: String, base64: String): Unit = js(
+    """{
+        const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([bytes], { type: mime }));
+        a.download = name;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }""",
+)
+
 /** Asks for a worksheet on the computer, and gives its name and text when one is chosen. */
 internal fun upload(onFile: (String, String) -> Unit): Unit = js(
     """{

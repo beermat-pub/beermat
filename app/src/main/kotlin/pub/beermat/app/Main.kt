@@ -161,6 +161,15 @@ fun main(args: Array<String>) {
                             }
                         }
                     })
+                    // Text, Word equations, tables, plots and pictures (docs/export.md#word).
+                    Item("Export to Word…", onClick = {
+                        chooseExport(file, "docx", "Export to Word")?.let { target ->
+                            session.guard(Unit) {
+                                val sheet = pub.beermat.format.WorksheetText.read(session.text())
+                                target.writeBytes(pub.beermat.export.Docx.write(sheet, WordPictures(session.base)::picture, session.base))
+                            }
+                        }
+                    })
                     Item("Export to PDF…", onClick = {
                         chooseExport(file, "pdf", "Export to PDF")?.let { target -> session.guard(Unit) { target.writeBytes(Pdf.write(session.layout, file?.name?.substringBefore(".bbm"))) } }
                     })
@@ -332,7 +341,7 @@ private fun insertPicture(session: Session, file: File) {
     }
 }
 
-/** Where to export (as [extension], "pdf" or "md"): beside the sheet, with its name, by default. */
+/** Where to export (as [extension], "pdf", "docx" or "md"): beside the sheet, with its name, by default. */
 private fun chooseExport(sheet: File?, extension: String, title: String): File? = waitFor {
     val folder = sheet?.absoluteFile?.parentFile?.let { PlatformFile(it) }
     val name = sheet?.name?.substringBefore(".bbm") ?: "Untitled"

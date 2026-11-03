@@ -99,6 +99,13 @@ private fun WebApp() {
             Button("New") { open("Untitled.bbm", "") }
             Button("Open…") { upload { fileName, text -> open(fileName, text) } }
             Button("Save") { download(name, session.save()); revision++ }
+            // Export to Word, as on the desktop (docs/export.md#word).
+            Button("Word") {
+                session.guard(Unit) {
+                    val docx = pub.beermat.export.Docx.write(pub.beermat.format.WorksheetText.read(session.text()), pub.beermat.app.WordPictures(null)::picture)
+                    downloadBytes(name.substringBefore(".bbm") + ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", Base64.encode(docx))
+                }
+            }
             Button("Examples ▾") { examples = !examples }
             Button("Picture…") {
                 uploadPicture { fileName, mime, base64 ->
