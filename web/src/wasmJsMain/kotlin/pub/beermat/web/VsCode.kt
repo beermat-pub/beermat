@@ -53,13 +53,17 @@ internal fun VsCodeApp() {
     var revision by remember { mutableIntStateOf(0) }
     var zoom by remember { mutableIntStateOf(100) }
     var resultFormat by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    // Whether the page has changed nothing since the text came: SymPy's answers then only complete the text it started from.
+    var untouched by remember { mutableStateOf(true) }
 
-    /** Sends the sheet's text when it has changed. */
+    /** Sends the sheet's text when it has changed, once SymPy has answered what it was asked. */
     fun flush() {
         val s = session ?: return
+        if (VsCodeBridge.busy) return
         val text = s.guard(null) { s.text() } ?: return
         if (text != sent) {
             sent = text
+            untouched = false
             // VS Code holds this text now: an undo back to the text it sent before is news.
             received = null
             postToVsCode("edit", text, 0)
@@ -78,6 +82,13 @@ internal fun VsCodeApp() {
         ready = true
         WebHost.resultFormat = { region, statement -> resultFormat = region to statement }
         WebHost.answered = ::changed
+        VsCodeBridge.answered = {
+            session?.let { s ->
+                s.guard(Unit) { s.relayout() }
+                if (untouched && !VsCodeBridge.busy) sent = s.guard(null) { s.text() }
+            }
+            changed()
+        }
         onVsCodeMessage { type, text, id, yes ->
             when (type) {
                 // Not the text this page sent, coming back.
@@ -88,9 +99,18 @@ internal fun VsCodeApp() {
                     val now = s ?: Session(text, MathLayout(SkiaMath, MATH_SIZE)).also { session = it }
                     if (s != null) s.guard(Unit) { s.replace(text) }
                     sent = now.guard(null) { now.text() }
+                    untouched = true
                     revision++
                 }
                 "answer" -> WebHost.answer(id, text, yes)
+                // The extension found the installed beermat: SymPy through it (docs/vscode.md#step-3-in-detail).
+                "helper" -> session?.let { s ->
+                    pub.beermat.symbolic.Helper.bridge = VsCodeBridge
+                    s.guard(Unit) { s.relayout() }
+                    if (untouched) sent = s.guard(null) { s.text() }
+                    revision++
+                }
+                "bridged" -> VsCodeBridge.answer(id, text)
             }
         }
         onPaste { text -> session?.let { s -> s.guard(Unit) { s.paste(text) }; changed() } }

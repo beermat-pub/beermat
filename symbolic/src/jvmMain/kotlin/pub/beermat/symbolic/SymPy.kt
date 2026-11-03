@@ -16,7 +16,7 @@ class SymPy(
     private val command: (Array<String>) -> ProcessBuilder,
     private val name: String = "SymPy",
     private val timeoutSeconds: Long = 30,
-) {
+) : Bridge {
     /** The bundled Python at [home]. */
     constructor(home: File, timeoutSeconds: Long = 30) : this({ args -> Python.process(home, *args) }, "SymPy", timeoutSeconds)
 
@@ -50,7 +50,7 @@ class SymPy(
 
     /** The answer to a [request] (one JSON line): the line `bridge.py` wrote back. */
     @Synchronized
-    fun ask(request: String): String {
+    override fun ask(request: String): String {
         cache[request]?.let { return it }
         val writer = input ?: start()
         try {

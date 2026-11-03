@@ -23,7 +23,7 @@ import pub.beermat.engine.syntax.Str
  * back the same way. Names the sheet defines are put in as [Cas] does: numbers without units by
  * their value, functions by their body.
  */
-class SymPyBackend(private val sympy: SymPy) : SymbolicBackend {
+class SymPyBackend(private val sympy: Bridge) : SymbolicBackend {
 
     override fun evaluate(expr: Expr, keywords: List<Expr>, defined: (Id) -> Value?): Expr {
         val request = Request(defined)

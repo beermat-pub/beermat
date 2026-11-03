@@ -43,6 +43,7 @@ kotlin {
             kotlin.srcDir(examples)
             dependencies {
                 implementation(project(":ui"))
+                implementation(project(":symbolic"))
                 implementation(compose.runtime)
                 implementation(compose.ui)
                 implementation(compose.foundation)

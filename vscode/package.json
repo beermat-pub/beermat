@@ -24,6 +24,16 @@
       }
     ],
     "languages": [{ "id": "markdown", "extensions": [".bbm"] }],
+    "configuration": {
+      "title": "Beermat",
+      "properties": {
+        "beermat.command": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "The `beermat` command, for symbolic algebra on the page. Empty: `beermat` on the PATH, which the desktop app puts there."
+        }
+      }
+    },
     "commands": [
       { "command": "beermat.openOnPage", "title": "Open on the Beermat Page", "category": "Beermat", "icon": "$(preview)" },
       { "command": "beermat.openAsText", "title": "Open as Text", "category": "Beermat", "icon": "$(go-to-file)" }

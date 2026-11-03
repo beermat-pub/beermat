@@ -56,6 +56,7 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             }
             "packages" -> return packages(args.drop(1))
             "python" -> return python(args.drop(1))
+            "bridge" -> return bridge()
             "help", "--help", "-h" -> { usage(out); return 0 }
             "version", "--version", "-v" -> { out.println("beermat ${pub.beermat.engine.Version.current}"); return 0 }
             else -> return usage("unknown command '$command'")
@@ -202,6 +203,37 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             "reinstall" -> P.missing(home).takeIf { it.isNotEmpty() }?.let { done(P.install(home, it)) } ?: 0.also { out.println("Every package asked for is installed.") }
             else -> usage("packages takes list, install, remove or reinstall")
         }
+    }
+
+    /**
+     * `beermat bridge`: SymPy for another program, one JSON request per line on standard input and one
+     * answer per line on standard output, as `bridge.py` takes and gives them: the VS Code extension's
+     * helper (docs/vscode.md#step-3-in-detail). Symbolic requests only: Python functions (`op`) are not
+     * run, since nothing here has asked the user.
+     */
+    private fun bridge(): Int {
+        val home = pub.beermat.symbolic.Python.home() ?: run {
+            err.println("beermat: this copy of Beermat has no Python")
+            return 2
+        }
+        val sympy = pub.beermat.symbolic.SymPy(home)
+        val writer = System.out.bufferedWriter(Charsets.UTF_8)
+        for (line in System.`in`.bufferedReader(Charsets.UTF_8).lineSequence()) {
+            if (line.isBlank()) continue
+            val reply = when {
+                Regex(""""op"\s*:""").containsMatchIn(line) -> "{\"error\": \"Python functions in VS Code need the desktop app for now\"}"
+                else -> try {
+                    sympy.ask(line)
+                } catch (x: pub.beermat.engine.eval.EvalException) {
+                    "{\"error\": ${Json.string(x.message ?: "SymPy stopped")}}"
+                }
+            }
+            writer.write(reply)
+            writer.newLine()
+            writer.flush()
+        }
+        sympy.stop()
+        return 0
     }
 
     /** `beermat python`: which Python runs the sheets' Python functions (docs/cli.md#python). */

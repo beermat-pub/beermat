@@ -23,7 +23,7 @@ import java.io.File
  * annotated with a unit (`q: "kN/m"`, `-> "kN*m"`) goes as a plain number in that unit; without one,
  * it must be a plain number. [allowed] asks whether a file may run (the user's consent).
  */
-class PythonModules(private val python: SymPy, private val allowed: (File) -> Boolean) : Modules {
+class PythonModules(private val python: Bridge, private val allowed: (File) -> Boolean) : Modules {
 
     /** A function's description, as `bridge.py` reads it with `inspect`. */
     class Function(val name: String, val params: List<Param>, val returns: String?, val signature: String, val doc: String)

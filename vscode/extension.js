@@ -3,6 +3,7 @@
 // the page gets its text, sends back every change as the whole text, and shows changes made elsewhere,
 // so saving, undo, git and other extensions all work on the same text.
 const vscode = require('vscode');
+const childProcess = require('child_process');
 
 const VIEW = 'beermat.sheet';
 
@@ -52,7 +53,12 @@ class SheetEditor {
     let edits = Promise.resolve();
     panel.webview.onDidReceiveMessage(async m => {
       switch (m.type) {
-        case 'ready': return load();
+        case 'ready':
+          load();
+          // SymPy through the installed beermat, when there is one (docs/vscode.md#step-3-in-detail).
+          if (await helper.found()) panel.webview.postMessage({ type: 'helper', yes: true });
+          return;
+        case 'bridge': return panel.webview.postMessage({ type: 'bridged', id: m.id, text: await helper.ask(m.text) });
         case 'edit': return (edits = edits.then(() => edit(document, m.text, text())));
         case 'save': return document.save();
         case 'open': return vscode.env.openExternal(vscode.Uri.parse(m.text));
@@ -129,6 +135,82 @@ function page(webview, media) {
 </html>`;
 }
 
-function deactivate() {}
+/**
+ * The installed beermat as a helper (docs/vscode.md#step-3-in-detail): `beermat bridge`, one process for
+ * every sheet, started at the first request and kept; one JSON request per line, answered in order.
+ * The command is the `beermat.command` setting, or `beermat` on the PATH (the desktop app puts it there).
+ */
+const helper = {
+  process: undefined,
+  waiting: [],
+  buffer: '',
+  checked: undefined,
 
-module.exports = { activate, deactivate, edit };
+  command() {
+    return vscode.workspace.getConfiguration('beermat').get('command') || 'beermat';
+  },
+
+  /** Runs [command] with [args]; on Windows through the shell, which finds beermat.cmd. */
+  spawn(args, options = {}) {
+    // On Windows one command line for the shell (the arguments are fixed words, nothing from a sheet).
+    if (process.platform === 'win32') return childProcess.spawn(`"${this.command()}" ${args.join(' ')}`, { shell: true, windowsHide: true, ...options });
+    return childProcess.spawn(this.command(), args, options);
+  },
+
+  /** Whether beermat runs here, asked once. */
+  found() {
+    this.checked ??= new Promise(resolve => {
+      try {
+        const p = this.spawn(['--version']);
+        p.on('error', () => resolve(false));
+        p.on('exit', code => resolve(code === 0));
+      } catch {
+        resolve(false);
+      }
+    });
+    return this.checked;
+  },
+
+  /** The answer to [request], as bridge.py writes it; an error answer when beermat isn't running. */
+  ask(request) {
+    return new Promise(resolve => {
+      if (!this.process) this.start();
+      this.waiting.push(resolve);
+      this.process.stdin.write(request + '\n');
+    });
+  },
+
+  start() {
+    const p = this.spawn(['bridge']);
+    this.process = p;
+    p.stdout.setEncoding('utf8');
+    p.stdout.on('data', chunk => {
+      this.buffer += chunk;
+      let end;
+      while ((end = this.buffer.indexOf('\n')) >= 0) {
+        const line = this.buffer.slice(0, end).trim();
+        this.buffer = this.buffer.slice(end + 1);
+        if (line) this.waiting.shift()?.(line);
+      }
+    });
+    const stopped = () => {
+      if (this.process !== p) return;
+      this.process = undefined;
+      this.buffer = '';
+      for (const resolve of this.waiting.splice(0)) resolve(JSON.stringify({ error: 'beermat stopped; it starts again with the next request' }));
+    };
+    p.on('error', stopped);
+    p.on('exit', stopped);
+  },
+
+  stop() {
+    this.process?.kill();
+    this.process = undefined;
+  },
+};
+
+function deactivate() {
+  helper.stop();
+}
+
+module.exports = { activate, deactivate, edit, helper };
