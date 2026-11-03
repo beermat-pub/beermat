@@ -76,9 +76,9 @@ Indices count from ORIGIN, 0 unless the sheet sets it. The last element of a vec
 
 A matrix product needs matching sizes. For an element-by-element product, use `vec(a*b)`. A transpose (`^T`) may be what's missing.
 
-**`sin: expected a number, not a 3×1 matrix`**
+**`mean: expected a number, not a string`**
 
-Most functions take one number. Wrap the call in `vec( )` to apply it to every element: `vec(sin(v))`.
+The function needs numbers (or arrays of them), and was given text in quotes. Functions that take one number, such as `sqrt` and `sin`, work on every element of an array by themselves: `sin(v)`.
 
 ## Calculations
 

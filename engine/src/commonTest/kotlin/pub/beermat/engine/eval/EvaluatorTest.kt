@@ -232,6 +232,22 @@ class EvaluatorTest {
     }
 
     @Test
+    fun `a built-in that takes one number goes element by element over an array, without vec`() {
+        fun elements(vararg lines: String) = (last(*lines).value as ArrayValue).elements.map { (it as Scalar).q }
+        assertEquals(listOf(2.0, 3.0), elements("sqrt([4; 9]) = ?").map { it.value.re })
+        // Units go through, each element on its own.
+        assertEquals(Quantity(2.0, Dimension.LENGTH), elements("sqrt([4 m^2; 9 m^2]) = ?")[0])
+        assertEquals(listOf(0.0, 1.0), elements("sin([0, π/2]) = ?").map { Math.round(it.value.re * 1e12) / 1e12 })
+        assertEquals(listOf(1.0, 2.0), elements("round([1.2; 1.6]) = ?").map { it.value.re })
+        assertEquals(listOf(1.0, -1.0), elements("sign([3; -2]) = ?").map { it.value.re })
+        assertEquals(listOf(0.0, 1.0), elements("erf([0; 10]) = ?").map { it.value.re })
+        // An element out of range is the error it would be alone.
+        assertEquals("asin: argument out of range", error("asin([0; 2]) = ?").message)
+        // A function that means something for an array keeps that meaning.
+        assertEquals(3.0, real("max([1; 3; 2]) = ?"))
+    }
+
+    @Test
     fun `strings are values`() {
         assertEquals(Text("OK"), last("s := \"OK\" = ?").value)
         assertTrue(error("s := \"OK\"", "s = ? m").message!!.contains("not a string"))

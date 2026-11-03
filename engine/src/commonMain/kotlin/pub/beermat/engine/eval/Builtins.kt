@@ -77,10 +77,9 @@ object Builtins {
             Scalar(Quantity(kotlin.math.atan2(y.realValue("atan2"), x.realValue("atan2"))))
         },
         Builtin("round", 1..2) { a ->
-            val x = a[0]().real("round", dimensionless = true)
             val n = if (a.size == 2) a[1]().real("round", dimensionless = true).toInt() else 0
             val scale = Math.pow(10.0, n.toDouble())
-            Scalar(Quantity(Math.round(x * scale) / scale))
+            perElement(a[0]()) { x -> Scalar(Quantity(Math.round(x.real("round", dimensionless = true) * scale) / scale)) }
         },
         Builtin("mod", 2..2) { a ->
             val x = a[0]().quantity("mod")
@@ -199,7 +198,7 @@ object Builtins {
     val scope: Scope = core.withAll(units)
 
     private fun unary(name: String, f: (Quantity) -> Quantity) =
-        Builtin(name, 1..1) { a -> Scalar(f(a[0]().quantity(name))) }
+        Builtin(name, 1..1) { a -> perElement(a[0]()) { Scalar(f(it.quantity(name))) } }
 
     /** A trigonometric function: of a plain number, read as radians, or of an angle. */
     private fun angular(name: String, f: (Complex) -> Complex) =
@@ -209,9 +208,11 @@ object Builtins {
         unary(name) { Quantity(f(it.requireNone(name).value)) }
 
     private fun realFunction(name: String, f: (Double) -> Double) = Builtin(name, 1..1) { a ->
-        val y = f(a[0]().real(name, dimensionless = true))
-        if (y.isNaN()) throw EvalException("$name: argument out of range")
-        Scalar(Quantity(y))
+        perElement(a[0]()) { x ->
+            val y = f(x.real(name, dimensionless = true))
+            if (y.isNaN()) throw EvalException("$name: argument out of range")
+            Scalar(Quantity(y))
+        }
     }
 
     private fun extremum(name: String, better: (Quantity, Quantity) -> Boolean) = Builtin(name, 1..Int.MAX_VALUE) { a ->
@@ -226,6 +227,13 @@ object Builtins {
         Scalar(qs.reduce { best, q -> if (better(q, best)) q else best })
     }
 }
+
+/**
+ * A built-in that takes one number, given an array: each element on its own, the array keeping its
+ * shape (docs/evaluation.md: `sqrt(v)`, `sin(v)` without `vec`).
+ */
+internal fun perElement(v: Value, f: (Value) -> Value): Value =
+    if (v is ArrayValue) ArrayValue.of(v.rows, v.cols) { r, c -> perElement(v[r, c], f) } else f(v)
 
 /** Every number in the arguments, arrays flattened (as max, min, mean take them). */
 internal fun numbers(args: List<() -> Value>, context: String): List<Quantity> {

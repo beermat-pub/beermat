@@ -27,10 +27,10 @@ internal object Library {
         multiple("Ceil") { kotlin.math.ceil(it) },
         multiple("Round") { Math.rint(it) },
         multiple("Trunc") { kotlin.math.truncate(it) },
-        Builtin("trunc", 1..1) { a -> Scalar(Quantity(kotlin.math.truncate(a[0]().real("trunc", dimensionless = true)))) },
+        Builtin("trunc", 1..1) { a -> perElement(a[0]()) { Scalar(Quantity(kotlin.math.truncate(it.real("trunc", dimensionless = true)))) } },
         Builtin("conj", 1..1) { a -> MatrixMath.map(a[0](), "conj") { Quantity(it.value.conj(), it.dimension) } },
-        Builtin("sign", 1..1) { a -> Scalar(Quantity(kotlin.math.sign(a[0]().quantity("sign").realValue("sign")))) },
-        Builtin("signum", 1..1) { a -> a[0]().quantity("signum").let { q -> Scalar(Quantity(if (q.value == Complex.ZERO) Complex.ZERO else q.value / Complex(q.value.abs()))) } },
+        Builtin("sign", 1..1) { a -> perElement(a[0]()) { Scalar(Quantity(kotlin.math.sign(it.quantity("sign").realValue("sign")))) } },
+        Builtin("signum", 1..1) { a -> perElement(a[0]()) { v -> v.quantity("signum").let { q -> Scalar(Quantity(if (q.value == Complex.ZERO) Complex.ZERO else q.value / Complex(q.value.abs()))) } } },
         // Trigonometry and hyperbolic functions.
         angular("sec") { Complex.ONE / it.cos() },
         angular("csc") { Complex.ONE / it.sin() },
@@ -231,15 +231,18 @@ internal object Library {
         Scalar(Quantity(f(x.realValue(name) / step) * step, x.dimension))
     }
 
-    private fun complex(name: String, f: (Complex) -> Complex) = Builtin(name, 1..1) { a -> Scalar(Quantity(f(a[0]().quantity(name).requireNone(name).value))) }
+    // One number each; an array, element by element (perElement).
+    private fun complex(name: String, f: (Complex) -> Complex) = Builtin(name, 1..1) { a -> perElement(a[0]()) { Scalar(Quantity(f(it.quantity(name).requireNone(name).value))) } }
 
     /** sec, csc, cot: of a plain number or an angle, as sin, cos and tan. */
-    private fun angular(name: String, f: (Complex) -> Complex) = Builtin(name, 1..1) { a -> Scalar(Quantity(f(a[0]().quantity(name).requireAngle(name).value))) }
+    private fun angular(name: String, f: (Complex) -> Complex) = Builtin(name, 1..1) { a -> perElement(a[0]()) { Scalar(Quantity(f(it.quantity(name).requireAngle(name).value))) } }
 
     private fun real(name: String, f: (Double) -> Double) = Builtin(name, 1..1) { a ->
-        val y = f(a[0]().real(name, dimensionless = true))
-        if (y.isNaN()) throw EvalException("$name: argument out of range")
-        Scalar(Quantity(y))
+        perElement(a[0]()) { x ->
+            val y = f(x.real(name, dimensionless = true))
+            if (y.isNaN()) throw EvalException("$name: argument out of range")
+            Scalar(Quantity(y))
+        }
     }
 
     /** dnorm and pnorm: [f] of the standardised x, and the standard deviation. */

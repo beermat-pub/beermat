@@ -50,11 +50,16 @@ F = [10 kN; 2 kN*m]
 
 ## Working on every element
 
-Arithmetic between arrays follows the rules of matrices: `M*v` is a matrix product, and two vectors multiplied give their dot product. To work element by element instead, wrap the expression in `vec( )` (**Ctrl+-**, drawn as an arrow over it):
+A function that takes one number, such as `sqrt`, `sin` or `round`, works on every element of an array, and gives an array of the same shape:
+
+```text
+sqrt(v) = [1.732; 2; 3.464]
+```
+
+Arithmetic between arrays follows the rules of matrices: `M*v` is a matrix product, and two vectors multiplied give their dot product. To multiply element by element instead, wrap the expression in `vec( )` (**Ctrl+-**, drawn as an arrow over it):
 
 ```text
 vec(v*v) = [9; 16; 144]
-vec(sqrt(v)) = [1.732; 2; 3.464]
 ```
 
 ## Sums

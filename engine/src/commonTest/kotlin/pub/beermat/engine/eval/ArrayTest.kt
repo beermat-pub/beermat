@@ -137,7 +137,8 @@ class ArrayTest {
         assertEquals("6 m", text("sum([1; 2; 3]*1 m) = ?"))
         assertEquals("2.5", text("mean([1, 2; 3, 4]) = ?"))
         assertEquals("9", text("max([1; 9; 3], 4) = ?"))
-        assertEquals("sqrt: expected a number, not a 2×1 matrix", error("sqrt([1; 4]) = ?"))
+        // A one-number built-in goes element by element (docs/evaluation.md); a string still is not a number.
+        assertEquals("sqrt: expected a number, not a string", error("sqrt(\"a\") = ?"))
     }
 
     @Test
