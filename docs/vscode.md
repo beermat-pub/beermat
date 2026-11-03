@@ -1,6 +1,6 @@
 # The VS Code extension
 
-> Status: **step 2 built** (2026-11-03; Dan brought the extension into 1.0 that day): the custom editor, the web build inside it, the document kept in step both ways, a `.vsix` on each release. **Steps 3 and 4 built** the same day (the AI tools on the open sheet, below): SymPy, Python functions (with consent), `READEXCEL` and `.xmcd` import through the installed `beermat`; data files and linked pictures read by the extension. Python functions, data files and `.xmcd` import, then steps 4 and 5, to do. Plan agreed with Dan on 2026-11-01 (milestone 24).
+> Status: **built** (2026-11-03; Dan brought the extension into 1.0 that day): step 2, the custom editor with the web build inside it, the document kept in step both ways, a `.vsix` on each release; step 3, SymPy, Python functions (with consent), `READEXCEL` and `.xmcd` import through the installed `beermat`, data files and linked pictures read by the extension; step 4, the AI tools on the open sheet. Step 5, publishing, is in the Release workflow, waiting on the Marketplace and Open VSX accounts. Not yet tried in a real VS Code window: Dan to try. Plan agreed with Dan on 2026-11-01 (milestone 24).
 
 The whole Beermat editor inside VS Code: a `.bbm` file opens on its page, with the toolbar and the same keys as the desktop app, beside the code and the chat it belongs with.
 
@@ -54,6 +54,16 @@ Built 2026-11-03.
 - **The tools run in `beermat mcp --host`** (the `mcp` module's `Mcp`, with a `Documents` that asks the host): one JSON object per line each way. The extension sends `{"mcp": message}` and gets `{"reply": response}`; while a tool works it asks `{"read": path}` (answered with the text and folder) or `{"write": path, "text": …}`. One MCP message at a time.
 - **Live documents**: no path is the active Beermat page (the last one in front); a path is the document open in VS Code for that file, else the file on disk. Reads see unsaved changes; writes are edits to the document (the part that changed), so they show on the page at once, are unsaved until saved, and undo with Ctrl+Z.
 - Checked by `vscode/test/mcp.test.js`: refusing a web page's request (in CI), and, with a built `beermat`, a session that reads the live sheet and inserts a statement, which arrives in the document with its result.
+
+## Step 5 in detail
+
+Prepared 2026-11-03; waiting on Dan's accounts.
+
+- The Release workflow's `vscode` job publishes the release's `.vsix` (the one on GitHub) with `vsce publish --packagePath` to the **VS Code Marketplace**, and `ovsx publish` to **Open VSX** (for VSCodium, Cursor and other editors built on VS Code), for versions without a suffix only: the Marketplace takes `x.y.z`, so previews (`1.0.0-dev3`) stay a `.vsix` on GitHub.
+- It needs two secrets, and passes with a warning without them:
+  - `VSCE_PAT`: the publisher `beermat-pub`, made at marketplace.visualstudio.com/manage (a Microsoft account; free; separate from Partner Center), and a Personal Access Token from Azure DevOps (dev.azure.com; organisation "All accessible organizations", scope Marketplace, Manage).
+  - `OVSX_PAT`: an account at open-vsx.org (signing in with GitHub), the Eclipse publisher agreement, the namespace `beermat-pub` (`npx ovsx create-namespace beermat-pub`), and an access token.
+- Our `.vsix` is packed by Gradle, not `vsce`; the Marketplace checks its manifest at the first publish, which may ask for a field `vsce` would have written.
 
 ## Alternatives considered
 

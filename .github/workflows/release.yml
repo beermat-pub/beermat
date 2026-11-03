@@ -180,6 +180,29 @@ jobs:
 
   # beermat.pub/try and beermat.pub/docs: the released page and its manual, in the site's repository (beermat-pub/beermat.pub, served by
   # GitHub Pages), pushed with a deploy key that can write there and nowhere else (docs/release.md#web-version).
+  # The VS Code extension on the Marketplace and Open VSX (docs/vscode.md#step-5-in-detail): versions
+  # without a suffix only (the Marketplace takes x.y.z), and only once the tokens are secrets; a preview
+  # release has its .vsix on GitHub.
+  vscode:
+    if: github.ref_type == 'tag' && !contains(github.ref_name, '-')
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: web, path: dist }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - name: VS Code Marketplace
+        env: { VSCE_PAT: "${{ secrets.VSCE_PAT }}" }
+        run: |
+          if [ -z "$VSCE_PAT" ]; then echo "::warning::No VSCE_PAT secret: not published on the Marketplace (docs/vscode.md#step-5-in-detail)."; exit 0; fi
+          npx --yes @vscode/vsce publish --packagePath dist/beermat-*.vsix
+      - name: Open VSX
+        env: { OVSX_PAT: "${{ secrets.OVSX_PAT }}" }
+        run: |
+          if [ -z "$OVSX_PAT" ]; then echo "::warning::No OVSX_PAT secret: not published on Open VSX (docs/vscode.md#step-5-in-detail)."; exit 0; fi
+          npx --yes ovsx publish dist/beermat-*.vsix
+
   site:
     if: github.ref_type == 'tag'
     needs: [publish]
