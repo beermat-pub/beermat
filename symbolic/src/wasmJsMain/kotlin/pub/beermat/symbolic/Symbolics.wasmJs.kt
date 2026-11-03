@@ -15,4 +15,5 @@ internal actual val sympy: SymbolicBackend?
         return SymPyBackend(bridge).also { backend = bridge to it }
     }
 
-internal actual fun pythonModules(allowed: (HostFile) -> Boolean): Modules? = null
+// In VS Code, the installed beermat's Python too, over the same bridge; the extension checks the user's consent again.
+internal actual fun pythonModules(allowed: (HostFile) -> Boolean): Modules? = Helper.bridge?.let { PythonModules(it, allowed) }

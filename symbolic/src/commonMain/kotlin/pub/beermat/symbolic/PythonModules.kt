@@ -15,7 +15,7 @@ import pub.beermat.engine.syntax.ParseException
 import pub.beermat.engine.syntax.Parser
 import pub.beermat.engine.units.Complex
 import pub.beermat.engine.units.Quantity
-import java.io.File
+import pub.beermat.engine.HostFile
 
 /**
  * `use "file.py"` (docs/symbolic.md#python-functions-in-a-sheet): the file's public functions as
@@ -23,23 +23,23 @@ import java.io.File
  * annotated with a unit (`q: "kN/m"`, `-> "kN*m"`) goes as a plain number in that unit; without one,
  * it must be a plain number. [allowed] asks whether a file may run (the user's consent).
  */
-class PythonModules(private val python: Bridge, private val allowed: (File) -> Boolean) : Modules {
+class PythonModules(private val python: Bridge, private val allowed: (HostFile) -> Boolean) : Modules {
 
     /** A function's description, as `bridge.py` reads it with `inspect`. */
     class Function(val name: String, val params: List<Param>, val returns: String?, val signature: String, val doc: String)
 
     class Param(val name: String, val unit: String?, val optional: Boolean)
 
-    override fun load(file: File): Module {
-        if (!allowed(file)) throw EvalException("${file.name} runs Python code, which hasn't been allowed yet (the app asks; the command line takes --allow-python)")
-        val path = file.canonicalPath
+    override fun load(file: HostFile): Module {
+        if (!allowed(file)) throw EvalException("${fileName(file)} runs Python code, which hasn't been allowed yet (the app asks; the command line takes --allow-python)")
+        val path = canonicalPath(file)
         val functions = describe(file)
-        return Module(file.name, functions.associate { f -> f.name to builtin(file, path, f) }, functions.associate { f -> f.name to Module.Doc(f.signature, f.doc) })
+        return Module(fileName(file), functions.associate { f -> f.name to builtin(file, path, f) }, functions.associate { f -> f.name to Module.Doc(f.signature, f.doc) })
     }
 
     /** The module's public functions (for completion and hover too). */
-    fun describe(file: File): List<Function> {
-        val reply = ask(mapOf("op" to "describe", "path" to file.canonicalPath, "version" to version(file)))
+    fun describe(file: HostFile): List<Function> {
+        val reply = ask(mapOf("op" to "describe", "path" to canonicalPath(file), "version" to version(file)))
         return (reply as List<*>).map { d ->
             d as Map<*, *>
             Function(
@@ -50,7 +50,7 @@ class PythonModules(private val python: Bridge, private val allowed: (File) -> B
         }
     }
 
-    private fun builtin(file: File, path: String, f: Function): Builtin {
+    private fun builtin(file: HostFile, path: String, f: Function): Builtin {
         val required = f.params.count { !it.optional }
         return Builtin(f.name, required..f.params.size) { args ->
             val values = args.mapIndexed { k, arg -> argument(arg(), f.params[k], f) }
@@ -119,7 +119,7 @@ class PythonModules(private val python: Bridge, private val allowed: (File) -> B
     }
 
     /** The file's version, so a changed file isn't answered from the cache. */
-    private fun version(file: File) = "${file.lastModified()}:${file.length()}"
+    private fun version(file: HostFile) = fileVersion(file)
 
     private companion object {
         val PYTHON_TYPES = setOf("float", "int", "complex", "str", "bool", "list", "tuple", "object", "Any", "None")

@@ -36,3 +36,33 @@ internal object VsCodeBridge : Bridge {
         answered()
     }
 }
+
+/**
+ * The user's consent to run a sheet's Python file, in VS Code (docs/vscode.md#step-3-in-detail): the
+ * extension asks, as the desktop app does, and remembers a yes for that file and its contents. The
+ * page meets the file, asks once, and says it is waiting; the answer works the sheet out again.
+ */
+internal object VsCodeConsent {
+    private val answers = mutableMapOf<String, Boolean>()
+    private val waiting = mutableMapOf<Int, String>()
+    private var sent = 0
+
+    var answered: () -> Unit = {}
+
+    val busy: Boolean get() = waiting.isNotEmpty()
+
+    fun allowed(path: String): Boolean {
+        answers[path]?.let { return it }
+        if (path !in waiting.values) {
+            waiting[++sent] = path
+            postToVsCode("consent", path, sent)
+        }
+        throw EvalException("waiting for your answer: may ${path.substringAfterLast('/').substringAfterLast('\\')} run?")
+    }
+
+    fun answer(id: Int, yes: Boolean) {
+        val path = waiting.remove(id) ?: return
+        answers[path] = yes
+        answered()
+    }
+}

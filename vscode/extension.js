@@ -4,10 +4,12 @@
 // so saving, undo, git and other extensions all work on the same text.
 const vscode = require('vscode');
 const childProcess = require('child_process');
+const crypto = require('crypto');
 
 const VIEW = 'beermat.sheet';
 
 function activate(context) {
+  python.saved = context.globalState;
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(VIEW, new SheetEditor(context), {
       // The page keeps its state (zoom, the cursor) while its tab is in the background.
@@ -61,7 +63,12 @@ class SheetEditor {
           if (vscode.workspace.isTrusted && await helper.found()) panel.webview.postMessage({ type: 'helper', yes: true });
           return;
         case 'file': return panel.webview.postMessage({ type: 'filed', id: m.id, ...(await readFile(m.text)) });
-        case 'bridge': return panel.webview.postMessage({ type: 'bridged', id: m.id, text: await helper.ask(m.text) });
+        case 'consent': return panel.webview.postMessage({ type: 'consented', id: m.id, yes: await python.allow(m.text) });
+        case 'bridge': {
+          // A Python function runs only from a file the user said may run, as it is now.
+          const text = (await python.mayRun(m.text)) ? await helper.ask(m.text) : JSON.stringify({ error: "this Python file hasn't been allowed to run" });
+          return panel.webview.postMessage({ type: 'bridged', id: m.id, text });
+        }
         case 'edit': return (edits = edits.then(() => edit(document, m.text, text())));
         case 'save': return document.save();
         case 'open': return vscode.env.openExternal(vscode.Uri.parse(m.text));
@@ -116,6 +123,63 @@ async function readFile(path) {
     return { text: '', yes: false };
   }
 }
+
+/**
+ * The user's consent to run a sheet's Python files (docs/symbolic.md#python-functions-in-a-sheet), as the
+ * desktop app asks it: once per file, showing its path; a yes is kept for that file and its contents (a
+ * changed file asks again), a no until VS Code closes. Never in Restricted Mode.
+ */
+const python = {
+  saved: undefined,
+  refused: new Set(),
+
+  /** The file's path and contents as one key. */
+  async key(path) {
+    const bytes = await vscode.workspace.fs.readFile(vscode.Uri.file(path));
+    return 'python.' + crypto.createHash('sha256').update(path).update('\0').update(bytes).digest('hex');
+  },
+
+  /** Whether [path] may run, asking the user the first time. */
+  async allow(path) {
+    if (!vscode.workspace.isTrusted) return false;
+    let key;
+    try {
+      key = await this.key(path);
+    } catch {
+      return false;
+    }
+    if (this.saved?.get(key)) return true;
+    if (this.refused.has(key)) return false;
+    const pick = await vscode.window.showWarningMessage(
+      'This sheet runs Python code from a file on your computer. Run it?',
+      { modal: true, detail: `${path}\n\nOnly say yes if you trust where the file came from.` },
+      'Run it',
+    );
+    if (pick === 'Run it') {
+      await this.saved?.update(key, true);
+      return true;
+    }
+    this.refused.add(key);
+    return false;
+  },
+
+  /** Whether a bridge [request] may go: anything but a Python function, or one from a file allowed as it is now. */
+  async mayRun(request) {
+    let r;
+    try {
+      r = JSON.parse(request);
+    } catch {
+      return false;
+    }
+    if (!r.op) return true;
+    if (!vscode.workspace.isTrusted || typeof r.path !== 'string') return false;
+    try {
+      return !!this.saved?.get(await this.key(r.path));
+    } catch {
+      return false;
+    }
+  },
+};
 
 /** The page's questions, which a web view can't ask itself: a line of text, a matrix's size, or how to resize one. */
 async function ask(kind) {
@@ -198,7 +262,8 @@ const helper = {
   },
 
   start() {
-    const p = this.spawn(['bridge']);
+    // Python functions too: every request for one passes python.mayRun first.
+    const p = this.spawn(['bridge', '--allow-python']);
     this.process = p;
     p.stdout.setEncoding('utf8');
     p.stdout.on('data', chunk => {
@@ -230,4 +295,4 @@ function deactivate() {
   helper.stop();
 }
 
-module.exports = { activate, deactivate, edit, helper };
+module.exports = { activate, deactivate, edit, helper, python };

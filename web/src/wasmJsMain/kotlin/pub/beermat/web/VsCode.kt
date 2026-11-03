@@ -61,7 +61,7 @@ internal fun VsCodeApp() {
     /** Sends the sheet's text when it has changed, once SymPy has answered what it was asked. */
     fun flush() {
         val s = session ?: return
-        if (VsCodeBridge.busy || RemoteFiles.busy) return
+        if (VsCodeBridge.busy || RemoteFiles.busy || VsCodeConsent.busy) return
         val text = s.guard(null) { s.text() } ?: return
         if (text != sent) {
             sent = text
@@ -88,12 +88,15 @@ internal fun VsCodeApp() {
         val reworked = {
             session?.let { s ->
                 s.guard(Unit) { s.relayout() }
-                if (untouched && !VsCodeBridge.busy && !RemoteFiles.busy) sent = s.guard(null) { s.text() }
+                if (untouched && !VsCodeBridge.busy && !RemoteFiles.busy && !VsCodeConsent.busy) sent = s.guard(null) { s.text() }
             }
             changed()
         }
         VsCodeBridge.answered = reworked
         RemoteFiles.answered = reworked
+        VsCodeConsent.answered = reworked
+        // A sheet's Python file runs once the user says it may (the extension asks, and checks again).
+        pub.beermat.format.PythonConsent.allowed = { file -> VsCodeConsent.allowed(file.path) }
         // Data files and pictures beside the sheet, read by the extension.
         val files = mutableMapOf<Int, String>()
         RemoteFiles.request = { path ->
@@ -126,6 +129,7 @@ internal fun VsCodeApp() {
                     revision++
                 }
                 "bridged" -> VsCodeBridge.answer(id, text)
+                "consented" -> VsCodeConsent.answer(id, yes)
                 // The sheet's folder, where its data files and pictures are found.
                 "folder" -> session?.let { s -> s.guard(Unit) { s.base = HostFile(text) }; revision++ }
                 "filed" -> files[id]?.let { path -> RemoteFiles.answer(path, if (yes) Base64.decode(text) else null) }

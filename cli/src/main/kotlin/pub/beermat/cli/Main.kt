@@ -56,7 +56,7 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             }
             "packages" -> return packages(args.drop(1))
             "python" -> return python(args.drop(1))
-            "bridge" -> return bridge()
+            "bridge" -> return bridge("--allow-python" in args)
             "help", "--help", "-h" -> { usage(out); return 0 }
             "version", "--version", "-v" -> { out.println("beermat ${pub.beermat.engine.Version.current}"); return 0 }
             else -> return usage("unknown command '$command'")
@@ -208,22 +208,24 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
     /**
      * `beermat bridge`: SymPy for another program, one JSON request per line on standard input and one
      * answer per line on standard output, as `bridge.py` takes and gives them: the VS Code extension's
-     * helper (docs/vscode.md#step-3-in-detail). Symbolic requests only: Python functions (`op`) are not
-     * run, since nothing here has asked the user.
+     * helper (docs/vscode.md#step-3-in-detail). Python functions (`op`) run only with [allowPython],
+     * which the extension gives once it has the user's consent for each file (and checks it again for
+     * every request); in the user's own Python when one is set, as in the app.
      */
-    private fun bridge(): Int {
+    private fun bridge(allowPython: Boolean): Int {
         val home = pub.beermat.symbolic.Python.home() ?: run {
             err.println("beermat: this copy of Beermat has no Python")
             return 2
         }
         val sympy = pub.beermat.symbolic.SymPy(home)
+        val functions = pub.beermat.symbolic.OwnPython.interpreter()?.let { pub.beermat.symbolic.SymPy.own(it) } ?: sympy
         val writer = System.out.bufferedWriter(Charsets.UTF_8)
         for (line in System.`in`.bufferedReader(Charsets.UTF_8).lineSequence()) {
             if (line.isBlank()) continue
             val reply = when {
-                Regex(""""op"\s*:""").containsMatchIn(line) -> "{\"error\": \"Python functions in VS Code need the desktop app for now\"}"
+                Regex(""""op"\s*:""").containsMatchIn(line) && !allowPython -> "{\"error\": \"Python functions aren't allowed here\"}"
                 else -> try {
-                    sympy.ask(line)
+                    (if (Regex(""""op"\s*:""").containsMatchIn(line)) functions else sympy).ask(line)
                 } catch (x: pub.beermat.engine.eval.EvalException) {
                     "{\"error\": ${Json.string(x.message ?: "SymPy stopped")}}"
                 }
@@ -233,6 +235,7 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             writer.flush()
         }
         sympy.stop()
+        functions.stop()
         return 0
     }
 
