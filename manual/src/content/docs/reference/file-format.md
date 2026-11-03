@@ -69,7 +69,7 @@ A page break is `<!-- pagebreak y=700 -->`. An area is everything between `<!-- 
 
 Each result is kept at the end of its line, after `#=`, and each error after `#!`:
 
-```calc
+```text
 M_max := q*L^2/8 = ? kN*m   #= 54 kN*m
 y := L + 2 s                #! units do not match: L vs T
 ```

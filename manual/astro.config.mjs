@@ -15,10 +15,39 @@ export default defineConfig({
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/beermat-pub/beermat' }],
       editLink: { baseUrl: 'https://github.com/beermat-pub/beermat/edit/main/manual/' },
       sidebar: [
-        { label: 'Getting started', items: ['start/install', 'start/first-worksheet'] },
+        { label: 'Getting started', items: ['start/install', 'start/first-worksheet', 'start/beam'] },
+        {
+          label: 'Tutorials',
+          items: [
+            'tutorials/units',
+            'tutorials/arrays',
+            'tutorials/programs',
+            'tutorials/plots',
+            'tutorials/solving',
+            'tutorials/symbolic',
+          ],
+        },
+        {
+          label: 'How-to guides',
+          items: [
+            'guides/results',
+            'guides/pages',
+            'guides/text-and-pictures',
+            'guides/tables',
+            'guides/solve',
+            'guides/data',
+            'guides/differential-equations',
+            'guides/python',
+            'guides/export',
+            'guides/xmcd',
+            'guides/ai',
+            'guides/dimensions',
+          ],
+        },
         {
           label: 'Reference',
           items: [
+            'reference/syntax',
             {
               label: 'Functions',
               items: [
@@ -34,7 +63,20 @@ export default defineConfig({
             'reference/units',
             'reference/settings',
             'reference/keys',
+            'reference/results',
+            'reference/errors',
+            'reference/file-format',
             'reference/command-line',
+            'reference/mcp',
+          ],
+        },
+        {
+          label: 'Explanations',
+          items: [
+            'explanations/evaluation',
+            'explanations/units',
+            'explanations/markdown',
+            'explanations/precision',
           ],
         },
         {

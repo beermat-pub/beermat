@@ -1,6 +1,6 @@
 ---
 title: Why a worksheet is a Markdown file
-description: What a plain-text worksheet gives you: reading it anywhere, version control, and AI assistants.
+description: "What a plain-text worksheet gives you: reading it anywhere, version control, and AI assistants."
 ---
 
 A Beermat worksheet is a text file you can open in any editor. The math is in the [linear syntax](../../reference/syntax/), the notes are Markdown, and each result is written after its line. This choice gives a few things a closed file can't.
