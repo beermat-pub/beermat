@@ -4,6 +4,9 @@ Each version's section here becomes the notes of its release on GitHub ([docs/re
 
 ## 1.0.0-dev3 (not released yet)
 
+The fourth preview: Beermat in VS Code, Export to Word, the manual's pages in draft, and Python of your own. Please try it and report what you find.
+
+- **The web version brings its own fonts** for symbols (→, ⋮, ▦…), so it downloads none.
 - **Making room on the page**: with the crosshair on the page, Enter pushes everything below it down a line; Backspace and Delete take a blank line out above or below it.
 - **The web version** says what needs the desktop app, and where to get it, rather than naming what's inside it.
 - **The manual**: the logo leads back to beermat.pub.

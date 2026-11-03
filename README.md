@@ -4,7 +4,7 @@
 
 Beermat is an engineering worksheet. You click anywhere on the page and type math that looks like math. It evaluates top to bottom, handles units properly, and supports programming inside functions. On top of that, worksheets are plain text files you can diff, read on GitHub, export to LaTeX or Word, and hand to an AI assistant.
 
-> **Status:** developer preview: [try it in your browser](https://beermat.pub/try) or [download it](https://beermat.pub/download), read the [manual](https://beermat.pub/docs/), and report what you find in [Issues](https://github.com/beermat-pub/beermat/issues). What's coming: [ROADMAP.md](ROADMAP.md).
+> **Status:** developer preview: [try it in your browser](https://beermat.pub/try), [download it](https://beermat.pub/download) (the desktop app, or the extension that opens `.bbm` files in VS Code), read the [manual](https://beermat.pub/docs/), and report what you find in [Issues](https://github.com/beermat-pub/beermat/issues). What's coming: [ROADMAP.md](ROADMAP.md).
 
 ## What a worksheet looks like
 
@@ -31,6 +31,8 @@ The app shows this as 2D math, with `M_max = 54 kN·m` computed live.
 - [docs/evaluation.md](docs/evaluation.md): how a worksheet is evaluated, and the built-in functions
 - [docs/cli.md](docs/cli.md): the `beermat` command line
 - [docs/mcp.md](docs/mcp.md): the MCP server, for AI assistants
+- [docs/vscode.md](docs/vscode.md): the VS Code extension
+- [docs/export.md](docs/export.md): LaTeX, MathML, Markdown and Word
 
 ## Support
 
