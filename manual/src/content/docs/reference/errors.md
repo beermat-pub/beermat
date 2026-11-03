@@ -24,7 +24,7 @@ A global definition (`≡`, typed `~`) holds for the whole sheet, so it can't be
 
 **A result is wrong by a large factor**
 
-Look for a variable named like a unit. After `m := 2 kg`, `3 m` is 6 kg, not three metres, for everything below. Rename the variable (`M`, `m_1`, `mass`).
+Look for a variable named like a unit. After `m := 2 kg`, `3 m` is 6 kg, not three metres, for everything below. Beermat warns, in orange under the statement: **`m here is the variable defined above, not the unit m`**. Rename the variable (`M`, `m_1`, `mass`).
 
 ## Units
 

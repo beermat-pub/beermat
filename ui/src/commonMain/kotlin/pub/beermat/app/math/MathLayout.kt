@@ -199,15 +199,15 @@ class MathLayout(
      * An error message, smaller and in [Ink.Error]. The variables it quotes, [names] (written
      * in linear syntax in the text: `\bf F_max is not defined`), are drawn as they are in the sheet.
      */
-    fun message(t: String, names: List<Id> = emptyList(), s: Float = size * 0.72f): Box {
+    fun message(t: String, names: List<Id> = emptyList(), s: Float = size * 0.72f, ink: Ink = Ink.Error): Box {
         val parts = mutableListOf<Box>()
         var k = 0
         for ((range, id) in quoted(t, names)) {
-            if (range.first > k) parts += text(t.substring(k, range.first), s, Ink.Error)
-            parts += identifier(id, s, ink = Ink.Error)
+            if (range.first > k) parts += text(t.substring(k, range.first), s, ink)
+            parts += identifier(id, s, ink = ink)
             k = range.last + 1
         }
-        if (k < t.length) parts += text(t.substring(k), s, Ink.Error)
+        if (k < t.length) parts += text(t.substring(k), s, ink)
         return Group.row(parts)
     }
 

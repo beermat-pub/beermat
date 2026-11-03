@@ -58,7 +58,7 @@ Starts with the built-in set that `.xmcd` files use. The table lives in [engine/
 
 Name clashes (`m`, `g`, `L`, `t`, `A`, `C`, `F`, `S`, `T`, `V`, `W`, `s`) are the main usability problem with units-as-variables. The rule (implemented):
 
-> **User definitions shadow units silently in their scope; using a shadowed unit name *in a unit placeholder* still refers to the unit.** The checker warns when a user definition shadows a built-in unit.
+> **User definitions shadow units silently in their scope; using a shadowed unit name *in a unit placeholder* still refers to the unit.** The checker warns when a user definition shadows a built-in unit and the sheet then writes that name as a unit: a number beside it (`3 m` after `m := 5`). Built 2026-11-03: `LineOutcome.warning`, drawn in orange under the statement and reported by `beermat check` as `warning: …`; never written in the file. Only that case, since engineers define `L`, `A`, `F`, `W`, `V`, `T`, `h` all the time and use them as variables.
 
 ## Angles
 

@@ -60,6 +60,7 @@ object SkiaMath : Metrics {
             Ink.Normal -> 0xFF1A1A1A.toInt()
             Ink.Keyword -> 0xFF1A1A1A.toInt()
             Ink.Error -> 0xFFC62828.toInt()
+            Ink.Warning -> 0xFFB45F06.toInt()
             Ink.Faint -> 0xFF9E9E9E.toInt()
         }
     }

@@ -29,7 +29,8 @@ Reports problems without changing the file, one per line, as `file:line: message
 
 - syntax errors and evaluation errors (units, undefined names, …);
 - stale results: the `results:` hash doesn't match the file, or a cached result differs from what the sheet now computes;
-- frontmatter settings that are invalid or not supported yet.
+- frontmatter settings that are invalid or not supported yet;
+- warnings (`warning: …`): a number written beside a name the sheet defined that is also a unit (`3 m` after `m := 5`), which is the variable, not the unit ([units.md](units.md)).
 
 Prints `ok` when there is nothing to report.
 

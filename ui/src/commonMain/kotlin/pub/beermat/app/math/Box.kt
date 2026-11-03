@@ -15,7 +15,7 @@ sealed interface Box {
 }
 
 /** How a piece of text is drawn. */
-enum class Ink { Normal, Keyword, Error, Faint }
+enum class Ink { Normal, Keyword, Error, Warning, Faint }
 
 /** A run of text in the math font at [size] pixels. [bold] thickens it (for `==`). */
 data class TextBox(

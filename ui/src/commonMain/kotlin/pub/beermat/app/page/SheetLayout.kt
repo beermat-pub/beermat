@@ -276,7 +276,9 @@ class SheetLayout(
             val scrolledLayout = layout.scrolled(MathLayout.Scroll(scrolled?.first ?: 0, scrolled?.second ?: 0, origin))
             val box = if (editing != null) scrolledLayout.editing(drafts(editing)).statement(st, parts?.number, parts?.unit, table) else scrolledLayout.statement(st, parts?.number, parts?.unit, table)
             val message = (o?.annotation as? Annotation.Error)?.message?.takeIf { o.parsed !is Unparsed || editing != null }
+            // A warning (a variable that hides a unit) where an error would go, when there is none.
             val error = message?.let { layout.message(it, o.errorNames) }
+                ?: o?.warning?.takeIf { editing == null }?.let { layout.message(it, ink = pub.beermat.app.math.Ink.Warning) }
             val baseline = top + box.ascent
             val errorBaseline = baseline + box.descent + 3f + (error?.ascent ?: 0f)
             return StatementView(o?.parsed, box, baseline, error, errorBaseline, o)

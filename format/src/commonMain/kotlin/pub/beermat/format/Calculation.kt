@@ -8,7 +8,28 @@ import pub.beermat.engine.eval.Evaluator
 import pub.beermat.engine.eval.Outcome
 import pub.beermat.engine.eval.Scalar
 import pub.beermat.engine.eval.Shown
+import pub.beermat.engine.syntax.Apply
+import pub.beermat.engine.syntax.Call
+import pub.beermat.engine.syntax.Define
+import pub.beermat.engine.syntax.Evaluate
+import pub.beermat.engine.syntax.Expr
 import pub.beermat.engine.syntax.ExprStatement
+import pub.beermat.engine.syntax.For
+import pub.beermat.engine.syntax.IfThen
+import pub.beermat.engine.syntax.Index
+import pub.beermat.engine.syntax.Line
+import pub.beermat.engine.syntax.LocalDefine
+import pub.beermat.engine.syntax.Matrix
+import pub.beermat.engine.syntax.Num
+import pub.beermat.engine.syntax.Op
+import pub.beermat.engine.syntax.Otherwise
+import pub.beermat.engine.syntax.Parens
+import pub.beermat.engine.syntax.Program
+import pub.beermat.engine.syntax.ProgramLine
+import pub.beermat.engine.syntax.Range
+import pub.beermat.engine.syntax.Return
+import pub.beermat.engine.syntax.Symbolic
+import pub.beermat.engine.syntax.While
 import pub.beermat.engine.syntax.Id
 import pub.beermat.engine.syntax.Parser
 import pub.beermat.engine.syntax.Statement
@@ -36,6 +57,12 @@ data class LineOutcome(
      * name in a symbolic statement is a variable. The [annotation] writes them plainly, as units are written.
      */
     val symbolic: String? = null,
+    /**
+     * A warning that isn't an error: a number written beside a name the sheet has defined that is also
+     * a unit (`3 m` after `m := 5`), which is the variable, not the unit (docs/units.md). Shown on the
+     * page and by `beermat check`; not written in the file.
+     */
+    val warning: String? = null,
 )
 
 /**
@@ -123,7 +150,8 @@ class Calculation private constructor(
             val plots = plotPositions.map { (block, k) -> Plots.evaluate(block, scopes[k], evaluator) }
             val formats = sheet.blocks.associateWith { settings.formatFor(it.attributes, problems) }
 
-            val lines = parsed.zip(outcomes) { p, o ->
+            val hidden = hiddenUnits(parsed.map { it.statement })
+            val lines = parsed.zip(outcomes).mapIndexed { k, (p, o) ->
                 val annotation = when (o) {
                     is Outcome.Failed -> Annotation.Error(oneLine(o.error.message ?: "error"))
                     is Outcome.Evaluated -> Annotation.Result(ResultText.format(o.shown, formats.getValue(p.block)))
@@ -140,7 +168,8 @@ class Calculation private constructor(
                 val text = p.lines.joinToString("\n") { it.source }.trimIndent()
                 val names = (o as? Outcome.Failed)?.error?.names.orEmpty()
                 val symbolic = (o as? Outcome.Symbolic)?.let { pub.beermat.engine.syntax.Printer.print(it.result) }
-                LineOutcome(p.lines[0], annotation, text, errorLine, p.statement, shown, formats.getValue(p.block), names, symbolic)
+                val warning = unitWarning(p.statement, k, hidden)
+                LineOutcome(p.lines[0], annotation, text, errorLine, p.statement, shown, formats.getValue(p.block), names, symbolic, warning)
             }
             val modules = outcomes.filterIsInstance<Outcome.Defined>().filter { it.value is pub.beermat.engine.eval.Module }.associate { it.id to it.value as pub.beermat.engine.eval.Module }
             return Calculation(sheet, settings, lines, problems.distinct(), plots, tableOutcomes.map { it!! }, modules)
@@ -169,6 +198,59 @@ class Calculation private constructor(
 
         private fun oneLine(s: String) = s.lineSequence().joinToString(" ") { it.trim() }
 
+        /** The built-in units the sheet defines as its own names, and the statement that first does. */
+        private fun hiddenUnits(statements: List<Statement>): Map<Id, Int> = buildMap {
+            statements.forEachIndexed { k, st ->
+                val target = (st as? Define)?.target as? Id ?: return@forEachIndexed
+                if (target !in this && Builtins.units.containsKey(target)) put(target, k)
+            }
+        }
+
+        /** The warning for statement [k]: a number beside a name in [hidden] defined above it, written as a unit would be. */
+        private fun unitWarning(st: Statement, k: Int, hidden: Map<Id, Int>): String? {
+            if (hidden.isEmpty() || st is Symbolic) return null
+            val found = mutableListOf<Id>()
+            fun visit(e: Expr) {
+                if (e is Apply && e.op == Op.MUL && e.implicit && unwrapNumber(e.args[0])) {
+                    val id = e.args[1] as? Id
+                    if (id != null && (hidden[id] ?: Int.MAX_VALUE) < k) found += id
+                }
+                exprChildren(e).forEach(::visit)
+            }
+            when (st) {
+                is Define -> visit(st.value)
+                is Evaluate -> visit(st.expr)
+                is ExprStatement -> visit(st.expr)
+                else -> {}
+            }
+            val id = found.firstOrNull() ?: return null
+            return "${id.name} here is the variable defined above, not the unit ${id.name}: rename the variable to use the unit"
+        }
+
+        private fun unwrapNumber(e: Expr): Boolean = e is Num || (e is Apply && e.op == Op.NEG && e.args[0] is Num)
+
+        private fun exprChildren(e: Expr): List<Expr> = when (e) {
+            is Apply -> e.args
+            is Call -> listOf(e.fn) + e.args
+            is Parens -> listOf(e.inner)
+            is Index -> listOf(e.target) + e.indices
+            is Matrix -> e.rows.flatten()
+            is Range -> listOfNotNull(e.first, e.second, e.last)
+            is Program -> e.lines.flatMap(::lineExprs)
+            else -> emptyList()
+        }
+
+        private fun lineExprs(l: ProgramLine): List<Expr> = when (l) {
+            is Line -> listOf(l.expr)
+            is LocalDefine -> listOf(l.value)
+            is IfThen -> listOf(l.condition) + l.body.flatMap(::lineExprs)
+            is Otherwise -> l.body.flatMap(::lineExprs)
+            is For -> listOf(l.over) + l.body.flatMap(::lineExprs)
+            is While -> listOf(l.condition) + l.body.flatMap(::lineExprs)
+            is Return -> listOf(l.value)
+            else -> emptyList()
+        }
+
         /** A symbolic result's text with its units written as units are (`N*m`), not as the upright names it draws them with. */
         fun plainUnits(text: String): String = Regex("""\\rm ([\p{L}°Ω]+)""").replace(text) { m ->
             val name = m.groupValues[1]
@@ -186,6 +268,7 @@ object Check {
         val calc = Calculation.of(sheet, folder)
         val problems = calc.settingProblems.map { Problem(null, it) }.toMutableList()
         calc.lines.forEach { if (it.annotation is Annotation.Error) problems += Problem(it.errorLine, it.annotation.message) }
+        calc.lines.forEach { o -> o.warning?.let { problems += Problem(o.line.number, "warning: $it") } }
         calc.plots.forEach { p -> p.problems.forEach { problems += Problem(null, "plot${p.block.attributes.id?.let { " #$it" } ?: ""}: $it") } }
         calc.sheet.parts.filterIsInstance<TableBlock>().zip(calc.tables).forEach { (b, t) -> t.problems.forEach { problems += Problem(null, "table${b.attributes.id?.let { " #$it" } ?: ""}: $it") } }
 

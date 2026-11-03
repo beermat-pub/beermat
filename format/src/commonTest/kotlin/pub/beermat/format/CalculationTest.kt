@@ -27,6 +27,28 @@ class CalculationTest {
     }
 
     @Test
+    fun `a number beside a name the sheet defined that is also a unit gets a warning, not an error`() {
+        val lines = Calculation.of(sheet("""
+            |```calc
+            |x := 3 m
+            |m := 5
+            |y := 3 m
+            |z := 2*m + L
+            |L := 6 m
+            |w := 4 L
+            |```
+            |""")).lines
+        // Before m is defined, `3 m` is the metre; after, the variable (15).
+        assertEquals(listOf(null, null), lines.take(2).map { it.warning })
+        assertEquals("m here is the variable defined above, not the unit m: rename the variable to use the unit", lines[2].warning)
+        assertEquals(Annotation.Result("15"), Calculation.of(sheet("```calc\nm := 5\ny := 3 m = ?\n```\n")).lines.last().annotation)
+        // Written as a product, or a name defined later, it is what was meant.
+        assertEquals(null, lines[3].warning)
+        assertEquals("L here is the variable defined above, not the unit L: rename the variable to use the unit", lines[5].warning)
+        assertEquals(listOf("warning: m here is the variable defined above, not the unit m: rename the variable to use the unit"), Check.of(sheet("```calc\nm := 5\ny := 3 m\n```\n")).map { it.message })
+    }
+
+    @Test
     fun `statements run in file order across fences`() {
         val sheet = sheet(
             """
