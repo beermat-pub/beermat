@@ -93,7 +93,7 @@ object SheetExport {
                     val st = o.parsed ?: continue
                     // A symbolic result is an expression, cached as its text.
                     val result = o.shown?.let { Result.of(ResultText.parts(it, o.format)) }
-                        ?: (o.annotation as? Annotation.Result)?.takeIf { st is pub.beermat.engine.syntax.Symbolic }?.let { Result.of(ResultText.Parts(it.text, null)) }
+                        ?: (o.annotation as? Annotation.Result)?.takeIf { st is pub.beermat.engine.syntax.Symbolic }?.let { Result.of(ResultText.Parts(o.symbolic ?: it.text, null)) }
                     equation(Equation(latex.statement(st, result), (o.annotation as? Annotation.Error)?.message))
                 }
             }

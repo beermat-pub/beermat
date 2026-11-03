@@ -105,7 +105,7 @@ object Docx {
             val st = o.parsed ?: return
             // A symbolic result is an expression, cached as its text.
             val result = o.shown?.let { Result.of(ResultText.parts(it, o.format)) }
-                ?: (o.annotation as? Annotation.Result)?.takeIf { st is Symbolic }?.let { Result.of(ResultText.Parts(it.text, null)) }
+                ?: (o.annotation as? Annotation.Result)?.takeIf { st is Symbolic }?.let { Result.of(ResultText.Parts(o.symbolic ?: it.text, null)) }
             body.append("<w:p><m:oMathPara><m:oMathParaPr><m:jc m:val=\"left\"/></m:oMathParaPr>${omml.math(st, result)}</m:oMathPara></w:p>")
             (o.annotation as? Annotation.Error)?.let { body.append("<w:p><w:pPr><w:pStyle w:val=\"BeermatError\"/></w:pPr>${run("Error: ${it.message}")}</w:p>") }
         }

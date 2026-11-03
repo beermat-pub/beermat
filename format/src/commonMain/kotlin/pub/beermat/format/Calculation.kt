@@ -31,6 +31,11 @@ data class LineOutcome(
     val format: ResultFormat = ResultFormat(),
     /** The variables an error message quotes (see `EvalException.names`), for the app to draw. */
     val errorNames: List<Id> = emptyList(),
+    /**
+     * A symbolic result as it is drawn: its units marked upright (`54000 \rm N*\rm m`), since every other
+     * name in a symbolic statement is a variable. The [annotation] writes them plainly, as units are written.
+     */
+    val symbolic: String? = null,
 )
 
 /**
@@ -124,7 +129,7 @@ class Calculation private constructor(
                     is Outcome.Evaluated -> Annotation.Result(ResultText.format(o.shown, formats.getValue(p.block)))
                     is Outcome.Defined -> o.shown?.let { Annotation.Result(ResultText.format(it, formats.getValue(p.block))) }
                     Outcome.NotEvaluated -> null
-                    is Outcome.Symbolic -> Annotation.Result(pub.beermat.engine.syntax.Printer.print(o.result))
+                    is Outcome.Symbolic -> Annotation.Result(plainUnits(pub.beermat.engine.syntax.Printer.print(o.result)))
                 }
                 val errorLine = p.lines[minOf((p.statement as? Unparsed)?.line ?: 0, p.lines.size - 1)].number
                 val shown = when (o) {
@@ -134,7 +139,8 @@ class Calculation private constructor(
                 }
                 val text = p.lines.joinToString("\n") { it.source }.trimIndent()
                 val names = (o as? Outcome.Failed)?.error?.names.orEmpty()
-                LineOutcome(p.lines[0], annotation, text, errorLine, p.statement, shown, formats.getValue(p.block), names)
+                val symbolic = (o as? Outcome.Symbolic)?.let { pub.beermat.engine.syntax.Printer.print(it.result) }
+                LineOutcome(p.lines[0], annotation, text, errorLine, p.statement, shown, formats.getValue(p.block), names, symbolic)
             }
             val modules = outcomes.filterIsInstance<Outcome.Defined>().filter { it.value is pub.beermat.engine.eval.Module }.associate { it.id to it.value as pub.beermat.engine.eval.Module }
             return Calculation(sheet, settings, lines, problems.distinct(), plots, tableOutcomes.map { it!! }, modules)
@@ -162,6 +168,12 @@ class Calculation private constructor(
         }
 
         private fun oneLine(s: String) = s.lineSequence().joinToString(" ") { it.trim() }
+
+        /** A symbolic result's text with its units written as units are (`N*m`), not as the upright names it draws them with. */
+        fun plainUnits(text: String): String = Regex("""\\rm ([\p{L}°Ω]+)""").replace(text) { m ->
+            val name = m.groupValues[1]
+            if (pub.beermat.engine.eval.Builtins.units.containsKey(Id(name))) name else m.value
+        }
     }
 }
 

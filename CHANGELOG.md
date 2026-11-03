@@ -19,6 +19,7 @@ Each version's section here becomes the notes of its release on GitHub ([docs/re
 - **The manual's written pages** (draft): getting started with a whole beam calculation, tutorials, how-to guides, explanations, and the reference for the math syntax, results, error messages, the file format and the MCP tools.
 - **Your own Python**: for those who keep a Python of their own (a venv, Conda), Tools → Python packages… (or `beermat python <path>`) runs the sheets' Python files there, with its packages. SymPy stays in Beermat's own Python.
 - **Functions on arrays**: a function that takes one number (`sqrt`, `sin`, `ln`, `round`…) works on every element of an array by itself, `sqrt(v)` without `vec()`.
+- **Symbolic results with units** are written as units are, `q*L^2/8 -> ?` giving `54 kN*m` in the file and on the command line (it was `54000 \rm N*\rm m`), with the engineering prefix as for `=`.
 - **Fixed**: `nthroot` of a negative number gave a complex root; an odd root is now the real one (`nthroot(-8, 3)` is −2).
 
 ## 1.0.0-dev2 (developer preview)

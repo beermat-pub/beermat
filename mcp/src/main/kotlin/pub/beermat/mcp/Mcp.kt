@@ -372,7 +372,7 @@ class Mcp(
                 is pub.beermat.engine.eval.Outcome.Defined -> outcome.shown?.let { ResultText.format(it, calc.settings.format) } ?: "defined"
                 is pub.beermat.engine.eval.Outcome.Failed -> throw ToolError(outcome.error.message ?: "error")
                 pub.beermat.engine.eval.Outcome.NotEvaluated -> "not evaluated"
-                is pub.beermat.engine.eval.Outcome.Symbolic -> pub.beermat.engine.syntax.Printer.print(outcome.result)
+                is pub.beermat.engine.eval.Outcome.Symbolic -> pub.beermat.format.Calculation.plainUnits(pub.beermat.engine.syntax.Printer.print(outcome.result))
             }
         }
 

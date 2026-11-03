@@ -66,7 +66,7 @@ A value with units goes in with its units, and they are checked:
 ```text
 q := 12 kN/m
 L := 6 m
-q*L^2/8 → 54000 N*m
+q*L^2/8 → 54 kN*m
 ```
 
 ## The keywords

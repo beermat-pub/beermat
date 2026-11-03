@@ -64,6 +64,9 @@ object ResultText {
     /** The unit a result of dimension [d] is shown in without a placeholder, such as `N*m` or `m/s^2`. */
     fun unitText(d: pub.beermat.engine.units.Dimension): String = AutoUnit.text(d)
 
+    /** [unit] with the engineering prefix for a number of size [magnitude] (`N*m`, 54000: `kN*m`), and what the number is divided by. */
+    fun prefixed(unit: String, magnitude: Double, f: ResultFormat = ResultFormat()): Pair<String, Double> = Prefixes.unit(unit, magnitude, f)
+
     /** The parts of a result; of an array, only the [window] (all of it without one), in the unit chosen for the whole. */
     fun parts(shown: Shown, f: ResultFormat = ResultFormat(), window: Window? = null): Parts = when (val v = shown.value) {
         is Scalar -> quantity(v.q, shown, f)

@@ -170,8 +170,19 @@ internal object SymbolicUnits {
         var rest: Expr = if (denominator.isEmpty()) product(numerator) else Apply(Op.DIV, listOf(product(numerator), product(denominator)))
         if (negative) rest = Apply(Op.NEG, listOf(rest))
         if (dim.isNone) return rest
-        // The unit `=` would choose, its names upright: `N*m`, or `1/s` written as a division.
-        val unit = upright(Parser.parseExpression(ResultText.unitText(dim)))
+        // The unit `=` would choose, with its prefix when the rest is a number (`54 kN*m`), its names upright:
+        // `N*m`, or `1/s` written as a division.
+        var unitText = ResultText.unitText(dim)
+        val value = (rest as? Num)?.let(::number)
+        if (value != null && value.isFinite()) {
+            val (prefixed, factor) = ResultText.prefixed(unitText, kotlin.math.abs(value))
+            if (factor != 1.0) {
+                unitText = prefixed
+                val scaled = value / factor
+                rest = Num(if (scaled == kotlin.math.round(scaled) && kotlin.math.abs(scaled) < 1e15) scaled.toLong().toString() else scaled.toString())
+            }
+        }
+        val unit = upright(Parser.parseExpression(unitText))
         return if (unit is Apply && unit.op == Op.DIV && unit.args[0] == Num("1")) Apply(Op.DIV, listOf(rest, unit.args[1])) else attach(rest, unit)
     }
 

@@ -271,7 +271,7 @@ class SheetLayout(
             val table = big?.let { MathLayout.Table(it.rows, it.cols, window!!.row, window.col, origin) }
             // A symbolic result is an expression, cached as its text.
             val parts = o?.shown?.let { ResultText.parts(it, o.format, window) }
-                ?: (o?.annotation as? Annotation.Result)?.takeIf { (editing?.statement ?: o.parsed) is pub.beermat.engine.syntax.Symbolic }?.let { ResultText.Parts(it.text, null) }
+                ?: (o?.annotation as? Annotation.Result)?.takeIf { (editing?.statement ?: o.parsed) is pub.beermat.engine.syntax.Symbolic }?.let { ResultText.Parts(o.symbolic ?: it.text, null) }
             val st = editing?.statement ?: o?.parsed ?: Unparsed(null, "?")
             val scrolledLayout = layout.scrolled(MathLayout.Scroll(scrolled?.first ?: 0, scrolled?.second ?: 0, origin))
             val box = if (editing != null) scrolledLayout.editing(drafts(editing)).statement(st, parts?.number, parts?.unit, table) else scrolledLayout.statement(st, parts?.number, parts?.unit, table)

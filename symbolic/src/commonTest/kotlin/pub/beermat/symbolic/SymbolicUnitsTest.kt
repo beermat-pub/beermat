@@ -22,7 +22,7 @@ class SymbolicUnitsTest {
 
     @Test
     fun `names with units are put in, and the result shown in one unit`() {
-        assertEquals("54000 \\rm N*\\rm m", sym("L := 6 m", "q := 12 kN/m", "q*L^2/8 -> ?"))
+        assertEquals("54 \\rm kN*\\rm m", sym("L := 6 m", "q := 12 kN/m", "q*L^2/8 -> ?"))
         assertEquals("36 \\rm m^2", sym("L := 6 m", "L^2 -> ?"))
         // A name not defined stays, with the unit beside it.
         assertEquals("6/x \\rm m", sym("L := 6 m", "L/x -> ?"))

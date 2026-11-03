@@ -12,6 +12,21 @@ class CalculationTest {
     private fun annotations(text: String) = Calculation.of(sheet(text)).lines.map { it.annotation }
 
     @Test
+    fun `a symbolic result's units are written as units in the file, and kept upright for drawing`() {
+        val line = Calculation.of(sheet("""
+            |```calc
+            |q := 12 kN/m
+            |L := 6 m
+            |q*L^2/8 -> ?
+            |```
+            |""")).lines.last()
+        assertEquals(Annotation.Result("54 kN*m"), line.annotation)
+        assertEquals("54 \\rm kN*\\rm m", line.symbolic)
+        // A variable the sheet styles upright keeps its style.
+        assertEquals("2*\\rm x", Calculation.plainUnits("2*\\rm x"))
+    }
+
+    @Test
     fun `statements run in file order across fences`() {
         val sheet = sheet(
             """
