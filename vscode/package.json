@@ -1,0 +1,38 @@
+{
+  "name": "beermat",
+  "displayName": "Beermat",
+  "description": "Engineering worksheets in VS Code: .bbm files open on their page, with real math, units, plots and results.",
+  "version": "0.0.0",
+  "publisher": "beermat-pub",
+  "license": "MIT",
+  "icon": "icon.png",
+  "homepage": "https://beermat.pub",
+  "repository": { "type": "git", "url": "https://github.com/beermat-pub/beermat" },
+  "bugs": { "url": "https://github.com/beermat-pub/beermat/issues" },
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["Visualization", "Education", "Other"],
+  "keywords": ["engineering", "calculation", "worksheet", "units", "math"],
+  "main": "./extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "beermat.sheet",
+        "displayName": "Beermat page",
+        "selector": [{ "filenamePattern": "*.bbm" }, { "filenamePattern": "*.bbm.md" }],
+        "priority": "default"
+      }
+    ],
+    "languages": [{ "id": "markdown", "extensions": [".bbm"] }],
+    "commands": [
+      { "command": "beermat.openOnPage", "title": "Open on the Beermat Page", "category": "Beermat", "icon": "$(preview)" },
+      { "command": "beermat.openAsText", "title": "Open as Text", "category": "Beermat", "icon": "$(go-to-file)" }
+    ],
+    "menus": {
+      "editor/title": [
+        { "command": "beermat.openOnPage", "when": "resourceFilename =~ /\\.bbm(\\.md)?$/ && activeCustomEditorId != beermat.sheet", "group": "navigation" },
+        { "command": "beermat.openAsText", "when": "activeCustomEditorId == beermat.sheet", "group": "navigation" }
+      ]
+    }
+  }
+}

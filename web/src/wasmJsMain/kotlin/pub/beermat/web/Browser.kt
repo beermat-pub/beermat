@@ -90,3 +90,24 @@ internal fun onPaste(onText: (String) -> Unit): Unit = js(
         if (t) { onText(t); e.preventDefault(); }
     })""",
 )
+
+// VS Code's web view (docs/vscode.md): the page talks to the extension in messages.
+
+/** Whether the page runs in VS Code's web view rather than a browser tab. */
+internal fun inVsCode(): Boolean = js("typeof acquireVsCodeApi === 'function'")
+
+/** Sends the extension a message: its [type], and [text] and [id] where the type has them. */
+internal fun postToVsCode(type: String, text: String, id: Int): Unit = js(
+    """{
+        window.beermatVsCode = window.beermatVsCode || acquireVsCodeApi();
+        window.beermatVsCode.postMessage({ type: type, text: text, id: id });
+    }""",
+)
+
+/** Calls [onMessage] with each message from the extension: its type, text, id, and the yes-or-no of an answer. */
+internal fun onVsCodeMessage(onMessage: (String, String, Int, Boolean) -> Unit): Unit = js(
+    """window.addEventListener('message', e => {
+        const m = e.data || {};
+        onMessage(String(m.type || ''), String(m.text == null ? '' : m.text), Number(m.id || 0), !!m.yes);
+    })""",
+)

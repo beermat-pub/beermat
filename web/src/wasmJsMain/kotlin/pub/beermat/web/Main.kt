@@ -43,7 +43,7 @@ import kotlin.io.encoding.Base64
 private const val DOWNLOAD = "https://beermat.pub/download"
 
 /** The manual (docs/manual.md). */
-private const val MANUAL = "https://beermat.pub/docs/"
+internal const val MANUAL = "https://beermat.pub/docs/"
 
 /** The website, which the page's name and a button lead back to. */
 private const val SITE = "https://beermat.pub"
@@ -57,15 +57,21 @@ private val TEXT_FONTS = listOf("LiberationSans-Regular", "LiberationSans-Bold",
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    ComposeViewport(document.body!!) { WebApp() }
+    // The same build runs in VS Code's web view (docs/vscode.md), as the extension's editor of .bbm files.
+    ComposeViewport(document.body!!) { if (inVsCode()) VsCodeApp() else WebApp() }
+}
+
+/** The math font, and the text fonts: the browser gives Skia none of its own. */
+internal suspend fun loadFonts() {
+    SkiaMath.load()
+    for (font in TEXT_FONTS) PageFonts.register(Res.readBytes("files/fonts/$font.ttf"))
 }
 
 @Composable
 private fun WebApp() {
     var ready by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        SkiaMath.load()
-        for (font in TEXT_FONTS) PageFonts.register(Res.readBytes("files/fonts/$font.ttf"))
+        loadFonts()
         ready = true
     }
     if (!ready) {

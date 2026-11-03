@@ -4,7 +4,10 @@ import pub.beermat.app.Host
 import pub.beermat.app.Pasted
 import pub.beermat.app.page.Session
 
-/** The sheet view's [Host] in the browser: its clipboard and question boxes. */
+/**
+ * The sheet view's [Host] in the browser: its clipboard and question boxes. In VS Code's web view,
+ * which has no question boxes, the extension asks instead and answers in a message ([answer]).
+ */
 internal object WebHost : Host {
 
     override fun copyText(text: String) = copyToClipboard(text)
@@ -16,15 +19,36 @@ internal object WebHost : Host {
 
     override fun beep() {}
 
-    override fun askMatrix(): Pair<Int, Int>? {
-        val n = numbers(prompt("Rows and columns:", "3, 1") ?: return null)
-        return if (n.size == 2) n[0] to n[1] else null
+    override val undoesItself: Boolean get() = !inVsCode()
+
+    override fun askMatrix(answer: (Int, Int) -> Unit) {
+        if (inVsCode()) return ask("matrix") { text, _ -> numbers(text).takeIf { it.size == 2 }?.let { answer(it[0], it[1]) } }
+        val n = numbers(prompt("Rows and columns:", "3, 1") ?: return)
+        if (n.size == 2) answer(n[0], n[1])
     }
 
-    override fun askMatrixResize(): Triple<Int, Int, Boolean>? {
-        val n = numbers(prompt("Rows and columns, after the cursor's cell (insert) or from it (delete):", "1, 0") ?: return null)
-        if (n.size != 2) return null
-        return Triple(n[0], n[1], confirm("OK to insert them, Cancel to delete them."))
+    override fun askMatrixResize(answer: (Int, Int, Boolean) -> Unit) {
+        if (inVsCode()) return ask("resize") { text, insert -> numbers(text).takeIf { it.size == 2 }?.let { answer(it[0], it[1], insert) } }
+        val n = numbers(prompt("Rows and columns, after the cursor's cell (insert) or from it (delete):", "1, 0") ?: return)
+        if (n.size == 2) answer(n[0], n[1], confirm("OK to insert them, Cancel to delete them."))
+    }
+
+    /** Questions sent to VS Code, waiting for their answers, by number. */
+    private val waiting = mutableMapOf<Int, (String, Boolean) -> Unit>()
+    private var asked = 0
+
+    /** Shows the change an answer made (the page sets this). */
+    var answered: () -> Unit = {}
+
+    private fun ask(kind: String, then: (String, Boolean) -> Unit) {
+        waiting[++asked] = then
+        postToVsCode("ask", kind, asked)
+    }
+
+    /** VS Code's answer to question [id]: the text typed (empty when cancelled), and a yes or no. */
+    fun answer(id: Int, text: String, yes: Boolean) {
+        waiting.remove(id)?.invoke(text, yes)
+        answered()
     }
 
     /** Opens the page's Result Format dialog (the page sets this to show it). */

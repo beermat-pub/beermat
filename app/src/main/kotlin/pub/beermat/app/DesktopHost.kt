@@ -49,13 +49,13 @@ object DesktopHost : Host {
     override fun beep() = Toolkit.getDefaultToolkit().beep()
 
     /** Rows and columns, as `3, 1` (a column of 3) or `2 2`. */
-    override fun askMatrix(): Pair<Int, Int>? {
-        val answer = JOptionPane.showInputDialog(null, "Rows and columns:", "Insert matrix", JOptionPane.QUESTION_MESSAGE, null, null, "3, 1") as? String ?: return null
-        val n = Regex("""\d+""").findAll(answer).map { it.value.toInt() }.toList()
-        return if (n.size == 2) n[0] to n[1] else null
+    override fun askMatrix(answer: (Int, Int) -> Unit) {
+        val text = JOptionPane.showInputDialog(null, "Rows and columns:", "Insert matrix", JOptionPane.QUESTION_MESSAGE, null, null, "3, 1") as? String ?: return
+        val n = Regex("""\d+""").findAll(text).map { it.value.toInt() }.toList()
+        if (n.size == 2) answer(n[0], n[1])
     }
 
-    override fun askMatrixResize(): Triple<Int, Int, Boolean>? {
+    override fun askMatrixResize(answer: (Int, Int, Boolean) -> Unit) {
         val field = JTextField("1, 0", 8)
         val panel = JPanel(BorderLayout(0, 6)).apply {
             add(JLabel("Rows and columns, after the cursor's cell (Insert) or from it (Delete):"), BorderLayout.NORTH)
@@ -63,9 +63,9 @@ object DesktopHost : Host {
         }
         val options = arrayOf("Insert", "Delete", "Cancel")
         val choice = JOptionPane.showOptionDialog(null, panel, "Resize matrix", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0])
-        if (choice !in 0..1) return null
+        if (choice !in 0..1) return
         val n = Regex("""\d+""").findAll(field.text).map { it.value.toInt() }.toList()
-        return if (n.size == 2) Triple(n[0], n[1], choice == 0) else null
+        if (n.size == 2) answer(n[0], n[1], choice == 0)
     }
 
     override fun editResultFormat(session: Session, region: Int, statement: Int) = ResultFormatDialog.edit(session, region, statement)

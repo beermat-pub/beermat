@@ -106,9 +106,11 @@ object Keys {
 
     /** `Ctrl+M` and the matrix button: a new matrix in an empty slot; in a matrix, Insert or Delete of rows and columns. */
     fun matrixCommand(session: Session, host: Host): Boolean {
-        if (!session.inMatrix) return host.askMatrix()?.let { (r, c) -> session.matrix(r, c) } ?: false
-        val (rows, cols, insert) = host.askMatrixResize() ?: return false
-        return session.resizeMatrix(rows, cols, insert)
+        // Cancelling isn't a mistake to beep at; a host that answers later shows the change itself.
+        var done = true
+        if (!session.inMatrix) host.askMatrix { r, c -> done = session.guard(false) { session.matrix(r, c) } }
+        else host.askMatrixResize { r, c, insert -> done = session.guard(false) { session.resizeMatrix(r, c, insert) } }
+        return done
     }
 
     /** The character a control-key chord names: Ctrl+G is 'g', Ctrl+= is '='. */
@@ -128,8 +130,9 @@ object Keys {
         return when {
             c == 's' && shift -> session.separate().let { true }
             c == 's' -> onSave().let { true }
-            c == 'z' -> session.undo().let { true }
-            c == 'y' -> session.redo().let { true }
+            // Unhandled, they reach the host, as in VS Code (Host.undoesItself).
+            c == 'z' -> host.undoesItself && session.undo().let { true }
+            c == 'y' -> host.undoesItself && session.redo().let { true }
             c == 'm' -> matrixCommand(session, host)
             c == 'c' -> session.copyText()?.let { host.copyText(it); true } ?: false
             // A picture copied from another program becomes an image region; text, a math region.

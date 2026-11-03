@@ -63,3 +63,79 @@ tasks.named<ProcessResources>("wasmJsProcessResources") {
         include("logo-small.svg", "icon-32.png", "apple-touch-icon.png")
     }
 }
+
+// The VS Code extension (docs/vscode.md): vscode/, with this build as its page in media/, packed as a
+// .vsix (a zip with a manifest) without vsce or npm. `./gradlew :web:vsix`, then
+// `code --install-extension web/build/vsix/beermat-<version>.vsix`.
+val vsixVersion = project.version.toString()
+val vsixManifest by tasks.registering {
+    val dir = layout.buildDirectory.dir("vsix-manifest")
+    val version = vsixVersion
+    inputs.property("version", version)
+    outputs.dir(dir)
+    doLast {
+        val out = dir.get().asFile.apply { mkdirs() }
+        File(out, "extension.vsixmanifest").writeText(
+            """<?xml version="1.0" encoding="utf-8"?>
+            |<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+            |  <Metadata>
+            |    <Identity Language="en-US" Id="beermat" Version="$version" Publisher="beermat-pub"/>
+            |    <DisplayName>Beermat</DisplayName>
+            |    <Description xml:space="preserve">Engineering worksheets in VS Code: .bbm files open on their page, with real math, units, plots and results.</Description>
+            |    <Tags>engineering,calculation,worksheet,units,math</Tags>
+            |    <Categories>Visualization,Education,Other</Categories>
+            |    <GalleryFlags>Public</GalleryFlags>
+            |    <Properties>
+            |      <Property Id="Microsoft.VisualStudio.Code.Engine" Value="^1.90.0"/>
+            |      <Property Id="Microsoft.VisualStudio.Code.ExtensionDependencies" Value=""/>
+            |      <Property Id="Microsoft.VisualStudio.Code.ExtensionPack" Value=""/>
+            |      <Property Id="Microsoft.VisualStudio.Code.ExtensionKind" Value="ui,workspace"/>
+            |      <Property Id="Microsoft.VisualStudio.Services.Links.Source" Value="https://github.com/beermat-pub/beermat"/>
+            |    </Properties>
+            |    <License>extension/LICENSE.txt</License>
+            |    <Icon>extension/icon.png</Icon>
+            |  </Metadata>
+            |  <Installation><InstallationTarget Id="Microsoft.VisualStudio.Code"/></Installation>
+            |  <Dependencies/>
+            |  <Assets>
+            |    <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true"/>
+            |    <Asset Type="Microsoft.VisualStudio.Services.Content.Details" Path="extension/README.md" Addressable="true"/>
+            |    <Asset Type="Microsoft.VisualStudio.Services.Content.License" Path="extension/LICENSE.txt" Addressable="true"/>
+            |    <Asset Type="Microsoft.VisualStudio.Services.Icons.Default" Path="extension/icon.png" Addressable="true"/>
+            |  </Assets>
+            |</PackageManifest>
+            |""".trimMargin(),
+        )
+        val types = mapOf(
+            "json" to "application/json", "js" to "application/javascript", "md" to "text/markdown", "txt" to "text/plain",
+            "png" to "image/png", "svg" to "image/svg+xml", "html" to "text/html", "wasm" to "application/wasm",
+            "ttf" to "font/ttf", "otf" to "font/otf", "map" to "application/json", "cvr" to "application/octet-stream",
+            "vsixmanifest" to "text/xml",
+        )
+        File(out, "[Content_Types].xml").writeText(
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">" +
+                types.entries.joinToString("") { (ext, type) -> "<Default Extension=\".$ext\" ContentType=\"$type\"/>" } + "</Types>",
+        )
+    }
+}
+
+tasks.register<Zip>("vsix") {
+    group = "distribution"
+    description = "Packs the VS Code extension, with this build as its page."
+    dependsOn("wasmJsBrowserDistribution")
+    val version = project.version.toString()
+    archiveFileName.set("beermat-$version.vsix")
+    destinationDirectory.set(layout.buildDirectory.dir("vsix"))
+    from(vsixManifest)
+    into("extension") {
+        from(rootProject.file("vscode")) {
+            include("package.json", "extension.js", "README.md")
+            filesMatching("package.json") { filter { it.replace("\"version\": \"0.0.0\"", "\"version\": \"$version\"") } }
+        }
+        from(rootProject.file("LICENSE")) { rename { "LICENSE.txt" } }
+        from(rootProject.file("branding/icon-512.png")) { rename { "icon.png" } }
+        into("media") {
+            from(layout.buildDirectory.dir("dist/wasmJs/productionExecutable")) { exclude("*.map", "index.html") }
+        }
+    }
+}

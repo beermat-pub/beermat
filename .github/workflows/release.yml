@@ -125,7 +125,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: linux, path: "beermat-linux.*\nbeermat-cli-linux.zip" }
 
-  # The web version (docs/web.md): the page's files, zipped for the release and published to beermat.pub/try.
+  # The web version (docs/web.md): the page's files, zipped for the release and published to beermat.pub/try;
+  # and the VS Code extension made from it.
   web:
     if: ${{ !inputs.only || inputs.only == 'web' }}
     runs-on: ubuntu-latest
@@ -135,10 +136,16 @@ jobs:
         with: { distribution: temurin, java-version: 21 }
       - uses: gradle/actions/setup-gradle@v4
       - run: echo "V=${VERSION#v}" >> $GITHUB_ENV
-      - run: ./gradlew :web:wasmJsBrowserDistribution "-Pversion=${{ env.V }}"
+      # The VS Code extension (docs/vscode.md) is the same build, packed as a .vsix.
+      - run: ./gradlew :web:vsix "-Pversion=${{ env.V }}"
       - run: cd web/build/dist/wasmJs/productionExecutable && zip -qr "$GITHUB_WORKSPACE/beermat-web.zip" .
+      - run: cp web/build/vsix/*.vsix "$GITHUB_WORKSPACE/"
       - uses: actions/upload-artifact@v4
-        with: { name: web, path: beermat-web.zip }
+        with:
+          name: web
+          path: |
+            beermat-web.zip
+            beermat-*.vsix
 
   # The manual (docs/manual.md): Starlight's HTML, published to beermat.pub/docs with the web version.
   manual:

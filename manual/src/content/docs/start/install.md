@@ -24,6 +24,16 @@ Install `beermat-linux.deb` (Debian, Ubuntu) or `beermat-linux.rpm` (Fedora, ope
 
 [beermat.pub/try](https://beermat.pub/try) runs Beermat in the browser: the same page, toolbar and keys. Your sheet stays in the browser until you save it to your computer. Printing, PDF, `.xmcd` import, symbolic algebra beyond the basics, Python functions and AI assistants need the desktop app; the browser shows them greyed out.
 
+## In VS Code
+
+The Beermat extension opens `.bbm` files on their page inside VS Code, with the toolbar and the same keys. Download `beermat-….vsix` from the [latest release](https://github.com/beermat-pub/beermat/releases), then in a terminal:
+
+```text
+code --install-extension beermat-1.0.0.vsix
+```
+
+(or **Extensions → ⋯ → Install from VSIX…**). The page edits the file's text, so saving, undo and git work as for any file; **Open as Text** at the top right shows the Markdown beside the page. As in the browser, symbolic algebra, Python functions and data files need the desktop app.
+
 ## The `beermat` command
 
 The desktop app brings the [`beermat` command](../../reference/command-line/) with it, for scripts and AI assistants.
