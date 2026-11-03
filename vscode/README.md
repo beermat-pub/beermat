@@ -12,4 +12,6 @@ M_max := q*L^2/8 = ? kN*m   →   M_max := q·L²/8 = 54 kN·m
 
 **Symbolic algebra** beyond the basics (integrals, factoring, series, solving, transforms) comes from the desktop app when it is installed: the extension finds its `beermat` command (or set **beermat.command**). Data files beside the sheet (`READCSV`, `READPRN`, `READFILE`) and linked pictures are read in a trusted workspace. **Python functions** (`bt := use "beam_tools.py"`) run through it too, after you say the file may run, as the app asks. Excel files (`READEXCEL`) are read by it as well, and **Beermat: Import .xmcd Worksheet…** (or right-click an `.xmcd` file) converts older worksheets. Printing and PDF are in the desktop app: [beermat.pub/download](https://beermat.pub/download). The manual is at [beermat.pub/docs](https://beermat.pub/docs/).
 
+**AI assistants** (Claude Code and any MCP client) work on the sheet open here: **Beermat: Connect Claude Code** copies the one command to run. They read it with your unsaved changes, and their edits show on the page at once and undo with Ctrl+Z.
+
 Beermat is free and open source (MIT). Issues and ideas: [github.com/beermat-pub/beermat](https://github.com/beermat-pub/beermat/issues).

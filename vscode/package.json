@@ -30,6 +30,11 @@
     "configuration": {
       "title": "Beermat",
       "properties": {
+        "beermat.mcpPort": {
+          "type": "number",
+          "default": 7342,
+          "markdownDescription": "The port of the AI tools (MCP) on the sheets open in VS Code, at `http://127.0.0.1:<port>/mcp`. The desktop app uses 7341."
+        },
         "beermat.command": {
           "type": "string",
           "default": "",
@@ -40,7 +45,8 @@
     "commands": [
       { "command": "beermat.openOnPage", "title": "Open on the Beermat Page", "category": "Beermat", "icon": "$(preview)" },
       { "command": "beermat.openAsText", "title": "Open as Text", "category": "Beermat", "icon": "$(go-to-file)" },
-      { "command": "beermat.importXmcd", "title": "Import .xmcd Worksheet…", "category": "Beermat" }
+      { "command": "beermat.importXmcd", "title": "Import .xmcd Worksheet…", "category": "Beermat" },
+      { "command": "beermat.connectClaude", "title": "Connect Claude Code (AI tools on the open sheet)", "category": "Beermat" }
     ],
     "menus": {
       "explorer/context": [

@@ -21,6 +21,7 @@ function activate(context) {
       if (uri) vscode.commands.executeCommand('vscode.openWith', uri, VIEW);
     }),
     vscode.commands.registerCommand('beermat.importXmcd', importXmcd),
+    vscode.commands.registerCommand('beermat.connectClaude', connectClaude),
     vscode.commands.registerCommand('beermat.openAsText', uri => {
       uri = uri ?? activeSheet();
       if (uri) vscode.commands.executeCommand('vscode.openWith', uri, 'default', vscode.ViewColumn.Beside);
@@ -72,6 +73,10 @@ class SheetEditor {
   }
 
   resolveCustomTextEditor(document, panel) {
+    // The AI tools work on the active page (the last one in front).
+    mcp.active = document;
+    mcp.start();
+    panel.onDidChangeViewState(e => { if (e.webviewPanel.active) mcp.active = document; });
     const media = vscode.Uri.joinPath(this.context.extensionUri, 'media');
     panel.webview.options = { enableScripts: true, localResourceRoots: [media] };
     panel.webview.html = page(panel.webview, media);
@@ -327,8 +332,150 @@ const helper = {
   },
 };
 
-function deactivate() {
-  helper.stop();
+/**
+ * The MCP server on the sheets open in VS Code (docs/vscode.md#step-4-in-detail): the same tools as the
+ * app's, on MCP's streamable HTTP transport at 127.0.0.1 (port `beermat.mcpPort`, 7342 by default; the
+ * app has 7341). The tools themselves run in `beermat mcp --host`, which asks here for each sheet it
+ * reads or writes: the live document, so an AI assistant sees unsaved changes and its edits show on
+ * the page at once and undo with Ctrl+Z. Refuses requests from web pages, as the app does. Started
+ * with the first sheet opened in a trusted workspace.
+ */
+const mcp = {
+  server: undefined,
+  port: undefined,
+  host: undefined,
+  buffer: '',
+  busy: Promise.resolve(),
+  pending: undefined,
+  active: undefined,
+
+  start() {
+    if (this.server || !vscode.workspace.isTrusted) return;
+    const http = require('http');
+    const port = vscode.workspace.getConfiguration('beermat').get('mcpPort') || 7342;
+    const server = http.createServer((req, res) => this.exchange(req, res));
+    server.on('error', () => { this.server = undefined; this.port = undefined; });
+    server.listen(port, '127.0.0.1', () => { this.port = port; });
+    this.server = server;
+  },
+
+  stop() {
+    this.server?.close();
+    this.server = undefined;
+    this.port = undefined;
+    this.host?.kill();
+    this.host = undefined;
+  },
+
+  exchange(req, res) {
+    const origin = req.headers.origin;
+    if (origin && !/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin)) { res.writeHead(403); return res.end(); }
+    if (req.method !== 'POST') { res.writeHead(405, { Allow: 'POST' }); return res.end(); }
+    let body = '';
+    req.on('data', d => (body += d));
+    req.on('end', async () => {
+      const reply = await this.handle(body);
+      if (reply == null) { res.writeHead(202); return res.end(); }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(reply);
+    });
+  },
+
+  /** One MCP message at a time: the host asks for sheets while it works on it. */
+  handle(message) {
+    const run = this.busy.then(() => new Promise(resolve => {
+      if (!this.host) this.startHost();
+      this.pending = resolve;
+      this.host.stdin.write(JSON.stringify({ mcp: message }) + '\n');
+    }));
+    this.busy = run.catch(() => {});
+    return run;
+  },
+
+  startHost() {
+    const p = helper.spawn(['mcp', '--host']);
+    this.host = p;
+    this.buffer = '';
+    p.stdout.setEncoding('utf8');
+    p.stdout.on('data', chunk => {
+      this.buffer += chunk;
+      let end;
+      while ((end = this.buffer.indexOf('\n')) >= 0) {
+        const line = this.buffer.slice(0, end).trim();
+        this.buffer = this.buffer.slice(end + 1);
+        if (line) this.line(JSON.parse(line));
+      }
+    });
+    const stopped = () => {
+      if (this.host !== p) return;
+      this.host = undefined;
+      const resolve = this.pending;
+      this.pending = undefined;
+      resolve?.(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32603, message: 'beermat stopped (is the desktop app installed?)' } }));
+    };
+    p.on('error', stopped);
+    p.on('exit', stopped);
+  },
+
+  async line(m) {
+    if ('reply' in m) {
+      const resolve = this.pending;
+      this.pending = undefined;
+      return resolve?.(m.reply);
+    }
+    let answer;
+    try {
+      answer = 'read' in m ? await this.read(m.read) : await this.write(m.write, m.text);
+    } catch (e) {
+      answer = { error: e.message };
+    }
+    this.host?.stdin.write(JSON.stringify(answer) + '\n');
+  },
+
+  /** The document a path names: the active Beermat page for none, else one open in VS Code, else none (the file on disk). */
+  document(path) {
+    if (path == null) {
+      if (!this.active || this.active.isClosed) throw new Error('no Beermat sheet is open in VS Code: open one, or give the path');
+      return this.active;
+    }
+    const same = (a, b) => (process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b);
+    const full = require('path').resolve(path);
+    return vscode.workspace.textDocuments.find(d => d.uri.scheme === 'file' && same(d.uri.fsPath, full));
+  },
+
+  async read(path) {
+    const d = this.document(path);
+    if (d) return { text: d.getText().replace(/\r\n/g, '\n'), folder: d.uri.scheme === 'file' ? require('path').dirname(d.uri.fsPath) : null };
+    const bytes = await vscode.workspace.fs.readFile(vscode.Uri.file(path));
+    return { text: Buffer.from(bytes).toString('utf8'), folder: require('path').dirname(require('path').resolve(path)) };
+  },
+
+  async write(path, text) {
+    const d = this.document(path);
+    if (d) await edit(d, text, d.getText().replace(/\r\n/g, '\n'));
+    else await vscode.workspace.fs.writeFile(vscode.Uri.file(path), Buffer.from(text, 'utf8'));
+    return { done: true };
+  },
+
+  /** What to run once in a terminal to connect Claude Code. */
+  get command() {
+    return this.port && `claude mcp add --transport http beermat-vscode http://127.0.0.1:${this.port}/mcp`;
+  },
+};
+
+/** Beermat: Connect Claude Code: the command to run once, copied. */
+async function connectClaude() {
+  if (!vscode.workspace.isTrusted) return vscode.window.showWarningMessage('The AI tools are off in Restricted Mode.');
+  mcp.start();
+  await new Promise(r => setTimeout(r, 300));
+  if (!mcp.command) return vscode.window.showWarningMessage('The AI tools could not start: another program has the port (the beermat.mcpPort setting picks another).');
+  await vscode.env.clipboard.writeText(mcp.command);
+  vscode.window.showInformationMessage(`Copied: ${mcp.command}. Run it once in a terminal; Claude Code then works on the Beermat page open here.`);
 }
 
-module.exports = { activate, deactivate, edit, helper, python };
+function deactivate() {
+  helper.stop();
+  mcp.stop();
+}
+
+module.exports = { activate, deactivate, edit, helper, python, mcp };

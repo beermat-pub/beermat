@@ -19,6 +19,10 @@ Then ask, in Claude Code, for example: *"Read my open Beermat sheet and check th
 - Its edits appear at once, unsaved: you see them, and **Ctrl+Z** undoes them. You decide whether to save.
 - The connection is to your own computer only (`127.0.0.1`), and web pages can't use it.
 
+## In VS Code
+
+With the Beermat extension, the same tools work on the sheet open in VS Code. Run **Beermat: Connect Claude Code** from the Command Palette: it copies a command like the one above (with port 7342), to run once. The assistant then reads the Beermat page in front, with your unsaved changes, and its edits show on it at once; **Ctrl+Z** undoes them.
+
 ## From files
 
 Without the app open, the [`beermat` command](../../reference/command-line/) serves the same tools on worksheet files:

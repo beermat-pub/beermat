@@ -51,7 +51,9 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             "export" -> setOf("--to", "--out", "--allow-python")
             "import" -> setOf("--out")
             "mcp" -> {
-                pub.beermat.mcp.Mcp(System.`in`.bufferedReader(Charsets.UTF_8), out).serve()
+                // --host: for the VS Code extension, which holds the sheets (docs/vscode.md#step-4-in-detail).
+                if ("--host" in args) McpHost(System.`in`.bufferedReader(Charsets.UTF_8), System.out.bufferedWriter(Charsets.UTF_8)).serve()
+                else pub.beermat.mcp.Mcp(System.`in`.bufferedReader(Charsets.UTF_8), out).serve()
                 return 0
             }
             "packages" -> return packages(args.drop(1))

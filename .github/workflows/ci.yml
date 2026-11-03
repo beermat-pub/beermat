@@ -28,4 +28,4 @@ jobs:
         with: { node-version: 24, cache: npm, cache-dependency-path: manual/package-lock.json }
       - run: cd manual && npm ci && npm run build
       # The VS Code extension's edits to the document (docs/vscode.md).
-      - run: node --test vscode/test/edit.test.js vscode/test/python.test.js
+      - run: node --test vscode/test/edit.test.js vscode/test/python.test.js vscode/test/mcp.test.js

@@ -11,6 +11,7 @@ Claude Code, or any MCP client, can read, evaluate and edit worksheets through B
   ```
 
   It listens on 127.0.0.1 only and refuses requests from web pages (an `Origin` other than localhost). `BEERMAT_MCP_PORT` picks another port; a second window can't share the port, so its server is off (the Tools menu says so).
+- **In VS Code** (the extension, docs/vscode.md#step-4-in-detail): the same tools on `http://127.0.0.1:7342/mcp`, on the sheets open there, live as in the app; **Beermat: Connect Claude Code** copies the command. The tools run in `beermat mcp --host`, which asks the extension for each sheet.
 - **From the CLI**, `beermat mcp`, on stdin/stdout, editing files (the app follows the file on disk):
 
   ```

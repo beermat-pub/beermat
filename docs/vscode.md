@@ -1,6 +1,6 @@
 # The VS Code extension
 
-> Status: **step 2 built** (2026-11-03; Dan brought the extension into 1.0 that day): the custom editor, the web build inside it, the document kept in step both ways, a `.vsix` on each release. **Step 3 built** the same day: SymPy, Python functions (with consent), `READEXCEL` and `.xmcd` import through the installed `beermat`; data files and linked pictures read by the extension. Python functions, data files and `.xmcd` import, then steps 4 and 5, to do. Plan agreed with Dan on 2026-11-01 (milestone 24).
+> Status: **step 2 built** (2026-11-03; Dan brought the extension into 1.0 that day): the custom editor, the web build inside it, the document kept in step both ways, a `.vsix` on each release. **Steps 3 and 4 built** the same day (the AI tools on the open sheet, below): SymPy, Python functions (with consent), `READEXCEL` and `.xmcd` import through the installed `beermat`; data files and linked pictures read by the extension. Python functions, data files and `.xmcd` import, then steps 4 and 5, to do. Plan agreed with Dan on 2026-11-01 (milestone 24).
 
 The whole Beermat editor inside VS Code: a `.bbm` file opens on its page, with the toolbar and the same keys as the desktop app, beside the code and the chat it belongs with.
 
@@ -45,6 +45,15 @@ VS Code lets an extension draw a file's editor itself, in a web view (a *custom 
 - **`READEXCEL`** (built 2026-11-03): the page sends `{"excel": path, "range": …}` over the bridge; `beermat bridge` reads the workbook with POI (`ExcelFiles.read`) and answers the cells as `bridge.py` writes values (numbers, `{"s": …}`, `{"m": rows}`). Not a Python request, so no consent; the helper runs only in a trusted workspace.
 - **`.xmcd` import** (built 2026-11-03): **Beermat: Import .xmcd Worksheet…** (and the Explorer's right-click on an `.xmcd`) runs `beermat import`, beside it as a `.bbm` (or where the user says when that exists), opens it on its page and lists what didn't come across. On Windows the helper's command line quotes paths.
 - Step 3 is complete.
+
+## Step 4 in detail
+
+Built 2026-11-03.
+
+- **The same tools as the app**, on the same transport (MCP's streamable HTTP, `POST /mcp`), served by the extension at `http://127.0.0.1:7342/mcp` (`beermat.mcpPort`; the app has 7341, so both can run). It starts with the first sheet opened in a trusted workspace, listens on 127.0.0.1 only, and refuses a request with an `Origin` that isn't localhost, as the app does. **Beermat: Connect Claude Code** copies `claude mcp add --transport http beermat-vscode http://127.0.0.1:7342/mcp`.
+- **The tools run in `beermat mcp --host`** (the `mcp` module's `Mcp`, with a `Documents` that asks the host): one JSON object per line each way. The extension sends `{"mcp": message}` and gets `{"reply": response}`; while a tool works it asks `{"read": path}` (answered with the text and folder) or `{"write": path, "text": …}`. One MCP message at a time.
+- **Live documents**: no path is the active Beermat page (the last one in front); a path is the document open in VS Code for that file, else the file on disk. Reads see unsaved changes; writes are edits to the document (the part that changed), so they show on the page at once, are unsaved until saved, and undo with Ctrl+Z.
+- Checked by `vscode/test/mcp.test.js`: refusing a web page's request (in CI), and, with a built `beermat`, a session that reads the live sheet and inserts a statement, which arrives in the document with its result.
 
 ## Alternatives considered
 
