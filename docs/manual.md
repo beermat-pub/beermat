@@ -1,6 +1,6 @@
 # The manual
 
-> Status: **step 1 done** (2026-11-02, for 1.0.0-dev2): the Starlight project in `manual/`, built in CI and published to beermat.pub/docs by releases; a shell of a few pages (start, install, first worksheet, the command line, What's new); Help → Manual and F1 open it. The rest of the plan below is to do: Dan's idea (2026-11-02) is to write it on the released dev2, recording the first videos as we go.
+> Status: **step 1 done** (2026-11-02, for 1.0.0-dev2): the Starlight project in `manual/`, built in CI and published to beermat.pub/docs by releases; a shell of a few pages (start, install, first worksheet, the command line, What's new); Help → Manual and F1 open it. **Step 2 done** (2026-11-03, for 1.0.0-dev3): the reference pages generated from the code (functions, units, settings, keys) and F1 on a function. The rest of the plan below is to do: Dan's idea (2026-11-02) is to write it on the released version, recording the first videos as we go.
 
 The user's manual, for 1.0: a documentation website at **beermat.pub/docs**, written in Markdown in this repository, built by the release workflow, and opened from the app's Help menu. **Public-facing**: no other product is named or compared; pages may say that Beermat imports `.xmcd` files.
 
@@ -22,7 +22,11 @@ The user's manual, for 1.0: a documentation website at **beermat.pub/docs**, wri
 
 Anything that is a list in the code is generated from the code, so the manual can't fall behind.
 
-- **Reference pages**: every built-in function, operator, unit, keyword, setting and keystroke. Each built-in gains a short doc entry in the engine (signature, one sentence, an example), and a test fails if one is missing. Units come from `units.bbm`, settings from the frontmatter table, keystrokes from the editor's key map. A Gradle task (`:manual:reference`) writes them as Markdown pages.
+- **Reference pages**: every built-in function, operator, unit, keyword, setting and keystroke. Built (2026-11-03):
+  - Each built-in has a doc entry in the engine (`FunctionDocs`: signature, one sentence, an example, and its group, one page each), and `FunctionDocsTest` fails if one is missing or an example doesn't evaluate. The page shows the example with its result written in by the evaluator, so it can't be wrong.
+  - Units come from `units.bbm` (its sections and the text under each heading, `BuiltinUnits`), settings from `Settings.reference` in the format module (a test checks the sheet reads each), keys from the toolbar's palettes (`Commands`) and a list of the general keys.
+  - `ManualReferenceTest` (app module) writes them to `manual/src/content/docs/reference/` with `./gradlew :app:test --tests '*ManualReference*' -Pbeermat.writeReference=true`. The pages are committed, and the test fails when the code changes and they aren't written again, so CI keeps them in step (rather than a Gradle task in the manual's Node build, which would need Java there).
+  - Each function has an anchor of its own, `#fn-name` (headings' own ids would clash between `floor` and `Floor`).
 - **Pictures of math and plots**, drawn by Beermat itself: a ```` ```beermat ```` fence in a page holds a small sheet, and a Gradle task renders it to SVG with the app's painter (as PDF export does) and puts the image in its place. The same task evaluates it, so an example that gives an error fails the build: every example in the manual works.
 - **"Open this example"**: each example sheet is also published as a `.bbm` file; a button opens it in the web version (`beermat.pub/try?open=…`), ready to edit, and a link downloads it for the desktop app.
 
@@ -85,8 +89,8 @@ Four parts (the usual split of tutorials, how-to guides, reference and explanati
 ## Steps
 
 1. Done: the Starlight project in `manual/` (`npm run dev` to work on it, `npm run build`; `prepare.mjs` first copies the icons from `branding/` and writes What's new from `CHANGELOG.md`, leaving out versions not released yet, so neither is kept twice), the build in CI, publishing to beermat.pub/docs on release, the first pages (only written pages are in the sidebar, rather than "to be written" ones), `ROADMAP.md`.
-2. Doc entries for every built-in, and the generated reference pages.
+2. Done (2026-11-03): doc entries for every built-in, and the generated reference pages.
 3. The ```` ```beermat ```` fence: rendered to SVG, evaluated, published as `.bbm`, the "Open this example" button.
 4. The pages, written as each feature settles, all before the first 1.0 beta: Getting started first, then the reference's hand-written parts, then tutorials and how-tos.
-5. Help → Manual and F1 in the app. Done for the start page (2026-11-02: Help → Manual, F1, and a Manual button in the web version's top bar); F1 on a function, unit or keyword opens its reference page once those pages exist (step 2). The app opens beermat.pub/docs, the newest manual, until there are versions of it.
+5. Help → Manual and F1 in the app. Done for the start page (2026-11-02: Help → Manual, F1, and a Manual button in the web version's top bar); F1 on a function's name, or anywhere in a call of one, opens its entry (2026-11-03; `Session.helpPage`; the web version's Manual button does the same), and Help → Keyboard shortcuts the keys page; units and keywords open the start page for now. The app opens beermat.pub/docs, the newest manual, until there are versions of it.
 6. (1.x) The offline copy in the app; translations, with the app's.

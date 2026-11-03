@@ -9,6 +9,9 @@ import pub.beermat.engine.display.Rounding
 import pub.beermat.engine.eval.UnitOptions
 import pub.beermat.engine.syntax.Multiplication
 
+/** A frontmatter setting in the manual: [key] (`result.decimals`), its default, and what it does. */
+data class SettingDoc(val key: String, val default: String, val meaning: String)
+
 /**
  * The frontmatter settings that evaluation and display use (docs/file-format.md#frontmatter).
  * Settings that are invalid or not supported yet are listed in [problems] and left at their defaults.
@@ -41,6 +44,34 @@ data class Settings(
         private val resultKeys = setOf(
             "decimals", "significant", "strict", "trailing_zeros",
             "exponential_threshold", "zero_threshold", "complex_threshold", "prefixes",
+        )
+
+        /**
+         * Every setting, for the manual's reference (docs/manual.md#what-generates-itself): its key,
+         * its default and what it does. A test checks that each is read without a problem.
+         */
+        val reference: List<SettingDoc> = listOf(
+            SettingDoc("title", "the file's name", "The worksheet's title, `{title}` in a header or footer."),
+            SettingDoc("page", "`A4`", "The page size, `A4` or `letter`, with ¾ inch margins."),
+            SettingDoc("header", "none", "Text in the top margin of every page: `header: Calculation 12` (centred), or `header: {left: \"{title}\", centre: …, right: \"Page {page} of {pages}\"}`. The fields are `{page}`, `{pages}`, `{title}` and `{date}`."),
+            SettingDoc("footer", "none", "Text in the bottom margin of every page, as `header`."),
+            SettingDoc("single_page_width", "`false`", "`true`: printing and PDF export leave out what is past the right margin, rather than printing it on extra pages (File → Print single page width)."),
+            SettingDoc("result.decimals", "`3`", "Decimal places shown in results."),
+            SettingDoc("result.significant", "none", "Significant figures shown instead of decimal places."),
+            SettingDoc("result.strict", "`false`", "With `significant`: round digits left of the decimal point too (1234.567 to 3 figures is `1230`, not `1235`)."),
+            SettingDoc("result.trailing_zeros", "`false`", "With `decimals`: pad results to the full number of places."),
+            SettingDoc("result.exponential_threshold", "`6`", "Numbers of 10ⁿ or more, or below 10⁻ⁿ, are shown with an exponent."),
+            SettingDoc("result.zero_threshold", "`15`", "Values below 10⁻ⁿ show as 0."),
+            SettingDoc("result.complex_threshold", "`10`", "A real or imaginary part smaller than 10⁻ⁿ of the other is hidden."),
+            SettingDoc("result.prefixes", "`true`", "Engineering prefixes on results with no unit asked for (`54 kN·m`); `false` turns them off."),
+            SettingDoc("multiplication", "`dot`", "How `*` is drawn: `dot` (a·b) or `space` (a b) (Format → Multiplication)."),
+            SettingDoc("origin", "`0`", "The first index of arrays, the starting value of `ORIGIN`."),
+            SettingDoc("tolerance", "`1e-3`", "The starting value of `TOL`, used by the solvers and by comparisons (`==`, `<`, …)."),
+            SettingDoc("angle", "`none`", "`dimension` makes angle a dimension of its own, with `rad` its unit (Format → Units)."),
+            SettingDoc("angle_display", "`deg`", "With `angle: dimension`, how an angle shows when no unit is asked for: `deg` or `rad`."),
+            SettingDoc("currency", "none", "A currency dimension whose unit has this name, such as `AUD` or `€` (Format → Units)."),
+            SettingDoc("beermat", "`1`", "The version of the file format, written by Beermat."),
+            SettingDoc("results", "", "A fingerprint of the sheet when its results were saved, written by Beermat, so that results left over from an older version of the sheet aren't shown."),
         )
 
         /** Known keys that don't affect evaluation yet. */

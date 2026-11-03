@@ -28,7 +28,8 @@ class PythonTest {
     fun `it is the bundled Python, with the unused parts left out`() {
         val prefix = run("import sys; print(sys.prefix)")
         assertEquals(home.canonicalFile, java.io.File(prefix).canonicalFile)
-        assertEquals("False False", run("import importlib.util as u; print(u.find_spec('tkinter') is not None, u.find_spec('pip') is not None)"))
+        // pip stays, for the user's own packages (Packages).
+        assertEquals("False True", run("import importlib.util as u; print(u.find_spec('tkinter') is not None, u.find_spec('pip') is not None)"))
     }
 
     @Test

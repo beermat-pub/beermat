@@ -59,20 +59,17 @@ traces:
 
 ## Frontmatter
 
-YAML between `---` lines at the top. All keys are optional.
+YAML between `---` lines at the top. All keys are optional. The manual's list of them is `Settings.reference` in the format module (docs/manual.md#what-generates-itself); a new key goes in both.
 
 | Key | Default | Meaning |
 |---|---|---|
 | `beermat` | `1` | Format version |
 | `title` | file name | Worksheet title |
-| `units` | `SI` | Unit system for displaying results: `SI`, `USCS`, `CGS`, `MKS`, or `none` |
+| `units` | `SI` | Unit system for displaying results; only `SI` so far (`USCS`, `CGS`, `MKS` or `none` planned), so it is left out of the manual |
 | `angle` | `none` | `dimension` makes angles a dimension, `rad` its unit ([units.md](units.md#angle-and-currency-as-dimensions)); Format → Units |
 | `angle_display` | `deg` | With `angle: dimension`, an angle no unit was asked for shows in `deg` or `rad` |
 | `single_page_width` | `false` | `true`: printing and PDF leave out what is past the right margin, rather than printing it on extra pages ([editor.md](editor.md#printing)) |
 | `currency` | none | A currency dimension whose unit has this name (`AUD`, `€`); Format → Units |
-| `angle` | `dimensionless` | `dimension` makes angle a dimension of its own ([units.md](units.md#angle-and-currency-as-dimensions)) |
-| `angle_display` | `deg` | With `angle: dimension`: how angle results show, `deg` or `rad` |
-| `currency` | — | A currency name (`AUD`) turns on the currency dimension, with that unit |
 | `result.prefixes` | `true` | Engineering prefixes on results with no unit asked for (`54 kN·m`); `false` turns them off |
 | `origin` | `0` | Array ORIGIN |
 | `result.decimals` | `3` | Decimal places shown (the default way of rounding results) |

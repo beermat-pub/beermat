@@ -32,4 +32,31 @@ internal object UnitTable {
         }
         return out
     }
+
+    /** The table's sections, for the manual's reference (docs/manual.md#what-generates-itself). */
+    val sections: List<UnitSection> by lazy {
+        val out = mutableListOf<UnitSection>()
+        var inCalc = false
+        for (line in pub.beermat.engine.UNITS_BBM.lines()) {
+            val trimmed = line.trim()
+            val last = out.lastOrNull()
+            when {
+                trimmed.startsWith("## ") -> out += UnitSection(trimmed.removePrefix("## "), "", emptyList())
+                last == null -> {}
+                !inCalc && trimmed.startsWith("```calc") -> inCalc = true
+                inCalc && trimmed == "```" -> inCalc = false
+                inCalc && trimmed.isNotEmpty() -> out[out.lastIndex] = last.copy(definitions = last.definitions + trimmed)
+                !inCalc && last.definitions.isEmpty() -> out[out.lastIndex] = last.copy(text = (last.text + " " + trimmed).trim())
+            }
+        }
+        out
+    }
+}
+
+/** A section of the built-in unit table: its heading, the text below it, and its definitions as written (`kN := 1000 N`). */
+data class UnitSection(val title: String, val text: String, val definitions: List<String>)
+
+/** The built-in units, as the manual lists them. */
+object BuiltinUnits {
+    val sections: List<UnitSection> get() = UnitTable.sections
 }

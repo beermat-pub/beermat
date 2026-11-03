@@ -45,6 +45,10 @@ Converts an `.xmcd` worksheet to `.bbm` (next to it unless `--out` is given) and
 
 Serves worksheets to MCP clients such as Claude Code on standard input and output. See [mcp.md](mcp.md).
 
+## `beermat packages [list|install <name>…|remove <name>…|reinstall]`
+
+The user's own Python packages, which the Python files a sheet uses can import ([symbolic.md](symbolic.md#the-users-own-packages)); the same as Tools → Python packages… in the app. `list` (the default) shows what is installed and where, and what was asked for but isn't there; `install numpy scipy` installs with the bundled pip (requirements as pip takes them, `scipy==1.14`); `remove` takes a package out; `reinstall` installs again what was asked for but is missing, after an update brought a new Python.
+
 ## Exit codes
 
 | Code | Meaning |

@@ -77,8 +77,8 @@ ton := 2000 lb
 
 ## Temperature
 
-`°C` and `°F` are points on a scale: `20 °C` is 293.15 K. Here they are one degree; where
-each scale's zero lies is in code (`Builtins.temperatureZeros`). A temperature difference is
+`°C` and `°F` are points on a scale: `20 °C` is 293.15 K, and `= ? °C` shows a temperature
+on the scale. Here they are one degree; each scale's zero is built in. A temperature difference is
 `Δ°C` or `Δ°F`, and `R` is the rankine.
 
 ```calc

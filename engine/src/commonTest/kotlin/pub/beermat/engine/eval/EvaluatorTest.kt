@@ -223,6 +223,7 @@ class EvaluatorTest {
         assertEquals(2.0, real("log(100) = ?"))
         assertEquals(3.0, real("log(8, 2) = ?"), 1e-15)
         assertEquals(2.0, real("nthroot(8, 3) = ?"), 1e-15)
+        assertEquals(-2.0, real("nthroot(-8, 3) = ?"), 1e-15)
         assertEquals(Quantity(3.0, Dimension.LENGTH), value("max(1 m, 3 m, 2 m) = ?"))
         assertEquals(1.0, real("mod(7, 3) = ?"))
         assertEquals(3.14, real("round(π, 2) = ?"))

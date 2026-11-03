@@ -42,7 +42,10 @@ object Builtins {
         Builtin("nthroot", 2..2) { a ->
             val n = a[1]().real("nthroot", dimensionless = true)
             if (n != Math.rint(n) || n == 0.0) throw EvalException("root: the index must be a non-zero integer")
-            Scalar(a[0]().quantity("nthroot").root(n.toInt()))
+            val x = a[0]().quantity("nthroot")
+            // An odd root of a negative number is the real one: nthroot(-8, 3) is -2.
+            val negative = x.isReal && x.value.re < 0 && n.toInt() % 2 != 0
+            Scalar(if (negative) -(-x).root(n.toInt()) else x.root(n.toInt()))
         },
         unary("abs") { Quantity(it.value.abs(), it.dimension) },
         unary("Re") { Quantity(it.value.re, it.dimension) },

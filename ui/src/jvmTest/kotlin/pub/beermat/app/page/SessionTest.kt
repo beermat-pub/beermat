@@ -250,6 +250,16 @@ class SessionTest {
     }
 
     @Test
+    fun `F1 on a built-in function opens its page in the manual`() {
+        val s = Session("", math)
+        s.type("y:sqrt(2")
+        assertEquals("reference/functions/numbers/#fn-sqrt", s.helpPage())
+        val t = Session("", math)
+        t.type("y:q")
+        assertEquals(null, t.helpPage())
+    }
+
+    @Test
     fun `a word and a space in a new region make it text`() {
         val s = Session("", math)
         s.type("the")

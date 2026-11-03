@@ -38,7 +38,7 @@ jobs:
       - name: Check Python
         shell: pwsh
         run: |
-          & app\build\compose\binaries\main\app\Beermat\app\resources\python\python.exe -I -c "import sympy; print(sympy.__version__)"
+          & app\build\compose\binaries\main\app\Beermat\app\resources\python\python.exe -I -c "import sympy, pip; print(sympy.__version__, pip.__version__)"
           if ($LASTEXITCODE) { exit 1 }
           # The beermat command in the app's folder, on the app's own Java and Python (docs/cli.md#installing).
           & app\build\compose\binaries\main\app\Beermat\bin\beermat.cmd eval examples\symbolic.bbm
@@ -92,7 +92,7 @@ jobs:
         run: |
           # `yes` accepts the licence page the DMG shows before it mounts.
           yes | hdiutil attach -nobrowse -mountpoint /tmp/dmg Beermat-macos.dmg > /dev/null
-          /tmp/dmg/Beermat.app/Contents/app/resources/python/bin/python3 -I -c "import sympy; print(sympy.__version__)"
+          /tmp/dmg/Beermat.app/Contents/app/resources/python/bin/python3 -I -c "import sympy, pip; print(sympy.__version__, pip.__version__)"
           /tmp/dmg/Beermat.app/Contents/app/bin/beermat eval examples/symbolic.bbm
           hdiutil detach /tmp/dmg
           unzip -q beermat-cli-macos.zip -d cli-check && cli-check/beermat-*/bin/beermat eval examples/symbolic.bbm
@@ -119,7 +119,7 @@ jobs:
       - name: Check Python
         run: |
           dpkg-deb -x beermat-linux.deb deb-check
-          deb-check/opt/beermat/lib/app/resources/python/bin/python3 -I -c "import sympy; print(sympy.__version__)"
+          deb-check/opt/beermat/lib/app/resources/python/bin/python3 -I -c "import sympy, pip; print(sympy.__version__, pip.__version__)"
           deb-check/opt/beermat/bin/beermat eval examples/symbolic.bbm
           unzip -q beermat-cli-linux.zip -d cli-check && cli-check/beermat-*/bin/beermat eval examples/symbolic.bbm
       - uses: actions/upload-artifact@v4

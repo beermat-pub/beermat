@@ -755,6 +755,24 @@ class Session(text: String, private val math: MathLayout) {
         changed()
     }
 
+    /**
+     * The manual's page for F1 (docs/manual.md#in-the-app-and-for-ai): on a built-in function's
+     * name, or anywhere in a call of one, its reference entry; otherwise null, for the start page.
+     */
+    fun helpPage(): String? {
+        val e = editing ?: return null
+        val path = e.state.cursor.path
+        for (n in path.size downTo 0) {
+            val name = when (val node = Nodes.at(e.state.statement, path.take(n))) {
+                is Id -> node.name
+                is pub.beermat.engine.syntax.Call -> (node.fn as? Id)?.name
+                else -> null
+            }
+            pub.beermat.engine.eval.FunctionDocs.byName[name]?.let { return it.page }
+        }
+        return null
+    }
+
     // Tables as grids (TableEditor).
 
     /** The table in region [region], if it is a table region. */

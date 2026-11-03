@@ -96,6 +96,16 @@ class CalculationTest {
     }
 
     @Test
+    fun `every setting in the manual's reference is one the sheet reads`() {
+        for (doc in Settings.reference) {
+            val yaml = if ('.' in doc.key) doc.key.split('.').let { (a, b) -> "$a: {$b: 1}" } else "${doc.key}: 1"
+            val problems = Settings.of(sheet("---\n$yaml\n---\n")).problems
+            assertTrue(problems.none { "unknown setting" in it }, "${doc.key}: $problems")
+        }
+        assertEquals(Settings.reference.size, Settings.reference.map { it.key }.toSet().size)
+    }
+
+    @Test
     fun `the sheet's multiplication style`() {
         assertEquals(pub.beermat.engine.syntax.Multiplication.DOT, Settings.of(sheet("---\nbeermat: 1\n---\n")).multiplication)
         assertEquals(pub.beermat.engine.syntax.Multiplication.SPACE, Settings.of(sheet("---\nmultiplication: space\n---\n")).multiplication)

@@ -4,11 +4,10 @@ What's coming to Beermat, roughly in order. Plans change; [issues](https://githu
 
 ## 1.0, the first public version
 
-Today's previews already have the worksheet, the editor, units, plots, symbolic algebra, printing and PDF, `.xmcd` import, the command line, AI assistants through MCP, and the web version. Before 1.0:
+Today's previews already have the worksheet, the editor, units, plots, symbolic algebra, printing and PDF, `.xmcd` import, the command line, AI assistants through MCP, the web version, Python packages of your own for Python functions in a sheet, and the manual's reference of every function, unit, setting and key. Before 1.0:
 
-- **The manual** at [beermat.pub/docs](https://beermat.pub/docs/): getting started, tutorials, how-to guides, and a reference of every function, unit and keystroke, with examples drawn by Beermat itself. F1 on a function opens its page.
+- **The rest of the manual** at [beermat.pub/docs](https://beermat.pub/docs/): getting started, tutorials and how-to guides, with examples drawn by Beermat itself.
 - **Spreadsheet components** from `.xmcd` files whose formulas run, not only their last values.
-- **Python packages of your own** for Python functions in a sheet.
 - **Short videos** showing how it works.
 
 ## After 1.0

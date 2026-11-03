@@ -48,7 +48,7 @@ object Brand {
     /** The manual (docs/manual.md): Help → Manual and F1. */
     const val MANUAL = "https://beermat.pub/docs/"
     const val SOURCE = "https://github.com/beermat-pub/beermat"
-    const val SHORTCUTS = "https://github.com/beermat-pub/beermat/blob/main/docs/editor.md"
+    const val SHORTCUTS = "${MANUAL}reference/keys/"
     const val TERMS = "https://beermat.pub/terms"
 
     /** The no-warranty notice (the website's terms page), also on the installers' licence page and the website. */
@@ -62,7 +62,8 @@ object Brand {
     fun icon(): Painter = BitmapPainter(org.jetbrains.skia.Image.makeFromEncoded(logo(256)).toComposeImageBitmap())
 
     fun open(url: String) {
-        runCatching { Desktop.getDesktop().browse(URI(url)) }
+        // Letters beyond ASCII (`#fn-Γ`) encoded, for the browser.
+        runCatching { Desktop.getDesktop().browse(URI(URI(url).toASCIIString())) }
     }
 }
 

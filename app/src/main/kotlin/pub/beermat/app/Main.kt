@@ -238,6 +238,8 @@ fun main(args: Array<String>) {
                         Item("MCP server off: port ${McpHttp.DEFAULT_PORT} is in use (another window?)", enabled = false, onClick = {})
                     }
                     Item("Recalculate    F9", onClick = { session.guard(Unit) { session.relayout() }; revision++ })
+                    // The packages a sheet's Python files import (docs/symbolic.md#the-users-own-packages).
+                    Item("Python packages…", onClick = { PythonPackages.show(); session.guard(Unit) { session.relayout() }; revision++ })
                     // The beermat command on the PATH (docs/cli.md#installing); Windows's installer does it there.
                     if (CommandLine.available) {
                         Separator()
@@ -247,7 +249,8 @@ fun main(args: Array<String>) {
                     }
                 }
                 Menu("Help") {
-                    Item("Manual", shortcut = KeyShortcut(K.F1), onClick = { Brand.open(Brand.MANUAL) })
+                    // F1 on a built-in function opens its reference entry (docs/manual.md#in-the-app-and-for-ai).
+                    Item("Manual", shortcut = KeyShortcut(K.F1), onClick = { Brand.open(Brand.MANUAL + (session.helpPage() ?: "")) })
                     Item("Keyboard shortcuts", onClick = { Brand.open(Brand.SHORTCUTS) })
                     Item("Support Beermat: buy us a beer", onClick = { Brand.open(Brand.BEER) })
                     Item("Check for updates now", onClick = { scope.launch { checkForUpdates(quietIfLatest = false) } })

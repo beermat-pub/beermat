@@ -54,6 +54,7 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
                 pub.beermat.mcp.Mcp(System.`in`.bufferedReader(Charsets.UTF_8), out).serve()
                 return 0
             }
+            "packages" -> return packages(args.drop(1))
             "help", "--help", "-h" -> { usage(out); return 0 }
             "version", "--version", "-v" -> { out.println("beermat ${pub.beermat.engine.Version.current}"); return 0 }
             else -> return usage("unknown command '$command'")
@@ -163,6 +164,31 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
         return 1
     }
 
+    /** `beermat packages`: the user's own Python packages, for Python functions in a sheet (docs/cli.md#packages). */
+    private fun packages(args: List<String>): Int {
+        val home = pub.beermat.symbolic.Python.home() ?: run {
+            err.println("beermat: this copy of Beermat has no Python")
+            return 2
+        }
+        val P = pub.beermat.symbolic.Packages
+        fun done(o: pub.beermat.symbolic.Packages.Outcome): Int {
+            (if (o.ok) out else err).print(o.output)
+            return if (o.ok) 0 else 1
+        }
+        return when (args.firstOrNull() ?: "list") {
+            "list" -> {
+                out.println("Packages in ${P.folder(home)}:")
+                P.installed(home).forEach { out.println("  ${it.name} ${it.version}") }
+                P.missing(home).takeIf { it.isNotEmpty() }?.let { out.println("Asked for but not installed (beermat packages reinstall): ${it.joinToString(", ")}") }
+                0
+            }
+            "install" -> args.drop(1).takeIf { it.isNotEmpty() }?.let { done(P.install(home, it)) } ?: usage("packages install needs a package name")
+            "remove" -> args.drop(1).takeIf { it.isNotEmpty() }?.let { names -> names.map { done(P.remove(home, it)) }.max() } ?: usage("packages remove needs a package name")
+            "reinstall" -> P.missing(home).takeIf { it.isNotEmpty() }?.let { done(P.install(home, it)) } ?: 0.also { out.println("Every package asked for is installed.") }
+            else -> usage("packages takes list, install, remove or reinstall")
+        }
+    }
+
     private fun usage(problem: String? = null): Int {
         problem?.let { err.println("beermat: $it") }
         usage(err)
@@ -180,6 +206,8 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
             |  beermat import <file.xmcd> [--out <file.bbm>]
             |                                           convert an .xmcd worksheet
             |  beermat mcp                              serve worksheets to MCP clients (Claude Code) on stdin/stdout
+            |  beermat packages [list|install <name>…|remove <name>…|reinstall]
+            |                                           Python packages for the Python files sheets use
             |  beermat --version                        print the version
             |
             |  --allow-python   let the worksheet run the Python files it uses (use "file.py")

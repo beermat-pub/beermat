@@ -114,7 +114,8 @@ private fun WebApp() {
             // What only the desktop does, shown so a visitor knows it is there (docs/web.md#what-the-web-version-leaves-out).
             for (feature in listOf("Print", "PDF", "Import .xmcd", "AI assistant (MCP)")) Greyed(feature)
             Spacer(Modifier.weight(1f))
-            Button("Manual") { openPage(MANUAL) }
+            // On a built-in function, at its reference entry, as F1 in the desktop app.
+            Button("Manual") { openPage(MANUAL + (session.helpPage() ?: "")) }
             Button("beermat.pub") { goTo(SITE) }
             Button("Get the desktop app") { openPage(DOWNLOAD) }
         }

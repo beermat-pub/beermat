@@ -14,7 +14,13 @@
 # ["str", "+"] a string.
 
 import json
+import os
 import sys
+
+# The user's own packages (docs/symbolic.md#the-users-own-packages), after the bundled ones, one
+# folder per Python minor version. -I leaves the user's site out, so the folder is added here.
+if os.environ.get("BEERMAT_PACKAGES"):
+    sys.path.append(os.path.join(os.environ["BEERMAT_PACKAGES"], "%d.%d" % sys.version_info[:2], "site-packages"))
 
 import sympy as sp
 
@@ -398,6 +404,8 @@ def module(path):
     folder = os.path.dirname(os.path.abspath(path))
     if folder not in sys.path:
         sys.path.insert(0, folder)
+    # A package installed since Python started is found too.
+    importlib.invalidate_caches()
     try:
         spec.loader.exec_module(loaded)
     except Exception as x:  # noqa: BLE001

@@ -11,6 +11,9 @@ Each version's section here becomes the notes of its release on GitHub ([docs/re
 - **Fixed**: regions past the page's right edge couldn't be scrolled to. They now print (and export to PDF) on extra pages after their page; File → Print single page width leaves them out.
 - **The system's own file dialogs**: on Windows, Open, Save As, Insert Picture and Export now use the modern Explorer dialog.
 - **A word and a space make text**: typing a word and then a space at the crosshair turns the new region into a text region, and the typing goes on there.
+- **The manual's reference**: every built-in [function](https://beermat.pub/docs/reference/functions/) with an example, every [unit](https://beermat.pub/docs/reference/units/), [worksheet setting](https://beermat.pub/docs/reference/settings/) and [key](https://beermat.pub/docs/reference/keys/). F1 on a function opens its page; Help → Keyboard shortcuts opens the keys.
+- **Your own Python packages**: Tools → Python packages… installs packages such as NumPy or SciPy for the Python files your sheets use, without a terminal or admin rights, into a folder of yours that updates leave alone (`beermat packages install numpy` from the command line).
+- **Fixed**: `nthroot` of a negative number gave a complex root; an odd root is now the real one (`nthroot(-8, 3)` is −2).
 
 ## 1.0.0-dev2 (developer preview)
 

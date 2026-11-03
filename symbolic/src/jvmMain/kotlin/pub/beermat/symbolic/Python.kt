@@ -34,8 +34,12 @@ object Python {
     /**
      * A process builder for the interpreter, isolated from any Python installed on the machine:
      * `-I` (no user site-packages, no `PYTHON*` variables, no current folder on the path) and
-     * `PYTHONHOME` set to the bundled folder.
+     * `PYTHONHOME` set to the bundled folder. `BEERMAT_PACKAGES` tells the bridge where the
+     * user's own packages are ([Packages]).
      */
     fun process(home: File, vararg args: String): ProcessBuilder =
-        ProcessBuilder(executable(home).path, "-I", *args).also { it.environment()["PYTHONHOME"] = home.path }
+        ProcessBuilder(executable(home).path, "-I", *args).also {
+            it.environment()["PYTHONHOME"] = home.path
+            it.environment()["BEERMAT_PACKAGES"] = Packages.root.path
+        }
 }

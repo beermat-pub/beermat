@@ -20,6 +20,8 @@ dependencies {
     // The command line, run from the app's own folder with its Java and Python (docs/cli.md#installing).
     implementation(project(":cli"))
     implementation(project(":export"))
+    // The user's own Python packages (Tools → Python packages…).
+    implementation(project(":symbolic"))
     implementation(project(":mcp"))
     implementation(compose.desktop.currentOs)
     implementation(libs.filekit.dialogs)
@@ -70,6 +72,8 @@ tasks.test {
     useJUnitPlatform()
     // `-Pbeermat.pdfOut=dir` keeps the PDFs (and a PNG of each page) that PdfTest writes, to look at.
     providers.gradleProperty("beermat.pdfOut").orNull?.let { systemProperty("beermat.pdfOut", it) }
+    // `-Pbeermat.writeReference=true` writes the manual's reference pages from the code (ManualReferenceTest).
+    providers.gradleProperty("beermat.writeReference").orNull?.let { systemProperty("beermat.writeReference", it) }
 }
 
 // Compose registers it late, after this script runs.

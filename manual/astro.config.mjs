@@ -16,7 +16,27 @@ export default defineConfig({
       editLink: { baseUrl: 'https://github.com/beermat-pub/beermat/edit/main/manual/' },
       sidebar: [
         { label: 'Getting started', items: ['start/install', 'start/first-worksheet'] },
-        { label: 'Reference', items: ['reference/command-line'] },
+        {
+          label: 'Reference',
+          items: [
+            {
+              label: 'Functions',
+              items: [
+                { label: 'A to Z', link: '/reference/functions/' },
+                'reference/functions/numbers',
+                'reference/functions/trigonometry',
+                'reference/functions/arrays',
+                'reference/functions/calculus',
+                'reference/functions/statistics',
+                'reference/functions/strings',
+              ],
+            },
+            'reference/units',
+            'reference/settings',
+            'reference/keys',
+            'reference/command-line',
+          ],
+        },
         {
           label: 'About',
           items: [

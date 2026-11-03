@@ -69,8 +69,9 @@ abstract class PreparePython : DefaultTask() {
         val lib = if (windows) File(home, "Lib") else File(home, "lib/python${python.get().substringBeforeLast('.')}")
         exec.exec { commandLine(exe.path, "-I", "-m", "pip", "install", "--quiet", "--no-compile", "--disable-pip-version-check", "--no-warn-script-location", *packages.get().toTypedArray()) }
 
-        // What we never use: Tcl/Tk, IDLE, the test suites, pip itself, headers.
-        val unused = listOf("tkinter", "idlelib", "turtledemo", "test", "ensurepip", "pydoc_data", "site-packages/pip", "site-packages/bin")
+        // What we never use: Tcl/Tk, IDLE, the test suites, headers. pip stays, for the user's own
+        // packages (docs/symbolic.md#the-users-own-packages), run as `python -m pip`.
+        val unused = listOf("tkinter", "idlelib", "turtledemo", "test", "ensurepip", "pydoc_data", "site-packages/bin")
             .map { File(lib, it) } +
             if (windows) listOf("tcl", "include", "libs", "Scripts", "share", "DLLs/_tkinter.pyd", "DLLs/tcl86t.dll", "DLLs/tk86t.dll").map { File(home, it) }
             else listOf("include", "share", "lib/pkgconfig", "lib/tcl9", "lib/tk9", "lib/tcl8", "lib/tk8", "lib/tcl8.6", "lib/tk8.6", "lib/itcl4.3.2", "lib/thread3.0.1").map { File(home, it) } +
@@ -78,7 +79,7 @@ abstract class PreparePython : DefaultTask() {
                 File(home, "lib").listFiles { f -> f.name.matches(Regex("lib(tcl|tk).*")) }.orEmpty() +
                 File(home, "bin").listFiles { f -> f.name.matches(Regex("(idle|pydoc|pip|isympy).*|.*-config")) }.orEmpty()
         val tests = File(lib, "site-packages").walkTopDown().filter { it.isDirectory && it.name == "tests" }.toList()
-        files.delete { delete(unused + tests + File(lib, "site-packages").listFiles { f -> f.name.startsWith("pip-") }.orEmpty()) }
+        files.delete { delete(unused + tests) }
 
         exec.exec { commandLine(exe.path, "-I", "-m", "compileall", "-q", "-j", "0", "--invalidation-mode", "unchecked-hash", lib.path) }
     }
@@ -131,4 +132,6 @@ tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
     dependsOn(preparePython)
     systemProperty("beermat.python", layout.buildDirectory.dir("app-resources/common/python").get().asFile.path)
+    // The user's own packages (Packages) in a folder of the tests', never the real one.
+    systemProperty("beermat.packages", layout.buildDirectory.dir("test-packages").get().asFile.path)
 }
