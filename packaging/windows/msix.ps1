@@ -19,10 +19,21 @@ $root = Resolve-Path "$PSScriptRoot\..\.."
 $image = Join-Path $root "app\build\compose\binaries\main\app\Beermat"
 if (-not (Test-Path "$image\Beermat.exe")) { throw "No app image: run ./gradlew :app:createDistributable first" }
 
-# The Store wants four numbers, the last one 0: 1.0.0-beta.2 packs as 1.0.0.0.
-$plain = $Version.TrimStart('v').Split('-')[0]
-if ($plain -notmatch '^\d+\.\d+\.\d+$') { throw "Version $Version isn't X.Y.Z" }
-$msixVersion = "$plain.0"
+# The Store wants four numbers, the last one 0, each upload higher than the one before. A preview of
+# X.0.0 packs just below it, as (X-1).9.N: 1.0.0-dev3 as 0.9.3.0, -beta.2 as 0.9.52.0, -rc.1 as
+# 0.9.91.0; then 1.0.0 as 1.0.0.0 (docs/release.md#microsoft-store).
+$parts = $Version.TrimStart('v').Split('-', 2)
+$plain = $parts[0]
+if ($plain -notmatch '^(\d+)\.(\d+)\.(\d+)$') { throw "Version $Version isn't X.Y.Z" }
+if ($parts.Count -eq 1) {
+    $msixVersion = "$plain.0"
+} else {
+    $major = [int]$Matches[1]
+    if ($major -lt 1 -or $Matches[2] -ne "0" -or $Matches[3] -ne "0") { Write-Warning "No Store number for the preview $Version (only previews of X.0.0 have one): no MSIX"; exit 0 }
+    if ($parts[1] -notmatch '^(dev|beta|rc)\.?(\d+)$') { Write-Warning "No Store number for the preview $Version (dev, beta or rc, and a number): no MSIX"; exit 0 }
+    $n = [int]$Matches[2] + @{ dev = 0; beta = 50; rc = 90 }[$Matches[1]]
+    $msixVersion = "$($major - 1).9.$n.0"
+}
 
 # The newest Windows SDK that has the tools.
 $sdk = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.*\x64\makeappx.exe" |

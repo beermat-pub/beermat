@@ -2,7 +2,7 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
-## 1.0.0-dev3 (not released yet)
+## 1.0.0-dev3 (developer preview)
 
 The fourth preview: Beermat in VS Code, Export to Word, the manual's pages in draft, and Python of your own. Please try it and report what you find.
 
