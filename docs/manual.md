@@ -90,7 +90,7 @@ Four parts (the usual split of tutorials, how-to guides, reference and explanati
 
 1. Done: the Starlight project in `manual/` (`npm run dev` to work on it, `npm run build`; `prepare.mjs` first copies the icons from `branding/` and writes What's new from `CHANGELOG.md`, leaving out versions not released yet, so neither is kept twice), the build in CI, publishing to beermat.pub/docs on release, the first pages (only written pages are in the sidebar, rather than "to be written" ones), `ROADMAP.md`.
 2. Done (2026-11-03): doc entries for every built-in, and the generated reference pages.
-3. The ```` ```beermat ```` fence: rendered to SVG, evaluated, published as `.bbm`, the "Open this example" button.
+3. **Next** (SPEC §9, the path to 1.0): the ```` ```beermat ```` fence: rendered to SVG, evaluated, published as `.bbm`, the "Open this example" button; the drafted pages' `text` examples become drawn ones.
 4. The pages, written as each feature settles, all before the first 1.0 beta: Getting started first, then the reference's hand-written parts, then tutorials and how-tos.
 5. Help → Manual and F1 in the app. Done for the start page (2026-11-02: Help → Manual, F1, and a Manual button in the web version's top bar); F1 on a function's name, or anywhere in a call of one, opens its entry (2026-11-03; `Session.helpPage`; the web version's Manual button does the same), and Help → Keyboard shortcuts the keys page; units and keywords open the start page for now. The app opens beermat.pub/docs, the newest manual, until there are versions of it.
 6. (1.x) The offline copy in the app; translations, with the app's.
