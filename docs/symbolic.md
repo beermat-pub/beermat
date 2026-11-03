@@ -54,7 +54,6 @@ m m`), so they never merge with a variable called `m`. A temperature on a scale 
 
 - A definition with a symbolic value (`F(s) := … -> ?`); units inside the body of a function the sheet defines (its names with units stay symbols).
 - `invztrans`, `rewrite`, `Piecewise` results (drawn as a program's `if` lines).
-- Symbolic `.xmcd` regions (`ml:symEval`) on import.
 
 ## Choosing the fuller backend
 

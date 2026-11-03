@@ -20,6 +20,7 @@ dependencies {
     // The command line, run from the app's own folder with its Java and Python (docs/cli.md#installing).
     implementation(project(":cli"))
     implementation(project(":export"))
+    implementation(project(":xmcd"))
     // The user's own Python packages (Tools → Python packages…).
     implementation(project(":symbolic"))
     implementation(project(":mcp"))

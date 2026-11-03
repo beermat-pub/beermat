@@ -1,6 +1,6 @@
 # `.xmcd` notes
 
-> Status: **draft**. Milestone 8 (import) is implemented: `beermat import file.xmcd` (module `xmcd`). The notes below came from a real private worksheet; committed tests use a small synthetic fixture (`xmcd/src/test/resources/synthetic.xmcd`).
+> Status: **draft**. Milestone 8 (import) is implemented: `beermat import file.xmcd` (module `xmcd`), and File → Open in the desktop app (2026-11-03), which opens an `.xmcd` file converted, as a new sheet to save as the `.bbm` beside it (Save As when that exists already), listing what didn't come across; the same for an `.xmcd` file given to the app (Open With). The notes below came from a real private worksheet; committed tests use a small synthetic fixture (`xmcd/src/test/resources/synthetic.xmcd`).
 
 Samples examined so far: one private worksheet (schema `worksheet30`, ~270 regions, no units). The newer `.xmcd` files share the 3.0 schema.
 

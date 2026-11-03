@@ -130,8 +130,7 @@ Built on 2026-10-29.
 ## Not built yet
 
 - `Ctrl+F9` (automatic recalculation off): recalculation is always automatic for now; `F9` recalculates.
-- `Ctrl+8` (cross product): the engine has no cross product yet.
-- `Ctrl+.` (symbolic evaluation): milestone 10.
+- `Ctrl+8` (cross product as an operator): the cross product is the function `cross(u, v)` for now.
 - Inline math in text regions.
 
 ## Choices made while building (approved by Dan, 2026-10-29)

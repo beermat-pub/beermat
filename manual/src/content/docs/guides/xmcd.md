@@ -5,15 +5,19 @@ description: Convert .xmcd worksheets to Beermat worksheets, and what to check a
 
 Beermat imports `.xmcd` worksheets (the XML worksheet format). The import makes a new `.bbm` file and leaves the original as it was.
 
-## Convert a file
+## Open one
 
-In a terminal, with the [`beermat` command](../../start/install/#the-beermat-command):
+**File → Open…** and choose the `.xmcd` file. It opens converted, as a new sheet, and Beermat lists anything it couldn't bring across. **Save** keeps it as a `.bbm` file of the same name beside the original (if there is one already, Beermat asks where to save).
+
+## Convert from a terminal
+
+With the [`beermat` command](../../start/install/#the-beermat-command):
 
 ```text
 beermat import design.xmcd
 ```
 
-This writes `design.bbm` beside it (or choose the name with `--out other.bbm`), and lists anything it couldn't bring across. Then open `design.bbm` in Beermat.
+This writes `design.bbm` beside it (or choose the name with `--out other.bbm`), and lists anything it couldn't bring across.
 
 To convert a whole folder (in PowerShell on Windows):
 

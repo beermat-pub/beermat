@@ -92,9 +92,11 @@ fun main(args: Array<String>) {
         pdf?.let { File(it).writeBytes(Pdf.write(session.layout, opened?.name?.substringBefore(".bbm"))) }
         return
     }
+    // An .xmcd file given to the app (Open With) is imported once the window is up.
+    val xmcd = opened?.takeIf { it.name.endsWith(".xmcd", ignoreCase = true) && it.exists() }
     application {
-        val session = remember { Session(opened?.takeIf { it.exists() }?.readText() ?: "", MathLayout(SkiaMath, MATH_SIZE)) }
-        var file by remember { mutableStateOf(opened) }
+        val session = remember { Session(opened?.takeIf { it.exists() && xmcd == null }?.readText() ?: "", MathLayout(SkiaMath, MATH_SIZE)) }
+        var file by remember { mutableStateOf(opened?.takeIf { xmcd == null }) }
         var revision by remember { mutableIntStateOf(0) }
         // The MCP server for Claude Code, on the sheet open here (docs/mcp.md).
         val mcp = remember { McpHttp(session, { file }) { revision++ }.also { it.start() } }
@@ -135,8 +137,24 @@ fun main(args: Array<String>) {
         fun saveNow() {
             saveAs(file)
         }
+        /**
+         * An `.xmcd` worksheet, converted (docs/xmcd.md): a new sheet, unsaved, to be saved as the `.bbm`
+         * beside it (or, when that exists already, wherever Save As puts it). What didn't come across is listed.
+         */
+        fun importXmcd(source: File) {
+            val imported = session.guard(null) { source.inputStream().use { pub.beermat.xmcd.XmcdImport.import(it, source.nameWithoutExtension) } } ?: return
+            session.load(imported.text, unsaved = true)
+            file = File(source.absoluteFile.parentFile, source.nameWithoutExtension + ".bbm").takeUnless { it.exists() }
+            revision++
+            val warnings = imported.warnings.distinct()
+            if (warnings.isNotEmpty()) {
+                val list = warnings.take(20).joinToString("\n") { "• $it" } + if (warnings.size > 20) "\n…and ${warnings.size - 20} more" else ""
+                JOptionPane.showMessageDialog(null, "${source.name} was imported; some of it didn't come across as it was:\n\n$list", "Import", JOptionPane.INFORMATION_MESSAGE)
+            }
+        }
         fun open(next: File?) {
             if (!keepChanges(session, file) { saveAs(it) }) return
+            if (next != null && next.name.endsWith(".xmcd", ignoreCase = true)) return importXmcd(next)
             session.load(next?.readText() ?: "")
             file = next
             revision++
@@ -144,6 +162,7 @@ fun main(args: Array<String>) {
         fun quit() {
             if (keepChanges(session, file) { saveAs(it) }) exitApplication()
         }
+        LaunchedEffect(Unit) { xmcd?.let(::importXmcd) }
         Window(onCloseRequest = ::quit, title = title.also { revision }, icon = icon, state = rememberWindowState(position = fittingPlacement(), size = fittingSize())) {
             MenuBar {
                 Menu("File") {
@@ -315,7 +334,8 @@ private fun chooseFile(save: Boolean): File? = waitFor {
             if (f.name.endsWith(".bbm") || f.name.endsWith(".bbm.md")) f else File(f.path + ".bbm")
         }
     } else {
-        FileKit.openFilePicker(FileKitType.File(setOf("bbm", "md")), dialogSettings = dialog("Open a worksheet"))?.file
+        // An .xmcd worksheet opens converted (docs/xmcd.md).
+        FileKit.openFilePicker(FileKitType.File(setOf("bbm", "md", "xmcd")), dialogSettings = dialog("Open a worksheet"))?.file
     }
 }
 

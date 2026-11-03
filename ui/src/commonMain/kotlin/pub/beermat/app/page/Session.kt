@@ -109,11 +109,14 @@ class Session(text: String, private val math: MathLayout) {
         load(text)
     }
 
-    /** (Re)reads the sheet from its text, placing every region (so its position no longer depends on the others). */
-    fun load(text: String) {
+    /**
+     * (Re)reads the sheet from its text, placing every region (so its position no longer depends on the others).
+     * An [unsaved] sheet (an imported one) asks to be saved before it is closed.
+     */
+    fun load(text: String, unsaved: Boolean = false) {
         read(text)
         crosshair = 0f to (layout.views.filter { !it.hidden }.maxOfOrNull { it.y + it.height + SheetLayout.FLOW_GAP } ?: 0f).snap()
-        dirty = false
+        dirty = unsaved
         undo.clear()
         redo.clear()
     }
