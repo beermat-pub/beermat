@@ -10,6 +10,6 @@ M_max := q*L^2/8 = ? kN*m   →   M_max := q·L²/8 = 54 kN·m
 - **Open as Text** (the button at the top right) shows the Markdown beside the page; **Open on the Beermat Page** goes back.
 - **Units checked** everywhere, results in the unit you ask for, tables, X-Y plots, programs, solve blocks and Export to Word come with it.
 
-**Symbolic algebra** beyond the basics (integrals, factoring, series, solving, transforms) comes from the desktop app when it is installed: the extension finds its `beermat` command (or set **beermat.command**). Python functions, data files, printing and `.xmcd` import need the desktop app itself for now: [beermat.pub/download](https://beermat.pub/download). The manual is at [beermat.pub/docs](https://beermat.pub/docs/).
+**Symbolic algebra** beyond the basics (integrals, factoring, series, solving, transforms) comes from the desktop app when it is installed: the extension finds its `beermat` command (or set **beermat.command**). Data files beside the sheet (`READCSV`, `READPRN`, `READFILE`) and linked pictures are read in a trusted workspace. Python functions, Excel files, printing and `.xmcd` import need the desktop app itself for now: [beermat.pub/download](https://beermat.pub/download). The manual is at [beermat.pub/docs](https://beermat.pub/docs/).
 
 Beermat is free and open source (MIT). Issues and ideas: [github.com/beermat-pub/beermat](https://github.com/beermat-pub/beermat/issues).

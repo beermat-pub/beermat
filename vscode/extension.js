@@ -55,9 +55,12 @@ class SheetEditor {
       switch (m.type) {
         case 'ready':
           load();
+          // The sheet's folder, where its data files and pictures are (a file on disk only).
+          if (document.uri.scheme === 'file') panel.webview.postMessage({ type: 'folder', text: require('path').dirname(document.uri.fsPath) });
           // SymPy through the installed beermat, when there is one (docs/vscode.md#step-3-in-detail).
-          if (await helper.found()) panel.webview.postMessage({ type: 'helper', yes: true });
+          if (vscode.workspace.isTrusted && await helper.found()) panel.webview.postMessage({ type: 'helper', yes: true });
           return;
+        case 'file': return panel.webview.postMessage({ type: 'filed', id: m.id, ...(await readFile(m.text)) });
         case 'bridge': return panel.webview.postMessage({ type: 'bridged', id: m.id, text: await helper.ask(m.text) });
         case 'edit': return (edits = edits.then(() => edit(document, m.text, text())));
         case 'save': return document.save();
@@ -98,6 +101,20 @@ async function saveWord(document, base64) {
     title: 'Export to Word',
   });
   if (target) await vscode.workspace.fs.writeFile(target, Buffer.from(base64, 'base64'));
+}
+
+/**
+ * A data file or picture the sheet names (READCSV, a linked picture), for the page, as base64: in a
+ * trusted workspace only (VS Code's Restricted Mode reads nothing for a sheet).
+ */
+async function readFile(path) {
+  if (!vscode.workspace.isTrusted) return { text: '', yes: false };
+  try {
+    const bytes = await vscode.workspace.fs.readFile(vscode.Uri.file(path));
+    return { text: Buffer.from(bytes).toString('base64'), yes: true };
+  } catch {
+    return { text: '', yes: false };
+  }
 }
 
 /** The page's questions, which a web view can't ask itself: a line of text, a matrix's size, or how to resize one. */

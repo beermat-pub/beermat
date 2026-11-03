@@ -13,6 +13,9 @@
   "categories": ["Visualization", "Education", "Other"],
   "keywords": ["engineering", "calculation", "worksheet", "units", "math"],
   "main": "./extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": { "supported": "limited", "description": "In Restricted Mode, sheets open and calculate, but read no data files and run no helper." }
+  },
   "activationEvents": [],
   "contributes": {
     "customEditors": [

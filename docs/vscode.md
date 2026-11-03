@@ -1,6 +1,6 @@
 # The VS Code extension
 
-> Status: **step 2 built** (2026-11-03; Dan brought the extension into 1.0 that day): the custom editor, the web build inside it, the document kept in step both ways, a `.vsix` on each release. **Step 3 begun** the same day: SymPy through the installed `beermat`. Python functions, data files and `.xmcd` import, then steps 4 and 5, to do. Plan agreed with Dan on 2026-11-01 (milestone 24).
+> Status: **step 2 built** (2026-11-03; Dan brought the extension into 1.0 that day): the custom editor, the web build inside it, the document kept in step both ways, a `.vsix` on each release. **Step 3 mostly built** the same day: SymPy through the installed `beermat`, data files and linked pictures read by the extension. Python functions, data files and `.xmcd` import, then steps 4 and 5, to do. Plan agreed with Dan on 2026-11-01 (milestone 24).
 
 The whole Beermat editor inside VS Code: a `.bbm` file opens on its page, with the toolbar and the same keys as the desktop app, beside the code and the chat it belongs with.
 
@@ -38,7 +38,9 @@ VS Code lets an extension draw a file's editor itself, in a web view (a *custom 
 - **A page can't wait**, so `VsCodeBridge` answers from what it has been told: a request met for the first time goes to the extension, and the statement says "SymPy is working on this…"; the answer is kept, and the sheet worked out again, meeting it this time. While requests are out the page doesn't send its text, so "working" never reaches the file; until the user changes something, answers only complete the text the page started from, so opening a sheet changes nothing.
 - **The helper** is `beermat bridge` (the command line: standard input to the bundled Python's `bridge.py` and back, one line each), started by the extension at the first request and kept for every sheet; found as the `beermat.command` setting or `beermat` on the PATH (`--version` asked once). It answers symbolic requests only: Python functions (`op`) are refused until the extension can ask the user, as the app does.
 - Checked: `vscode/test/helper.test.js` (the helper against a built `beermat`, with `BEERMAT_COMMAND` set; skipped in CI), and the page in headless Edge with the extension's helper behind a stand-in, the integral and `factor` answered by SymPy.
-- To do: Python functions (with the user's consent, and VS Code's workspace trust), data files (`READCSV` and the others: the page asks the extension for the file), `.xmcd` import (a command that runs `beermat import`).
+- **Data files and linked pictures** (built 2026-11-03): the extension sends the sheet's folder (`folder`), and the page's `RemoteFiles` (the engine's WebAssembly files) asks for a file the first time it is met (`file`, answered by `filed` with base64), saying it is being read meanwhile, as for SymPy. Text formats only (`READCSV`, `READPRN`, `READFILE`); `READEXCEL` needs the desktop. Files are read again when the sheet comes again from VS Code. `Pictures` no longer remembers a file that wasn't there, so one saved later appears (on the desktop too).
+- **Workspace trust**: in VS Code's Restricted Mode the extension reads no files for a sheet and starts no helper (`capabilities.untrustedWorkspaces`: limited).
+- To do: Python functions (with the user's consent), `READEXCEL`, `.xmcd` import (a command that runs `beermat import`).
 
 ## Alternatives considered
 

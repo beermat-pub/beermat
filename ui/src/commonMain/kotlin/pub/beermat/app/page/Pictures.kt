@@ -38,8 +38,9 @@ object Pictures {
     fun of(r: ImageRegion, base: HostFile?): Picture? = locked(cache) {
         val key = if (r.embedded) r.source else "$base | ${r.source}"
         if (key in cache) return@locked cache.remove(key).also { cache[key] = it }
-        val picture = bytes(r, base)?.let(::decode)
-        cache[key] = picture
+        val picture = runCatching { bytes(r, base) }.getOrNull()?.let(::decode)
+        // A file not there (yet) is looked for again next time: it may be saved, or still being read (VS Code).
+        if (picture != null || r.embedded) cache[key] = picture
         if (cache.size > 64) cache.remove(cache.keys.first())
         picture
     }

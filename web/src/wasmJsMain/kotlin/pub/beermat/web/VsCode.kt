@@ -31,6 +31,8 @@ import pub.beermat.app.math.MathLayout
 import pub.beermat.app.math.SkiaMath
 import pub.beermat.app.page.Session
 import pub.beermat.app.WordPictures
+import pub.beermat.engine.HostFile
+import pub.beermat.engine.RemoteFiles
 import pub.beermat.engine.Version
 import pub.beermat.export.Docx
 import pub.beermat.format.WorksheetText
@@ -59,7 +61,7 @@ internal fun VsCodeApp() {
     /** Sends the sheet's text when it has changed, once SymPy has answered what it was asked. */
     fun flush() {
         val s = session ?: return
-        if (VsCodeBridge.busy) return
+        if (VsCodeBridge.busy || RemoteFiles.busy) return
         val text = s.guard(null) { s.text() } ?: return
         if (text != sent) {
             sent = text
@@ -82,12 +84,21 @@ internal fun VsCodeApp() {
         ready = true
         WebHost.resultFormat = { region, statement -> resultFormat = region to statement }
         WebHost.answered = ::changed
-        VsCodeBridge.answered = {
+        // An answer from outside (SymPy, a file): the sheet worked out again, which now finds it.
+        val reworked = {
             session?.let { s ->
                 s.guard(Unit) { s.relayout() }
-                if (untouched && !VsCodeBridge.busy) sent = s.guard(null) { s.text() }
+                if (untouched && !VsCodeBridge.busy && !RemoteFiles.busy) sent = s.guard(null) { s.text() }
             }
             changed()
+        }
+        VsCodeBridge.answered = reworked
+        RemoteFiles.answered = reworked
+        // Data files and pictures beside the sheet, read by the extension.
+        val files = mutableMapOf<Int, String>()
+        RemoteFiles.request = { path ->
+            files[files.size + 1] = path
+            postToVsCode("file", path, files.size)
         }
         onVsCodeMessage { type, text, id, yes ->
             when (type) {
@@ -97,7 +108,11 @@ internal fun VsCodeApp() {
                     val s = session
                     // The first text makes the page; a later one replaces the sheet, the crosshair staying.
                     val now = s ?: Session(text, MathLayout(SkiaMath, MATH_SIZE)).also { session = it }
-                    if (s != null) s.guard(Unit) { s.replace(text) }
+                    if (s != null) {
+                        // Data files are read again, in case they changed too.
+                        RemoteFiles.forget()
+                        s.guard(Unit) { s.replace(text) }
+                    }
                     sent = now.guard(null) { now.text() }
                     untouched = true
                     revision++
@@ -111,6 +126,9 @@ internal fun VsCodeApp() {
                     revision++
                 }
                 "bridged" -> VsCodeBridge.answer(id, text)
+                // The sheet's folder, where its data files and pictures are found.
+                "folder" -> session?.let { s -> s.guard(Unit) { s.base = HostFile(text) }; revision++ }
+                "filed" -> files[id]?.let { path -> RemoteFiles.answer(path, if (yes) Base64.decode(text) else null) }
             }
         }
         onPaste { text -> session?.let { s -> s.guard(Unit) { s.paste(text) }; changed() } }
