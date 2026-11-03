@@ -1,6 +1,6 @@
 # The VS Code extension
 
-> Status: **step 2 built** (2026-11-03; Dan brought the extension into 1.0 that day): the custom editor, the web build inside it, the document kept in step both ways, a `.vsix` on each release. **Step 3 mostly built** the same day: SymPy through the installed `beermat`, data files and linked pictures read by the extension. Python functions, data files and `.xmcd` import, then steps 4 and 5, to do. Plan agreed with Dan on 2026-11-01 (milestone 24).
+> Status: **step 2 built** (2026-11-03; Dan brought the extension into 1.0 that day): the custom editor, the web build inside it, the document kept in step both ways, a `.vsix` on each release. **Step 3 built** the same day: SymPy, Python functions (with consent), `READEXCEL` and `.xmcd` import through the installed `beermat`; data files and linked pictures read by the extension. Python functions, data files and `.xmcd` import, then steps 4 and 5, to do. Plan agreed with Dan on 2026-11-01 (milestone 24).
 
 The whole Beermat editor inside VS Code: a `.bbm` file opens on its page, with the toolbar and the same keys as the desktop app, beside the code and the chat it belongs with.
 
@@ -42,7 +42,9 @@ VS Code lets an extension draw a file's editor itself, in a web view (a *custom 
 - **Workspace trust**: in VS Code's Restricted Mode the extension reads no files for a sheet and starts no helper (`capabilities.untrustedWorkspaces`: limited).
 - **Python functions** (built 2026-11-03): `PythonModules` moved to common code (with `fileName`, `canonicalPath`, `fileVersion` per platform; in the page the version is the file's contents' hash, read through `RemoteFiles`), over the same bridge. The page asks the extension for consent (`consent`, answered by `consented`) the first time it meets a file and says it is waiting meanwhile. The extension asks as the desktop app does (a modal warning with the path), keeps a yes for that file and its contents in VS Code's global state (a changed file asks again) and a no until VS Code closes, never in Restricted Mode; and it checks that key again for **every** Python request before passing it to `beermat bridge --allow-python`, so a page can't run a file the user hasn't allowed. The helper runs them in the user's own Python when one is set, as the app does. `PythonConsent.modules` is now looked up at each evaluation (it was made once, so the page's helper, and the app's own Python chosen while it ran, were missed).
 - Checked: `vscode/test/python.test.js` (consent and the per-request check, with VS Code faked; in CI) and the page in headless Edge with the real helper behind a stand-in: `bt.moment(12 kN/m, 6 m) = 54 kN·m` from a `.py` beside the sheet.
-- To do: `READEXCEL`, `.xmcd` import (a command that runs `beermat import`).
+- **`READEXCEL`** (built 2026-11-03): the page sends `{"excel": path, "range": …}` over the bridge; `beermat bridge` reads the workbook with POI (`ExcelFiles.read`) and answers the cells as `bridge.py` writes values (numbers, `{"s": …}`, `{"m": rows}`). Not a Python request, so no consent; the helper runs only in a trusted workspace.
+- **`.xmcd` import** (built 2026-11-03): **Beermat: Import .xmcd Worksheet…** (and the Explorer's right-click on an `.xmcd`) runs `beermat import`, beside it as a `.bbm` (or where the user says when that exists), opens it on its page and lists what didn't come across. On Windows the helper's command line quotes paths.
+- Step 3 is complete.
 
 ## Alternatives considered
 

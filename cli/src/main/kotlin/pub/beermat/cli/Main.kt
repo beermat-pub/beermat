@@ -223,6 +223,8 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
         for (line in System.`in`.bufferedReader(Charsets.UTF_8).lineSequence()) {
             if (line.isBlank()) continue
             val reply = when {
+                // An Excel workbook for the page's READEXCEL, read here with POI.
+                line.contains("\"excel\"") -> excel(line)
                 Regex(""""op"\s*:""").containsMatchIn(line) && !allowPython -> "{\"error\": \"Python functions aren't allowed here\"}"
                 else -> try {
                     (if (Regex(""""op"\s*:""").containsMatchIn(line)) functions else sympy).ask(line)
@@ -237,6 +239,23 @@ class Cli(private val out: PrintStream, private val err: PrintStream) {
         sympy.stop()
         functions.stop()
         return 0
+    }
+
+    /** READEXCEL for the VS Code page (`{"excel": path, "range": …}`): the cells as `bridge.py` writes values. */
+    private fun excel(line: String): String = try {
+        val r = pub.beermat.symbolic.Json.read(line) as Map<*, *>
+        val file = java.io.File(r["excel"] as String)
+        if (!file.isFile) throw pub.beermat.engine.eval.EvalException("READEXCEL: '${file.name}' is not found")
+        val v = pub.beermat.format.ExcelFiles.read(file, r["range"] as String?, file.name)
+        fun out(v: pub.beermat.engine.eval.Value): Any = when (v) {
+            is pub.beermat.engine.eval.Scalar -> v.q.value.re
+            is pub.beermat.engine.eval.Text -> mapOf("s" to v.value)
+            is pub.beermat.engine.eval.ArrayValue -> mapOf("m" to (0 until v.rows).map { r -> (0 until v.cols).map { c -> out(v[r, c]) } })
+            else -> throw pub.beermat.engine.eval.EvalException("READEXCEL: a cell the sheet can't hold")
+        }
+        pub.beermat.symbolic.Json.write(mapOf("ok" to out(v)))
+    } catch (x: Exception) {
+        pub.beermat.symbolic.Json.write(mapOf("error" to (x.message ?: "READEXCEL: the workbook can't be read")))
     }
 
     /** `beermat python`: which Python runs the sheets' Python functions (docs/cli.md#python). */

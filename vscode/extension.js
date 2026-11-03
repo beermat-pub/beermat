@@ -20,11 +20,44 @@ function activate(context) {
       uri = uri ?? vscode.window.activeTextEditor?.document.uri;
       if (uri) vscode.commands.executeCommand('vscode.openWith', uri, VIEW);
     }),
+    vscode.commands.registerCommand('beermat.importXmcd', importXmcd),
     vscode.commands.registerCommand('beermat.openAsText', uri => {
       uri = uri ?? activeSheet();
       if (uri) vscode.commands.executeCommand('vscode.openWith', uri, 'default', vscode.ViewColumn.Beside);
     }),
   );
+}
+
+/**
+ * Imports an .xmcd worksheet (docs/xmcd.md) with the installed `beermat import`, beside it as a .bbm
+ * (or where the user says, when that exists), and opens it on its page, telling what didn't come across.
+ */
+async function importXmcd(uri) {
+  uri ??= (await vscode.window.showOpenDialog({ filters: { 'Worksheets': ['xmcd'] }, title: 'Import an .xmcd worksheet' }))?.[0];
+  if (!uri) return;
+  if (!(await helper.found())) {
+    const pick = await vscode.window.showErrorMessage('Importing .xmcd needs the Beermat desktop app (its beermat command).', 'Download');
+    if (pick) vscode.env.openExternal(vscode.Uri.parse('https://beermat.pub/download'));
+    return;
+  }
+  let target = uri.with({ path: uri.path.replace(/\.xmcd$/i, '') + '.bbm' });
+  try {
+    await vscode.workspace.fs.stat(target);
+    target = await vscode.window.showSaveDialog({ defaultUri: target, filters: { 'Beermat worksheet': ['bbm'] }, title: 'Save the imported worksheet' });
+    if (!target) return;
+  } catch {
+    // Not there yet: the place beside the .xmcd is free.
+  }
+  const warnings = await new Promise(resolve => {
+    let err = '';
+    const p = helper.spawn(['import', uri.fsPath, '--out', target.fsPath]);
+    p.stderr.on('data', d => (err += d));
+    p.on('error', e => resolve({ failed: e.message }));
+    p.on('exit', code => resolve(code === 0 ? { lines: err.split(/\r?\n/).filter(l => l.trim()) } : { failed: err.trim() || `beermat import stopped (${code})` }));
+  });
+  if (warnings.failed) return vscode.window.showErrorMessage(`The import didn't work: ${warnings.failed}`);
+  await vscode.commands.executeCommand('vscode.openWith', target, VIEW);
+  if (warnings.lines.length > 0) vscode.window.showWarningMessage(`Imported; ${warnings.lines.length} thing(s) didn't come across as they were.`, { detail: warnings.lines.slice(0, 20).join('\n') });
 }
 
 /** The sheet in the active tab, when it is open on its page. */
@@ -233,8 +266,11 @@ const helper = {
 
   /** Runs [command] with [args]; on Windows through the shell, which finds beermat.cmd. */
   spawn(args, options = {}) {
-    // On Windows one command line for the shell (the arguments are fixed words, nothing from a sheet).
-    if (process.platform === 'win32') return childProcess.spawn(`"${this.command()}" ${args.join(' ')}`, { shell: true, windowsHide: true, ...options });
+    // On Windows one command line for the shell: fixed words, and paths the user chose, in quotes (a Windows path has none).
+    if (process.platform === 'win32') {
+      const line = [this.command(), ...args].map(a => (/^[\w.-]+$/.test(a) ? a : `"${a}"`)).join(' ');
+      return childProcess.spawn(line, { shell: true, windowsHide: true, ...options });
+    }
     return childProcess.spawn(this.command(), args, options);
   },
 

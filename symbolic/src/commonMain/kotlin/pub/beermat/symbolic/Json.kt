@@ -4,7 +4,7 @@ package pub.beermat.symbolic
  * Just enough JSON for the bridge to SymPy: strings, numbers, lists, objects, true, false
  * and null. Written as ASCII (anything else escaped), as Python's `json` writes it.
  */
-internal object Json {
+object Json {
 
     fun write(v: Any?): String = StringBuilder().also { write(v, it) }.toString()
 

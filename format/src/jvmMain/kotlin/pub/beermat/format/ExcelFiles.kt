@@ -33,11 +33,16 @@ object ExcelFiles {
             val range = a.getOrNull(1)?.invoke()?.let { (it as? Text)?.value ?: throw EvalException("READEXCEL: the range is a string, such as \"Sheet1!A1:C10\"") }
             val file = File(path).takeIf { it.isAbsolute } ?: File(folder ?: throw EvalException("READEXCEL: save the sheet first, so '$path' can be found beside it"), path)
             if (!file.isFile) throw EvalException("READEXCEL: '$path' is not found")
-            val sheets = runCatching { if (file.name.endsWith(".xls", ignoreCase = true)) xls(file) else xlsx(file) }
-                .getOrElse { throw EvalException("READEXCEL: '$path' can't be read as a workbook (${it.message})") }
-            matrix(sheets, range)
+            read(file, range, path)
         },
     )
+
+    /** The cells of [range] in the workbook [file] (as READEXCEL gives them); [name] is how messages call it. */
+    fun read(file: File, range: String?, name: String = file.name): Value {
+        val sheets = runCatching { if (file.name.endsWith(".xls", ignoreCase = true)) xls(file) else xlsx(file) }
+            .getOrElse { throw EvalException("READEXCEL: '$name' can't be read as a workbook (${it.message})") }
+        return matrix(sheets, range)
+    }
 
     /** A sheet: its name and its cells by (row, column), from 0. */
     class Sheet(val name: String, val cells: Map<Pair<Int, Int>, Value>)

@@ -39,9 +39,13 @@
     },
     "commands": [
       { "command": "beermat.openOnPage", "title": "Open on the Beermat Page", "category": "Beermat", "icon": "$(preview)" },
-      { "command": "beermat.openAsText", "title": "Open as Text", "category": "Beermat", "icon": "$(go-to-file)" }
+      { "command": "beermat.openAsText", "title": "Open as Text", "category": "Beermat", "icon": "$(go-to-file)" },
+      { "command": "beermat.importXmcd", "title": "Import .xmcd Worksheet…", "category": "Beermat" }
     ],
     "menus": {
+      "explorer/context": [
+        { "command": "beermat.importXmcd", "when": "resourceExtname == .xmcd", "group": "navigation" }
+      ],
       "editor/title": [
         { "command": "beermat.openOnPage", "when": "resourceFilename =~ /\\.bbm(\\.md)?$/ && activeCustomEditorId != beermat.sheet", "group": "navigation" },
         { "command": "beermat.openAsText", "when": "activeCustomEditorId == beermat.sheet", "group": "navigation" }

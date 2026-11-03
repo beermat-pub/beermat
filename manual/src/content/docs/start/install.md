@@ -32,7 +32,7 @@ The Beermat extension opens `.bbm` files on their page inside VS Code, with the 
 code --install-extension beermat-1.0.0.vsix
 ```
 
-(or **Extensions → ⋯ → Install from VSIX…**). The page edits the file's text, so saving, undo and git work as for any file; **Open as Text** at the top right shows the Markdown beside the page. With the desktop app installed, symbolic algebra works on the page too: the extension uses its `beermat` command. Data files beside the sheet are read too, and Python functions run after you say the file may (in a trusted folder). Excel files need the desktop app itself.
+(or **Extensions → ⋯ → Install from VSIX…**). The page edits the file's text, so saving, undo and git work as for any file; **Open as Text** at the top right shows the Markdown beside the page. With the desktop app installed, symbolic algebra works on the page too: the extension uses its `beermat` command. Data files beside the sheet are read too, and Python functions run after you say the file may (in a trusted folder). Excel files are read the same way, and **Beermat: Import .xmcd Worksheet…** converts an `.xmcd` file.
 
 ## The `beermat` command
 
