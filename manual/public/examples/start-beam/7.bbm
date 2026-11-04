@@ -1,0 +1,36 @@
+---
+results: d89ff4e7a73fa7e0
+---
+<!-- #t1 x=0 y=0 -->
+# Beam check
+
+```calc {#r1 x=0 y=37}
+L := 6 m
+```
+
+```calc {#r2 x=0 y=55}
+q := 12 kN/m
+E := 210 GPa
+I := 8360 cm^4
+W_el := 557 cm^3
+f_y := 355 MPa
+```
+
+```calc {#r3 x=0 y=151}
+M_max := q*L^2/8 = ?   #= 54 kN*m
+V_max := q*L/2 = ?     #= 36 kN
+```
+
+```calc {#r4 x=0 y=216}
+σ := M_max/W_el = ? MPa   #= 96.948 MPa
+U := σ/f_y = ?            #= 0.273
+```
+
+```calc {#r5 x=0 y=281}
+δ := 5*q*L^4/(384*E*I) = ?   #= 11.535 mm
+δ_allow := L/360 = ?         #= 16.667 mm
+```
+
+```calc {#r6 x=0 y=343}
+check := if(δ <= δ_allow, "OK", "too flexible") = ?   #= "OK"
+```

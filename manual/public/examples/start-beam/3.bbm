@@ -1,0 +1,17 @@
+---
+results: 241b6c55fbe9e145
+---
+<!-- #t1 x=0 y=0 -->
+# Beam check
+
+```calc {#r1 x=0 y=37}
+L := 6 m
+```
+
+```calc {#r2 x=0 y=55}
+q := 12 kN/m
+E := 210 GPa
+I := 8360 cm^4
+W_el := 557 cm^3
+f_y := 355 MPa
+```

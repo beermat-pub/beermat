@@ -9,3 +9,32 @@
   --sl-color-accent: #8f5810;
   --sl-color-accent-high: #4a2e08;
 }
+
+/* The drawn examples (src/examples.mjs): Beermat's page, white as on paper, in both themes. */
+.beermat-example {
+  margin: 1rem 0;
+}
+.beermat-example img {
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+}
+.beermat-example figcaption {
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+  margin-top: 0.2rem;
+}
+.beermat-example details {
+  margin-bottom: 0.2rem;
+}
+.beermat-example summary {
+  cursor: pointer;
+  display: inline;
+}
+.beermat-example pre {
+  margin-top: 0.3rem;
+  font-size: var(--sl-text-sm);
+}

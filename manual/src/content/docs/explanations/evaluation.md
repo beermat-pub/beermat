@@ -17,8 +17,8 @@ The sheet is worked out again after every change, so results are always current.
 
 A global definition (`≡`, typed `~`, written `::=`) is worked out before everything else, so it can be used anywhere on the page, even above it:
 
-```text
-y := G*2 = 20
+```beermat
+y := G*2 = ?
 G ::= 10
 ```
 
@@ -30,11 +30,11 @@ Use globals sparingly: for constants and settings that the whole sheet shares, s
 
 A function's body is worked out when it is called, but its other names are looked up where the function was defined:
 
-```text
+```beermat
 a := 2
 f(x) := a*x
 a := 3
-f(1) = 2
+f(1) = ?
 ```
 
 `f` was defined while `a` was 2, so changing `a` below doesn't change `f`. Define the function again below to use the new value, or pass `a` as an argument.

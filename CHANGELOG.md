@@ -2,6 +2,11 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
+## 1.0.0-dev4 (not released yet)
+
+- **The manual's examples are drawn by Beermat**, worked out as you'd see them on the page, with **Open this example** to try each one in the browser, and the sheet to download.
+- **Fixed**: a result that couldn't be shown dropped the unit asked for; `σ = ? kN` with the wrong unit now shows `σ = ■ kN` above its error.
+
 ## 1.0.0-dev3 (developer preview)
 
 The fourth preview: Beermat in VS Code, Export to Word, the manual's pages in draft, and Python of your own. Please try it and report what you find.

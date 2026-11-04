@@ -30,12 +30,26 @@ M_d := 1.35*M_Loads[0] + 1.5*M_Loads[1] = ?
 ```
 ````
 
-On the page, the computed cells show their values (20.25, 33.75 and 54 kN·m down the M column), and below it:
+On the page, the computed cells show their values, and below the table the column is a vector:
 
-```text
-M_Loads = [20.25; 33.75; 54]*kN*m
-M_d := 1.35*M_Loads[0] + 1.5*M_Loads[1] = 77.963 kN*m
+````beermat
+```calc
+L := 6 m
 ```
+
+```table {name=Loads}
+| Case    | q [kN/m] | M [kN*m]  |
+|---------|---------:|----------:|
+| Dead    | 4.5      | = q*L^2/8 |
+| Imposed | 7.5      | = q*L^2/8 |
+| Total   | = sum(q) | = sum(M)  |
+```
+
+```calc
+M_Loads = ?
+M_d := 1.35*M_Loads[0] + 1.5*M_Loads[1] = ?
+```
+````
 
 The line of dashes says how each column is aligned: `---:` to the right, `:---:` centred.
 

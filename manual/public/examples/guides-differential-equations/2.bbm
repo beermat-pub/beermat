@@ -1,0 +1,26 @@
+---
+results: 265dfc8ebaabc34d
+---
+```calc {#r1 x=0 y=0}
+M := 2 kg
+k := 50 N/m
+c := 1 N*s/m
+given
+x''(t) == -(k*x(t) + c*x'(t))/M
+x(0 s) == 0.1 m
+x'(0 s) == 0 m/s
+x := Odesolve(t, 5 s)
+x(1 s) = ?   #= 17.879 mm
+x(5 s) = ?   #= 28.032 mm
+```
+
+```calc {#r2 x=0 y=211}
+given
+p'(t) == q(t)
+q'(t) == -p(t)
+p(0) == 0
+q(0) == 1
+[p; q] := Odesolve([p; q], t, 4)
+p(1) = ?   #= 0.841
+q(1) = ?   #= 0.54
+```

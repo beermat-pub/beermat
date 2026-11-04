@@ -75,6 +75,10 @@ tasks.test {
     providers.gradleProperty("beermat.pdfOut").orNull?.let { systemProperty("beermat.pdfOut", it) }
     // `-Pbeermat.writeReference=true` writes the manual's reference pages from the code (ManualReferenceTest).
     providers.gradleProperty("beermat.writeReference").orNull?.let { systemProperty("beermat.writeReference", it) }
+    // The bundled Python, for the manual's symbolic and Python examples (ManualExamplesTest).
+    dependsOn(":symbolic:preparePython")
+    systemProperty("beermat.python", project(":symbolic").layout.buildDirectory.dir("app-resources/common/python").get().asFile.path)
+    systemProperty("beermat.packages", layout.buildDirectory.dir("test-packages").get().asFile.path)
 }
 
 // Compose registers it late, after this script runs.

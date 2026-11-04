@@ -1,0 +1,31 @@
+---
+results: 95d413bfbdb3a410
+---
+```calc {#r1 x=0 y=0}
+f(x) := x^2 + 1
+g(x, y) := sqrt(x^2 + y^2)
+h := f
+```
+
+```calc {#r2 x=0 y=62}
+f(x) :=
+  if x < 0
+    return -x
+  otherwise
+    x
+```
+
+```calc {#r3 x=0 y=99}
+r := program*2 = ?   #= 8
+  a <- 3
+  a + 1
+```
+
+```calc {#r4 x=0 y=136}
+x := 1
+y := 1
+given
+x^2 + y^2 == 4
+x - y == 1
+s := find(x, y) = ?   #= [1.823; 0.823]
+```

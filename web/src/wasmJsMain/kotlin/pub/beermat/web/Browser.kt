@@ -111,3 +111,18 @@ internal fun onVsCodeMessage(onMessage: (String, String, Int, Boolean) -> Unit):
         onMessage(String(m.type || ''), String(m.text == null ? '' : m.text), Number(m.id || 0), !!m.yes);
     })""",
 )
+
+/** The page's `?open=` parameter, taken out of the address so a reload keeps the sheet as edited; null without one. */
+internal fun openParameter(): String? = js(
+    """(() => {
+        const url = new URL(window.location.href);
+        const open = url.searchParams.get('open');
+        if (open !== null) { url.searchParams.delete('open'); window.history.replaceState(null, '', url.toString()); }
+        return open;
+    })()""",
+)
+
+/** Fetches [path] from this site and gives its text; nothing when it can't. */
+internal fun fetchText(path: String, onText: (String) -> Unit): Unit = js(
+    """{ fetch(path).then(r => r.ok ? r.text() : null).then(t => { if (t !== null) onText(t); }).catch(() => {}); }""",
+)

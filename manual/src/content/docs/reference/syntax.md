@@ -79,7 +79,7 @@ From loosest to tightest:
 
 ## Functions
 
-```text
+```beermat both
 f(x) := x^2 + 1
 g(x, y) := sqrt(x^2 + y^2)
 h := f
@@ -115,7 +115,7 @@ Indices count from `ORIGIN`, 0 unless the sheet sets it (`ORIGIN := 1`, or `orig
 
 A definition ending in `:=` takes the indented lines below it as a program, two spaces per level:
 
-```text
+```beermat both
 f(x) :=
   if x < 0
     return -x
@@ -134,7 +134,7 @@ f(x) :=
 
 A program's value is that of the last line it runs. No blank lines inside a program, and indent with spaces, not tabs. Where a program is only part of a value, the word `program` stands in its place, with its lines below:
 
-```text
+```beermat both
 r := program*2 = ?
   a <- 3
   a + 1
@@ -144,7 +144,7 @@ gives 8.
 
 ## Solve blocks
 
-```text
+```beermat both
 x := 1
 y := 1
 given

@@ -12,10 +12,10 @@ description: root, polyroots, solve blocks with find and minerr, and Minimize an
 | `root(f, x)` | A value of x where f is 0, starting from x's current value |
 | `root(f, x, a, b)` | A root between a and b (f must change sign there) |
 
-```text
+```beermat
 x := 1
-root(x^3 - 2*x - 5, x) = 2.095
-root(cos(x) - x, x, 0, 1) = 0.739
+root(x^3 - 2*x - 5, x) = ?
+root(cos(x) - x, x, 0, 1) = ?
 ```
 
 If `root` reports that it found no root near the guess, give limits, or a better guess. It looks for real roots only.
@@ -24,20 +24,20 @@ If `root` reports that it found no root near the guess, give limits, or a better
 
 `polyroots(v)` gives every root of v₀ + v₁x + v₂x² + …, complex ones too:
 
-```text
-polyroots([-6; 11; -6; 1]) = [1; 2; 3]
-polyroots([1; 0; 1]) = [-1i; 1i]
+```beermat
+polyroots([-6; 11; -6; 1]) = ?
+polyroots([1; 0; 1]) = ?
 ```
 
 ## Several equations
 
-```text
+```beermat
 a := 1 m
 b := 4 m
 given
 a + b == 5 m
 a*b == 6 m^2
-find(a, b) = [2; 3]*m
+find(a, b) = ?
 ```
 
 - Every unknown needs a guess above the block, with its unit.
@@ -47,7 +47,7 @@ find(a, b) = [2; 3]*m
 
 **When there is no exact solution**, `minerr` gives the values that come closest (a least-squares fit), where `find` reports an error:
 
-```text
+```beermat
 x_d := [1; 2; 3; 4]
 y_d := [2.1; 3.9; 6.2; 7.8]
 a := 1
@@ -57,26 +57,26 @@ a*x_d[0] + b == y_d[0]
 a*x_d[1] + b == y_d[1]
 a*x_d[2] + b == y_d[2]
 a*x_d[3] + b == y_d[3]
-minerr(a, b) = [1.94; 0.15]
+minerr(a, b) = ?
 ```
 
 ## The best values
 
 `Minimize(f, x, y, …)` and `Maximize(f, x, y, …)` give the values of the variables where the function f is least or greatest, starting from their current values. Below a `given`, the conditions hold too:
 
-```text
+```beermat new
 f(x) := (x - 2)^2 + 1
 x := 0
-Minimize(f, x) = 2
+Minimize(f, x) = ?
 ```
 
-```text
+```beermat
 w := 1 m
 h := 1 m
 A(w, h) := w*h
 given
 2*w + 2*h == 4 m
-Maximize(A, w, h) = [1; 1]*m
+Maximize(A, w, h) = ?
 ```
 
 ## Good guesses

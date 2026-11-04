@@ -3,5 +3,9 @@ dist/
 .astro/
 # Written by prepare.mjs at every build: What's new from ../CHANGELOG.md, the icons from ../branding.
 src/content/docs/whats-new.md
-public/
+public/*
+# The drawn examples are written by ManualExamplesTest (app module) and committed, as the reference pages are.
+!public/examples/
 src/assets/
+# Python's compiled files, from the examples' beam_tools.py.
+__pycache__/

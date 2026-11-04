@@ -23,7 +23,7 @@ Change them, then press **Escape** (or click elsewhere) to draw the plot. Click 
 
 ## A function of x
 
-```text
+```beermat
 L := 6 m
 q := 12 kN/m
 M(x) := q*x*(L - x)/2
@@ -56,7 +56,7 @@ axes:
 
 To plot measured points, give vectors of the same length for x and y:
 
-```text
+```beermat
 t_d := [0; 1; 2; 3]*1 s
 y_d := [0; 2; 3; 3.5]*1 m
 ```

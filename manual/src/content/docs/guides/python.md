@@ -20,10 +20,10 @@ def add(a, b):
 
 ## Using it
 
-```text
+```beermat
 bt := use "beam_tools.py"
-M_max := bt.moment(12 kN/m, 6 m) = 54 kN*m
-bt.add(2, 3) = 5
+M_max := bt.moment(12 kN/m, 6 m) = ?
+bt.add(2, 3) = ?
 ```
 
 - `use "file.py"` gives the file's functions as a module, held in a variable (`bt`). The path is relative to the sheet.
@@ -36,8 +36,8 @@ Annotate the arguments and the result with their units, as strings. Beermat chec
 
 Without annotations, the arguments and the result are plain numbers. A value with a unit passed to such a function is an error:
 
-```text
-bt.add(2 m, 3)      add: a takes a plain number; give it a unit in the .py file (a: "m"), or divide by one at the call
+```beermat errors
+bt.add(2 m, 3) = ?
 ```
 
 Arrays go in and out as lists (of lists), and strings as strings. An error in the Python code shows as the statement's error, with the line in the `.py` file.

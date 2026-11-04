@@ -1,0 +1,9 @@
+---
+results: 2574d86ac6b5e2fb
+---
+<!-- #t1 x=0 y=0 -->
+# Beam check
+
+```calc {#r1 x=0 y=37}
+L := 6 m
+```

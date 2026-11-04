@@ -5,9 +5,9 @@ description: The common error messages, what usually causes each, and how to fix
 
 An error shows in red at the part of the statement that caused it. The command line prints it after `#!`. Every statement that uses a broken definition says so, naming where the trouble started:
 
-```text
-a := b + 1          b is not defined
-c := a + 1          a has an error: b is not defined
+```beermat errors
+a := b + 1
+c := a + 1
 ```
 
 Fix the first one, and the rest follow.

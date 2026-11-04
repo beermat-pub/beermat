@@ -1,0 +1,16 @@
+---
+results: 2f09052b81bd39d9
+---
+```calc {#r1 x=0 y=0}
+f(x) := x^2 + 1
+g(x, y) := sqrt(x^2 + y^2)
+h := f
+```
+
+```calc {#r2 x=0 y=62}
+f(x) :=
+  if x < 0
+    return -x
+  otherwise
+    x
+```

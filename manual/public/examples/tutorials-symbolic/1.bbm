@@ -1,0 +1,8 @@
+---
+results: 0bede7b26018582d
+---
+```calc {#r1 x=0 y=0}
+x/2 + x/3 -> ?           #= 5*x/6
+diff(x*sin(x), x) -> ?   #= x*cos(x) + sin(x)
+int(x*sin(x), x) -> ?    #= sin(x) - x*cos(x)
+```

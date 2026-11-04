@@ -1,0 +1,17 @@
+---
+results: 4e0a7ea56a79daaa
+---
+```calc {#r1 x=0 y=0}
+f(x) := (x - 2)^2 + 1
+x := 0
+Minimize(f, x) = ?   #= 2
+```
+
+```calc {#r2 x=0 y=56}
+w := 1 m
+h := 1 m
+A(w, h) := w*h
+given
+2*w + 2*h == 4 m
+Maximize(A, w, h) = ?   #= [1; 1]*m
+```

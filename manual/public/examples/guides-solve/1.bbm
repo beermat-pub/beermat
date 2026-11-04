@@ -1,0 +1,8 @@
+---
+results: d27e178eff70af8a
+---
+```calc {#r1 x=0 y=0}
+x := 1
+root(x^3 - 2*x - 5, x) = ?      #= 2.095
+root(cos(x) - x, x, 0, 1) = ?   #= 0.739
+```

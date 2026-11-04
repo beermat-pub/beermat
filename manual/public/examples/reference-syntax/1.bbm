@@ -1,0 +1,8 @@
+---
+results: 99a1c395c3b9cbaa
+---
+```calc {#r1 x=0 y=0}
+f(x) := x^2 + 1
+g(x, y) := sqrt(x^2 + y^2)
+h := f
+```

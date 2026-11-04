@@ -5,11 +5,11 @@ description: Read data from CSV, text and Excel files, fit lines and curves, and
 
 ## Read a file
 
-```text
+```beermat
 D := READCSV("spring.csv")
-D = ["x", "F"; 0, 0; 2.1, 50; 3.9, 100; 6.2, 150; 7.9, 200]
+D = ?
 P := READPRN("spring.csv")
-P = [0, 0; 2.1, 50; 3.9, 100; 6.2, 150; 7.9, 200]
+P = ?
 ```
 
 | Function | Reads |
@@ -27,21 +27,21 @@ Reading files is in the desktop app; the browser can't reach your files.
 
 ## Fit a straight line
 
-```text
+```beermat
 x := P^<0>*1 mm
 F := P^<1>*1 N
-k := slope(x, F) = 25.083 N/mm
-corr(x, F) = 0.999
+k := slope(x, F) = ? N/mm
+corr(x, F) = ?
 ```
 
 `intercept(x, F)` gives the other end of the line.
 
 ## Interpolate
 
-```text
-linterp(x, F, 5 mm) = 123.913 N
+```beermat
+linterp(x, F, 5 mm) = ? N
 vs := cspline(x, F)
-interp(vs, x, F, 5 mm) = 124.404 N
+interp(vs, x, F, 5 mm) = ? N
 ```
 
 - `linterp` draws straight lines between the points.
@@ -56,10 +56,10 @@ interp(vs, x, F, 5 mm) = 124.404 N
 
 ## Statistics
 
-```text
-mean(F) = 100 N
-median(F) = 100 N
-Stdev(F) = 79.057 N
+```beermat
+mean(F) = ? N
+median(F) = ? N
+Stdev(F) = ? N
 ```
 
 `stdev` and `var` are for a whole population (dividing by n), `Stdev` and `Var` for a sample (by n − 1). The [statistics functions](../../reference/functions/statistics/) include the normal distribution, histograms and random numbers.

@@ -1,0 +1,7 @@
+---
+results: a79ebda5dc316bc0
+---
+```calc {#r1 x=0 y=0}
+v := 12 kN/m
+v/(1 kN/m) = ?   #= 12
+```

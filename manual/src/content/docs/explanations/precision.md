@@ -19,12 +19,12 @@ The symbolic arrow `→` works exactly, with fractions: `x/2 + x/3 → 5*x/6`. `
 
 Comparisons (`==`, `<`, `<=`, `>`, `>=`, `!=`) treat numbers within a small relative tolerance as equal. The tolerance is the built-in variable `TOL`, 10⁻³ by default:
 
-```text
-0.1 + 0.2 == 0.3 = 1
-1.0005 == 1 = 1
-1.002 == 1 = 0
+```beermat
+0.1 + 0.2 == 0.3 = ?
+1.0005 == 1 = ?
+1.002 == 1 = ?
 TOL := 10^-6
-1.0005 == 1 = 0
+1.0005 == 1 = ?
 ```
 
 Change it for the whole sheet with the `tolerance` [setting](../../reference/settings/), or from one point on with `TOL := …`.
@@ -33,7 +33,7 @@ Change it for the whole sheet with the `tolerance` [setting](../../reference/set
 
 `(-8)^(1/3)` is the principal complex cube root, `1 + 1.732i`, as in most mathematics. For the real root, use `nthroot`:
 
-```text
-(-8)^(1/3) = 1 + 1.732i
-nthroot(-8, 3) = -2
+```beermat
+(-8)^(1/3) = ?
+nthroot(-8, 3) = ?
 ```

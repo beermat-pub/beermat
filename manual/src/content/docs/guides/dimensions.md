@@ -15,23 +15,23 @@ angle: dimension
 
 Then `rad` is a unit like the metre, and angles are checked:
 
-```text
+```beermat errors angle=dimension
 θ := 30 deg
-θ = 30 deg
-asin(0.5) = 30 deg
-k_r := 20 kN*m/(0.01 rad) = 2 MN*m/rad
-x := 2 m + θ      units do not match: L vs ∠
+θ = ? deg
+asin(0.5) = ? deg
+k_r := 20 kN*m/(0.01 rad) = ? MN*m/rad
+x := 2 m + θ
 ```
 
 - `sin`, `cos` and `tan` take an angle (or a plain number, read as radians); `asin`, `acos`, `atan` and `atan2` give one.
 - An angle result is shown in degrees unless you ask for another unit; `angle_display: rad` shows radians instead.
 - Formulas where the radian quietly disappears need it written. An arc length is `r*θ/rad`, and an angular frequency `2*π*f*rad`:
 
-```text
+```beermat
 r := 2 m
-s := r*θ/rad = 1.047 m
+s := r*θ/rad = ?
 f := 50 Hz
-ω := 2*π*f*rad = 314.159 rad/s
+ω := 2*π*f*rad = ? rad/s
 ```
 
 ## Money as a dimension
@@ -46,13 +46,13 @@ currency: AUD
 
 That name becomes a unit, and money is checked like anything else:
 
-```text
+```beermat errors currency=AUD
 cost := 120 AUD/m^3
 V := 4 m^3
-cost*V = 480 AUD
+cost*V = ?
 USD := 1.52 AUD
-p := 100 USD = 152 AUD
-y := 3 AUD + 2 m      units do not match: ¤ vs L
+p := 100 USD = ?
+y := 3 AUD + 2 m
 ```
 
 Other currencies are definitions with your own rate; Beermat fetches no exchange rates. Money never takes prefixes (no "kAUD").
@@ -61,9 +61,9 @@ Other currencies are definitions with your own rate; Beermat fetches no exchange
 
 A unit is a value with a name, so a unit of your own is a definition:
 
-```text
+```beermat
 bag := 25 kg
-cement := 12 bag = 300 kg
+cement := 12 bag = ?
 ```
 
 It can be used below where it is defined, like any variable, and in a result's placeholder (`= ? bag`).

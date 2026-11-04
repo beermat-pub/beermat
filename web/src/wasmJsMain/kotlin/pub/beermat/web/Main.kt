@@ -110,6 +110,12 @@ private fun WebApp() {
         changed()
     }
     LaunchedEffect(Unit) { onPaste { text -> session.guard(Unit) { session.paste(text) }; changed() } }
+    // "Open this example" in the manual (docs/manual.md#drawn-examples): /try?open=/docs/examples/…bbm.
+    LaunchedEffect(Unit) {
+        val path = openParameter() ?: return@LaunchedEffect
+        if (!Regex("""^/docs/examples/[\w-]+/\d+\.bbm$""").matches(path)) return@LaunchedEffect
+        fetchText(path) { text -> open(path.substringAfterLast('/').let { "example-$it" }, text) }
+    }
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().background(Color(0xFF2B2118)).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicText("Beermat", Modifier.clickable { goTo(SITE) }, style = TextStyle(color = Color(0xFFF2B33D), fontSize = 16.sp))

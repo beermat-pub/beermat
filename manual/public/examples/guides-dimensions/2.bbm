@@ -1,0 +1,19 @@
+---
+angle: dimension
+results: e0fea9c1672e131a
+---
+
+```calc {#r1 x=0 y=0}
+θ := 30 deg
+θ = ? deg                                #= 30 deg
+asin(0.5) = ? deg                        #= 30 deg
+k_r := 20 kN*m/(0.01 rad) = ? MN*m/rad   #= 2 MN*m/rad
+x := 2 m + θ                             #! units do not match: L vs ∠
+```
+
+```calc {#r2 x=0 y=111}
+r := 2 m
+s := r*θ/rad = ?           #= 1.047 m
+f := 50 Hz
+ω := 2*π*f*rad = ? rad/s   #= 314.159 rad/s
+```

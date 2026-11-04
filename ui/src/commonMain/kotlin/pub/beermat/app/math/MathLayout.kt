@@ -190,7 +190,10 @@ class MathLayout(
 
     /** No result yet: a placeholder, and the unit slot when editing. */
     private fun resultSlotOnly(slot: Int?, slotUnit: Expr?, s: Float): Box {
-        if (!tagged || slot == null) return placeholder(s)
+        // Without a result (an error), the unit asked for still shows: `σ = ■ kN`, so the error reads against it.
+        if (!tagged || slot == null) {
+            return slotUnit?.let { row(placeholder(s), thin(s), MathLayout(metrics, size, Units.ALL, false, drafts, multiplication, scroll).expr(it, s)) } ?: placeholder(s)
+        }
         val u = slotUnit?.let { MathLayout(metrics, size, Units.ALL, true, drafts, multiplication, scroll).expr(it, s) } ?: placeholder(s * 0.75f)
         return row(placeholder(s), thin(s), tag(slot, u))
     }

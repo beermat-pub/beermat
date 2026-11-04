@@ -5,13 +5,13 @@ description: A whole calculation, a steel beam checked for bending and deflectio
 
 This page builds a short, complete calculation: a simply supported steel beam under a uniform load, checked for bending stress and deflection. It takes about fifteen minutes, and uses most of what you need every day.
 
-The examples show the math the way it is written in a `.bbm` file. On the page you see it drawn: `q*L^2/8` as a fraction, `M_max` as M with a subscript.
+The examples are drawn as Beermat shows them, worked out by Beermat itself. Under each, **As text** shows how it is written in the `.bbm` file, and **Open this example** opens the sheet so far in the browser.
 
 ## 1. A heading
 
 Click near the top of the page and type `"`: on an empty spot, a quote starts a text region. Text is Markdown, so a line starting with `# ` is a heading:
 
-```text
+```beermat text
 # Beam check
 ```
 
@@ -21,13 +21,13 @@ Press **Escape** to finish the text. (Typing a word and a space on an empty spot
 
 Click below the heading and type the span. `:` gives the definition sign `:=`:
 
-```text
+```beermat
 L := 6 m
 ```
 
 Press **Enter**. The crosshair moves down a line, ready for the next one. Add the load, and the section's properties:
 
-```text
+```beermat
 q := 12 kN/m
 E := 210 GPa
 I := 8360 cm^4
@@ -42,33 +42,33 @@ f_y := 355 MPa
 
 Beside the inputs, or below them, work out the largest moment and shear. Type `=` at the end of a definition to show its value (`M.max:q*L^2/8=`):
 
-```text
-M_max := q*L^2/8 = 54 kN*m
-V_max := q*L/2 = 36 kN
+```beermat
+M_max := q*L^2/8 = ?
+V_max := q*L/2 = ?
 ```
 
 You typed no units for the result: Beermat worked them out from the inputs, and chose the prefix (`kN·m` rather than `54000 N·m`).
 
 The stress, in the unit you want. Type the unit straight after the `=`, where it goes into the small placeholder at the end (`s«Ctrl+G»:M.max/W.el=MPa`):
 
-```text
-σ := M_max/W_el = 96.948 MPa
-U := σ/f_y = 0.273
+```beermat
+σ := M_max/W_el = ? MPa
+U := σ/f_y = ?
 ```
 
 Greek letters: type the Latin letter, then **Ctrl+G** (`s` then Ctrl+G is σ), or pick it from the Greek palette.
 
 ## 4. Deflection
 
-```text
-δ := 5*q*L^4/(384*E*I) = 11.535 mm
-δ_allow := L/360 = 16.667 mm
+```beermat
+δ := 5*q*L^4/(384*E*I) = ?
+δ_allow := L/360 = ?
 ```
 
 ## 5. A check that reads like one
 
-```text
-check := if(δ <= δ_allow, "OK", "too flexible") = "OK"
+```beermat
+check := if(δ <= δ_allow, "OK", "too flexible") = ?
 ```
 
 `<=` gives ≤. `if(condition, then, else)` picks one of two values; a string in quotes is a value like any other.
@@ -81,10 +81,10 @@ Click on `6 m` and make it `7 m`. Every result below changes at once. The page i
 
 A function of x:
 
-```text
+```beermat
 M(x) := q*x*(L - x)/2
-M(1.5 m) = 40.5 kN*m
-M(L/2) = 54 kN*m
+M(1.5 m) = ?
+M(L/2) = ?
 ```
 
 To draw it, press **@** on an empty spot (or **Insert → X-Y plot**). A small example plot appears, open as its settings. Change them to:
@@ -99,7 +99,21 @@ traces:
     label: M
 ```
 
-Press **Escape**, and the plot is drawn. [Plots](../../tutorials/plots/) has more.
+Press **Escape**, and the plot is drawn:
+
+````beermat
+```plot
+title: Bending moment
+x: x = 0 m .. L
+x_unit: m
+traces:
+  - y: M(x)
+    unit: kN*m
+    label: M
+```
+````
+
+[Plots](../../tutorials/plots/) has more.
 
 ## 8. Save, print, share
 

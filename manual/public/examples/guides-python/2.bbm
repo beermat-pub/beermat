@@ -1,0 +1,12 @@
+---
+results: 3c61957dc7ebd083
+---
+```calc {#r1 x=0 y=0}
+bt := use "beam_tools.py"
+M_max := bt.moment(12 kN/m, 6 m) = ?   #= 54 kN*m
+bt.add(2, 3) = ?                       #= 5
+```
+
+```calc {#r2 x=0 y=107}
+bt.add(2 m, 3) = ?   #! add: a takes a plain number; give it a unit in the .py file (a: "m"), or divide by one at the call
+```

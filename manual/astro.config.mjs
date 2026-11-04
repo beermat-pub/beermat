@@ -1,10 +1,13 @@
 // The manual (docs/manual.md): Starlight, published at beermat.pub/docs by the release workflow.
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { remarkBeermatExamples } from './src/examples.mjs';
 
 export default defineConfig({
   site: 'https://beermat.pub',
   base: '/docs',
+  // The ```beermat fences, drawn by Beermat (src/examples.mjs).
+  markdown: { remarkPlugins: [[remarkBeermatExamples, { base: '/docs' }]] },
   integrations: [
     starlight({
       title: 'Beermat manual',

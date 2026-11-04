@@ -1,0 +1,34 @@
+---
+results: b25ae85593386264
+---
+```calc {#r1 x=0 y=0}
+F := 2.5 kN
+A := 25 mm*40 mm
+σ := F/A = ?   #= 2.5 MPa
+```
+
+```calc {#r2 x=0 y=59}
+v := 90 km/hr
+t := 2 s
+a := v/t = ?   #= 12.5 m/s^2
+```
+
+```calc {#r3 x=0 y=131}
+σ = ? psi                      #= 362.594 psi
+v = ?                          #= 25 m/s
+E_day := 3 kW*8 hr = ? kW*hr   #= 24 kW*hr
+E_day = ? MJ                   #= 86.4 MJ
+```
+
+```calc {#r4 x=0 y=212}
+x := 3 m + 2 s   #! units do not match: L vs T
+```
+
+```calc {#r5 x=0 y=240}
+σ = ? kN   #! units do not match: the result is L^-1·M·T^-2, the unit is L·M·T^-2
+```
+
+```calc {#r6 x=0 y=273}
+m := 2 kg
+w := m*g = ?   #= 19.613 N
+```

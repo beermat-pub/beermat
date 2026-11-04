@@ -1,0 +1,22 @@
+---
+results: 468d7ea55b15b330
+---
+```calc {#r1 x=0 y=0}
+D := READCSV("spring.csv")
+D = ?   #= ["x", "F"; 0, 0; 2.1, 50; 3.9, 100; 6.2, 150; 7.9, 200]
+P := READPRN("spring.csv")
+P = ?   #= [0, 0; 2.1, 50; 3.9, 100; 6.2, 150; 7.9, 200]
+```
+
+```calc {#r2 x=0 y=120}
+x := P^<0>*1 mm
+F := P^<1>*1 N
+k := slope(x, F) = ? N/mm   #= 25.083 N/mm
+corr(x, F) = ?              #= 0.999
+```
+
+```calc {#r3 x=0 y=241}
+linterp(x, F, 5 mm) = ? N      #= 123.913 N
+vs := cspline(x, F)
+interp(vs, x, F, 5 mm) = ? N   #= 124.404 N
+```

@@ -1,0 +1,22 @@
+---
+results: 95d14832fc433054
+---
+```calc {#r1 x=0 y=0}
+grade(U) :=
+  "OK" if U <= 1
+  "fails" otherwise
+grade(0.8) = ?   #= "OK"
+grade(1.2) = ?   #= "fails"
+```
+
+```calc {#r2 x=0 y=73}
+fib(n) :=
+  a <- 0
+  b <- 1
+  for k in 1..n
+    t <- a + b
+    a <- b
+    b <- t
+  a
+fib(10) = ?   #= 55
+```

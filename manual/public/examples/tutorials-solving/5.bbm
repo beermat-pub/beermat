@@ -1,0 +1,38 @@
+---
+results: ff173daff51d9b03
+---
+```calc {#r1 x=0 y=0}
+q := 12 kN/m
+E := 210 GPa
+I := 8360 cm^4
+δ(L) := 5*q*L^4/(384*E*I)
+L := 5 m
+L_max := root(δ(L) - L/360, L) = ?   #= 6.783 m
+δ(L_max) = ?                         #= 18.842 mm
+L_max/360 = ?                        #= 18.842 mm
+```
+
+```calc {#r2 x=0 y=180}
+x := 1
+root(x^2 - 2, x) = ?   #= 1.414
+x := -1
+root(x^2 - 2, x) = ?   #= -1.414
+```
+
+```calc {#r3 x=0 y=253}
+root(δ(L) - L/360, L, 1 m, 20 m) = ?   #= 6.783 m
+```
+
+```calc {#r4 x=0 y=285}
+a := 1 m
+b := 4 m
+given
+a + b == 5 m
+a*b == 6 m^2
+sol := find(a, b) = ?   #= [2; 3]*m
+```
+
+```calc {#r5 x=0 y=399}
+[a_1; b_1] := find(a, b)
+a_1 = ?   #= 2 m
+```
