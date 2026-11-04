@@ -48,7 +48,11 @@ class ManualExamplesTest {
             files.forEach { (path, bytes) -> File(out, path).apply { parentFile.mkdirs() }.writeBytes(bytes) }
         }
         val there = out.walkTopDown().filter { it.isFile }.map { it.relativeTo(out).path.replace('\\', '/') }.toSet()
-        val stale = files.filter { (path, bytes) -> !File(out, path).isFile || !File(out, path).readBytes().contentEquals(bytes) }.keys + (there - files.keys)
+        // The sheets must match; a picture must be there. Its exact bytes differ between systems (text
+        // regions use the system's fonts on the desktop), so CI on Linux can't compare what Windows drew.
+        val stale = files.filter { (path, bytes) ->
+            !File(out, path).isFile || (path.endsWith(".bbm") && !File(out, path).readBytes().contentEquals(bytes))
+        }.keys + (there - files.keys)
         assertEquals(emptySet(), stale, "examples to draw again: ./gradlew :app:test --tests '*ManualExamples*' -Pbeermat.writeReference=true")
     }
 
