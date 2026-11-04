@@ -1,7 +1,4 @@
----
-results: dd22365eaf10cf45
----
-```calc {#r1 x=0 y=0}
-a := b + 1   #! b is not defined
-c := a + 1   #! a has an error: b is not defined
+```calc
+a := b + 1
+c := a + 1
 ```

@@ -1,8 +1,5 @@
----
-results: 9bd1737ea54bb2f0
----
-```calc {#r1 x=0 y=0}
+```calc
 f(x) := (x - 2)^2 + 1
 x := 0
-Minimize(f, x) = ?   #= 2
+Minimize(f, x) = ?
 ```

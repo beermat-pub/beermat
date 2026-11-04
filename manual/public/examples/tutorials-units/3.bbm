@@ -1,21 +1,18 @@
----
-results: acbdd5bd9273a555
----
-```calc {#r1 x=0 y=0}
+```calc
 F := 2.5 kN
 A := 25 mm*40 mm
-σ := F/A = ?   #= 2.5 MPa
+σ := F/A = ?
 ```
 
-```calc {#r2 x=0 y=59}
+```calc
 v := 90 km/hr
 t := 2 s
-a := v/t = ?   #= 12.5 m/s^2
+a := v/t = ?
 ```
 
-```calc {#r3 x=0 y=131}
-σ = ? psi                      #= 362.594 psi
-v = ?                          #= 25 m/s
-E_day := 3 kW*8 hr = ? kW*hr   #= 24 kW*hr
-E_day = ? MJ                   #= 86.4 MJ
+```calc
+σ = ? psi
+v = ?
+E_day := 3 kW*8 hr = ? kW*hr
+E_day = ? MJ
 ```

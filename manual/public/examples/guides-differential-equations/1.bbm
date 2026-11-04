@@ -1,7 +1,4 @@
----
-results: 5f7c186315414ea8
----
-```calc {#r1 x=0 y=0}
+```calc
 M := 2 kg
 k := 50 N/m
 c := 1 N*s/m
@@ -10,6 +7,6 @@ x''(t) == -(k*x(t) + c*x'(t))/M
 x(0 s) == 0.1 m
 x'(0 s) == 0 m/s
 x := Odesolve(t, 5 s)
-x(1 s) = ?   #= 17.879 mm
-x(5 s) = ?   #= 28.032 mm
+x(1 s) = ?
+x(5 s) = ?
 ```

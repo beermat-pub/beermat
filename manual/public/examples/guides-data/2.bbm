@@ -1,16 +1,13 @@
----
-results: e2b4174c66284b47
----
-```calc {#r1 x=0 y=0}
+```calc
 D := READCSV("spring.csv")
-D = ?   #= ["x", "F"; 0, 0; 2.1, 50; 3.9, 100; 6.2, 150; 7.9, 200]
+D = ?
 P := READPRN("spring.csv")
-P = ?   #= [0, 0; 2.1, 50; 3.9, 100; 6.2, 150; 7.9, 200]
+P = ?
 ```
 
-```calc {#r2 x=0 y=120}
+```calc
 x := P^<0>*1 mm
 F := P^<1>*1 N
-k := slope(x, F) = ? N/mm   #= 25.083 N/mm
-corr(x, F) = ?              #= 0.999
+k := slope(x, F) = ? N/mm
+corr(x, F) = ?
 ```

@@ -1,19 +1,16 @@
----
-results: 4ba81277585510d6
----
-```calc {#r1 x=0 y=0}
+```calc
 L := 6 m
 ```
 
-```table {#a1 name=Loads x=0 y=18}
-| Case    |      q [kN/m] |          M [kN*m] |
-| ------- | ------------: | ----------------: |
-| Dead    |           4.5 | = q*L^2/8 → 20.25 |
-| Imposed |           7.5 | = q*L^2/8 → 33.75 |
-| Total   | = sum(q) → 12 |     = sum(M) → 54 |
+```table {name=Loads}
+| Case    | q [kN/m] | M [kN*m]  |
+|---------|---------:|----------:|
+| Dead    | 4.5      | = q*L^2/8 |
+| Imposed | 7.5      | = q*L^2/8 |
+| Total   | = sum(q) | = sum(M)  |
 ```
 
-```calc {#r2 x=0 y=100}
-M_Loads = ?                                   #= [20.25; 33.75; 54]*kN*m
-M_d := 1.35*M_Loads[0] + 1.5*M_Loads[1] = ?   #= 77.963 kN*m
+```calc
+M_Loads = ?
+M_d := 1.35*M_Loads[0] + 1.5*M_Loads[1] = ?
 ```

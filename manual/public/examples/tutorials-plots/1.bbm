@@ -1,7 +1,4 @@
----
-results: 1e0352c357bec658
----
-```calc {#r1 x=0 y=0}
+```calc
 L := 6 m
 q := 12 kN/m
 M(x) := q*x*(L - x)/2

@@ -1,8 +1,5 @@
----
-results: e8adb0fe194b4b6b
----
-```calc {#r1 x=0 y=0}
+```calc
 bt := use "beam_tools.py"
-M_max := bt.moment(12 kN/m, 6 m) = ?   #= 54 kN*m
-bt.add(2, 3) = ?                       #= 5
+M_max := bt.moment(12 kN/m, 6 m) = ?
+bt.add(2, 3) = ?
 ```

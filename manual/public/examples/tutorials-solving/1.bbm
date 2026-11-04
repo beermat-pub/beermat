@@ -1,13 +1,10 @@
----
-results: 96d46ad55a1b5a9b
----
-```calc {#r1 x=0 y=0}
+```calc
 q := 12 kN/m
 E := 210 GPa
 I := 8360 cm^4
 δ(L) := 5*q*L^4/(384*E*I)
 L := 5 m
-L_max := root(δ(L) - L/360, L) = ?   #= 6.783 m
-δ(L_max) = ?                         #= 18.842 mm
-L_max/360 = ?                        #= 18.842 mm
+L_max := root(δ(L) - L/360, L) = ?
+δ(L_max) = ?
+L_max/360 = ?
 ```

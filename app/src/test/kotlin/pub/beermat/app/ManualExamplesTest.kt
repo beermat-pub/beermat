@@ -162,6 +162,7 @@ class ManualExamplesTest {
         fun shown(v: String) = "%.1f".format(java.util.Locale.ROOT, v.toFloat() * SCALE)
         val (rest, sw, sh) = m.destructured
         val svg = drawn.replaceRange(m.range, """<svg$rest width="${shown(sw)}" height="${shown(sh)}" viewBox="0 0 $sw $sh"""")
-        return svg.toByteArray() to session.text()
+        // The sheet as the page writes it, without positions (they depend on the system's fonts): it flows when opened.
+        return svg.toByteArray() to text
     }
 }

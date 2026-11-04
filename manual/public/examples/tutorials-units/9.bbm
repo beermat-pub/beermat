@@ -1,55 +1,52 @@
----
-results: 2d6d8c4bc3b98023
----
-```calc {#r1 x=0 y=0}
+```calc
 F := 2.5 kN
 A := 25 mm*40 mm
-σ := F/A = ?   #= 2.5 MPa
+σ := F/A = ?
 ```
 
-```calc {#r2 x=0 y=59}
+```calc
 v := 90 km/hr
 t := 2 s
-a := v/t = ?   #= 12.5 m/s^2
+a := v/t = ?
 ```
 
-```calc {#r3 x=0 y=131}
-σ = ? psi                      #= 362.594 psi
-v = ?                          #= 25 m/s
-E_day := 3 kW*8 hr = ? kW*hr   #= 24 kW*hr
-E_day = ? MJ                   #= 86.4 MJ
+```calc
+σ = ? psi
+v = ?
+E_day := 3 kW*8 hr = ? kW*hr
+E_day = ? MJ
 ```
 
-```calc {#r4 x=0 y=212}
-x := 3 m + 2 s   #! units do not match: L vs T
+```calc
+x := 3 m + 2 s
 ```
 
-```calc {#r5 x=0 y=240}
-σ = ? kN   #! units do not match: the result is L^-1·M·T^-2, the unit is L·M·T^-2
+```calc
+σ = ? kN
 ```
 
-```calc {#r6 x=0 y=273}
+```calc
 m := 2 kg
-w := m*g = ?   #= 19.613 N
+w := m*g = ?
 ```
 
-```calc {#r7 x=0 y=312}
+```calc
 θ := 30 deg
-sin(θ) = ?   #= 0.5
-θ = ?        #= 0.524
-θ = ? deg    #= 30 deg
+sin(θ) = ?
+θ = ?
+θ = ? deg
 ```
 
-```calc {#r8 x=0 y=385}
+```calc
 T := 20 °C
-T = ?                     #= 293.15 K
-T = ? °C                  #= 20 °C
-T = ? °F                  #= 68 °F
-ΔT := 30 °C - 20 °C = ?   #= 10 K
-ΔT = ? Δ°C                #= 10 Δ°C
+T = ?
+T = ? °C
+T = ? °F
+ΔT := 30 °C - 20 °C = ?
+ΔT = ? Δ°C
 ```
 
-```calc {#r9 x=0 y=478}
+```calc
 bag := 25 kg
-cement := 12 bag = ?   #= 300 kg
+cement := 12 bag = ?
 ```

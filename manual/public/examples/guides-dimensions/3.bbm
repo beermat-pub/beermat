@@ -1,29 +1,28 @@
 ---
 angle: dimension
 currency: AUD
-results: b3d99556c29ad3ef
 ---
 
-```calc {#r1 x=0 y=0}
+```calc
 θ := 30 deg
-θ = ? deg                                #= 30 deg
-asin(0.5) = ? deg                        #= 30 deg
-k_r := 20 kN*m/(0.01 rad) = ? MN*m/rad   #= 2 MN*m/rad
-x := 2 m + θ                             #! units do not match: L vs ∠
+θ = ? deg
+asin(0.5) = ? deg
+k_r := 20 kN*m/(0.01 rad) = ? MN*m/rad
+x := 2 m + θ
 ```
 
-```calc {#r2 x=0 y=111}
+```calc
 r := 2 m
-s := r*θ/rad = ?           #= 1.047 m
+s := r*θ/rad = ?
 f := 50 Hz
-ω := 2*π*f*rad = ? rad/s   #= 314.159 rad/s
+ω := 2*π*f*rad = ? rad/s
 ```
 
-```calc {#r3 x=0 y=201}
+```calc
 cost := 120 AUD/m^3
 V := 4 m^3
-cost*V = ?         #= 480 AUD
+cost*V = ?
 USD := 1.52 AUD
-p := 100 USD = ?   #= 152 AUD
-y := 3 AUD + 2 m   #! units do not match: ¤ vs L
+p := 100 USD = ?
+y := 3 AUD + 2 m
 ```

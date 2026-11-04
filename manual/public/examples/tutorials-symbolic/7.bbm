@@ -1,46 +1,43 @@
----
-results: 936810dbfe7c16fa
----
-```calc {#r1 x=0 y=0}
-x/2 + x/3 -> ?           #= 5*x/6
-diff(x*sin(x), x) -> ?   #= x*cos(x) + sin(x)
-int(x*sin(x), x) -> ?    #= sin(x) - x*cos(x)
+```calc
+x/2 + x/3 -> ?
+diff(x*sin(x), x) -> ?
+int(x*sin(x), x) -> ?
 ```
 
-```calc {#r2 x=0 y=82}
-(x + 1)^2 -> expand -> ?           #= x^2 + 2*x + 1
-x^2 - 1 -> factor -> ?             #= (x - 1)*(x + 1)
-x^2 - 4 -> solve(x) -> ?           #= [-2; 2]
-a*x^2 + b*x + c -> solve(x) -> ?   #= [(-b - sqrt(b^2 - 4*a*c))/(2*a); (sqrt(b^2 - 4*a*c) - b)/(2*a)]
-sin(x) -> series(x, 6) -> ?        #= x^5/120 - x^3/6 + x
-π -> float(4) -> ?                 #= 3.142
+```calc
+(x + 1)^2 -> expand -> ?
+x^2 - 1 -> factor -> ?
+x^2 - 4 -> solve(x) -> ?
+a*x^2 + b*x + c -> solve(x) -> ?
+sin(x) -> series(x, 6) -> ?
+π -> float(4) -> ?
 ```
 
-```calc {#r3 x=0 y=272}
-x^2 + 1 -> substitute(x == y + 1) -> expand -> ?   #= y^2 + 2*y + 2
-sqrt(x^2) -> assume(x > 0) -> simplify -> ?        #= x
+```calc
+x^2 + 1 -> substitute(x == y + 1) -> expand -> ?
+sqrt(x^2) -> assume(x > 0) -> simplify -> ?
 ```
 
-```calc {#r4 x=0 y=316}
-int(x^2, x, 0, a) -> ?              #= a^3/3
-lim(sin(x)/x, x, 0) -> ?            #= 1
-sum(1/k^2, k, 1, ∞) -> ?            #= π^2/6
-1/(s^2 + 1) -> invlaplace(s) -> ?   #= sin(t)
+```calc
+int(x^2, x, 0, a) -> ?
+lim(sin(x)/x, x, 0) -> ?
+sum(1/k^2, k, 1, ∞) -> ?
+1/(s^2 + 1) -> invlaplace(s) -> ?
 ```
 
-```calc {#r5 x=0 y=449}
-[x + y == 3; x - y == -1] -> solve(x, y) -> ?   #= [1, 2]
+```calc
+[x + y == 3; x - y == -1] -> solve(x, y) -> ?
 ```
 
-```calc {#r6 x=0 y=491}
+```calc
 w := 3
-w^2 + z -> ?           #= z + 9
+w^2 + z -> ?
 g_1(u) := u^2
-diff(g_1(t), t) -> ?   #= 2*t
+diff(g_1(t), t) -> ?
 ```
 
-```calc {#r7 x=0 y=571}
+```calc
 q := 12 kN/m
 L := 6 m
-q*L^2/8 -> ?   #= 54 kN*m
+q*L^2/8 -> ?
 ```

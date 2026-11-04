@@ -1,13 +1,10 @@
----
-results: 66996fb6abf21cc0
----
-```calc {#r1 x=0 y=0}
+```calc
 x := 1
-root(x^3 - 2*x - 5, x) = ?      #= 2.095
-root(cos(x) - x, x, 0, 1) = ?   #= 0.739
+root(x^3 - 2*x - 5, x) = ?
+root(cos(x) - x, x, 0, 1) = ?
 ```
 
-```calc {#r2 x=0 y=57}
-polyroots([-6; 11; -6; 1]) = ?   #= [1; 2; 3]
-polyroots([1; 0; 1]) = ?         #= [-1i; 1i]
+```calc
+polyroots([-6; 11; -6; 1]) = ?
+polyroots([1; 0; 1]) = ?
 ```

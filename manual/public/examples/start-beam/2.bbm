@@ -1,9 +1,6 @@
----
-results: 2574d86ac6b5e2fb
----
-<!-- #t1 x=0 y=0 -->
+<!-- #t1 -->
 # Beam check
 
-```calc {#r1 x=0 y=37}
+```calc
 L := 6 m
 ```

@@ -1,15 +1,12 @@
----
-results: 6306fb0edb3dffc3
----
-```calc {#r1 x=0 y=0}
+```calc
 grade(U) :=
   "OK" if U <= 1
   "fails" otherwise
-grade(0.8) = ?   #= "OK"
-grade(1.2) = ?   #= "fails"
+grade(0.8) = ?
+grade(1.2) = ?
 ```
 
-```calc {#r2 x=0 y=73}
+```calc
 fib(n) :=
   a <- 0
   b <- 1
@@ -18,24 +15,24 @@ fib(n) :=
     a <- b
     b <- t
   a
-fib(10) = ?   #= 55
+fib(10) = ?
 ```
 
-```calc {#r3 x=0 y=200}
+```calc
 peak(v) :=
   k <- 0
   for j in 0..last(v)
     k <- j if v[j] > v[k]
   k
-peak([3; 9; 4]) = ?   #= 1
+peak([3; 9; 4]) = ?
 ```
 
-```calc {#r4 x=0 y=324}
+```calc
 halvings(x) :=
   n <- 0
   while x > 1
     x <- x/2
     n <- n + 1
   n
-halvings(1000) = ?   #= 10
+halvings(1000) = ?
 ```
