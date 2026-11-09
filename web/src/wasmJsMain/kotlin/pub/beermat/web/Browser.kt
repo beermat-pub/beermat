@@ -133,6 +133,9 @@ internal fun inVideo(): Boolean = js("new URLSearchParams(window.location.search
 /** The zoom the video asks for (`?video=125`), or 0 for the usual 175 %. */
 internal fun videoZoom(): Int = js("parseInt(new URLSearchParams(window.location.search).get('video')) || 0")
 
+/** For a square cut (`&square=240`): where the 720-pixel square starts, or 0 for none. */
+internal fun videoSquare(): Int = js("parseInt(new URLSearchParams(window.location.search).get('square')) || 0")
+
 /** Lets the video recorder show a key and a caption: `window.beermatVideo.key('Ctrl+G')`, `.caption('…')`; an empty text hides it. */
 internal fun exposeVideo(key: (String) -> Unit, caption: (String) -> Unit): Unit = js(
     """{ window.beermatVideo = { key: k => key(String(k || '')), caption: c => caption(String(c || '')) }; }""",

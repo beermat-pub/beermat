@@ -7,7 +7,7 @@
 //
 //   ./gradlew :web:wasmJsBrowserDistribution
 //   (cd web/build/dist/wasmJs/productionExecutable && python -m http.server 8765)
-//   node tools/record-video.mjs http://127.0.0.1:8765/index.html videos/01-type-math.txt out/01-type-math.webm [--frames 6,14]
+//   node tools/record-video.mjs http://127.0.0.1:8765/index.html videos/01-type-math.txt out/01-type-math.webm [--frames 6,14] [--square]
 //
 // Script steps, one per line (# for comments): `caption <text>` (empty hides it), `type <keys>` (letters as
 // typed; «enter», «esc», «bs», «tab», «space», arrows «left» «right» «up» «down», chords «ctrl-g»,
@@ -22,6 +22,9 @@ import { tmpdir } from 'node:os';
 const [url, scriptPath, outPath, ...options] = process.argv.slice(2);
 // --frames 6,14,22: also save the frames at those seconds (out/01-type-math.webm.6s.jpg), to look at.
 const sample = (options[options.indexOf('--frames') + 1] ?? '').split(',').filter(Boolean).map(Number);
+// --square: the caption and key badge drawn inside the square x 240–960 (page pixels), so that cropping
+// 1080×1080 at x 360 of the video gives a square cut with both (for LinkedIn).
+const square = options.includes('--square');
 const steps = readFileSync(scriptPath, 'utf8').split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
 const browser = process.env.BROWSER ?? 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const profile = join(tmpdir(), `beermat-video-${process.pid}`);
@@ -73,7 +76,7 @@ await send('Page.enable');
 await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1.5, mobile: false });
 // `zoom 125` anywhere in the script: the page at that zoom instead of 175 %, for a sheet that needs room.
 const zoom = steps.find(s => s.startsWith('zoom '))?.slice(5).trim();
-await send('Page.navigate', { url: url + (url.includes('?') ? '&' : '?') + 'video' + (zoom ? '=' + zoom : '') });
+await send('Page.navigate', { url: url + (url.includes('?') ? '&' : '?') + 'video' + (zoom ? '=' + zoom : '') + (square ? '&square=240' : '') });
 for (let i = 0; i < 100; i++) {
   await sleep(200);
   if (await evaluate('!!window.beermatVideo')) break;

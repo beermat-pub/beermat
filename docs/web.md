@@ -88,7 +88,7 @@ Asked for by Dan on 2026-10-29: whatever the browser can't do still shows, greye
 
 ## The video page
 
-The feature videos are recorded from the web version, off screen (2026-11-09). `/try?video` (`VideoApp`) is the toolbar and an empty sheet at 175 % (`?video=125` for another zoom), with a badge for the key just pressed and a caption, both set through `window.beermatVideo`. `tools/record-video.mjs` plays a script on it in headless Edge (keys, clicks, hovers, captions; it draws a mouse pointer), records Chrome's screencast and encodes a WebM in the browser (MediaRecorder, VP9), so it needs no ffmpeg. Headless Edge stops drawing after about 10 s unless focus is emulated and `--disable-frame-rate-limit` is set; the page also changes one pixel every frame so still moments are recorded.
+The feature videos are recorded from the web version, off screen (2026-11-09). `/try?video` (`VideoApp`) is the toolbar and an empty sheet at 175 % (`?video=125` for another zoom), with a badge for the key just pressed and a caption, both set through `window.beermatVideo`. `tools/record-video.mjs` plays a script on it in headless Edge (keys, clicks, hovers, captions; it draws a mouse pointer), records Chrome's screencast and encodes a WebM in the browser (MediaRecorder, VP9), so it needs no ffmpeg. With `--square` the page draws the caption and badge inside a square (`&square=240`), and cropping the video to 1080×1080 at x 360 gives the square cut for LinkedIn. Headless Edge stops drawing after about 10 s unless focus is emulated and `--disable-frame-rate-limit` is set; the page also changes one pixel every frame so still moments are recorded.
 
 ## Effort and order
 

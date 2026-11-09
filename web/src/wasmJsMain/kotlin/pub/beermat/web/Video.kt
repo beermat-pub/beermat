@@ -2,7 +2,10 @@ package pub.beermat.web
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +37,8 @@ import pub.beermat.app.page.Session
  * page alone, at 175 % so math reads on a phone (or the zoom in `?video=125`, for a sheet that needs room), an empty sheet that the browser doesn't keep. The
  * recorder (`tools/record-video.mjs`) types into it and sets, through `window.beermatVideo`, the key
  * just pressed (a badge at the bottom right, so the video teaches the shortcuts) and the caption.
+ * With `&square=240`, both are drawn inside the square from x 240 to 960, the badge above the caption,
+ * so that a square crop of the video keeps them (the LinkedIn cuts).
  */
 @Composable
 internal fun VideoApp() {
@@ -53,6 +58,9 @@ internal fun VideoApp() {
     }
     if (!ready) return
     val session = remember { Session("", MathLayout(SkiaMath, MATH_SIZE)) }
+    val square = remember { videoSquare() }
+    // Where the badge and the caption go: the whole page, or the square.
+    val frame = if (square > 0) Modifier.fillMaxHeight().width(720.dp).offset(x = square.dp) else Modifier.fillMaxSize()
     Box(Modifier.fillMaxSize()) {
         SheetView(
             session, revision, Commands.palettes, videoZoom().takeIf { it > 0 } ?: 175, WebHost,
@@ -62,7 +70,7 @@ internal fun VideoApp() {
             statusBar = {},
         )
         key?.let { k ->
-            Box(Modifier.fillMaxSize().padding(bottom = 28.dp, end = 28.dp), contentAlignment = Alignment.BottomEnd) {
+            Box(frame.padding(bottom = if (square > 0) 96.dp else 28.dp, end = 28.dp), contentAlignment = Alignment.BottomEnd) {
                 BasicText(
                     k,
                     Modifier.background(Color(0xE62B2118), RoundedCornerShape(8.dp)).padding(horizontal = 16.dp, vertical = 8.dp),
@@ -73,7 +81,7 @@ internal fun VideoApp() {
         // One pixel, all but invisible, that changes at every frame.
         Box(Modifier.size(1.dp).background(Color(0f, 0f, 0f, if (tick % 2 == 0) 0.01f else 0.02f)))
         caption?.let { c ->
-            Box(Modifier.fillMaxSize().padding(bottom = 28.dp), contentAlignment = Alignment.BottomCenter) {
+            Box(frame.padding(bottom = 28.dp), contentAlignment = Alignment.BottomCenter) {
                 BasicText(
                     c,
                     Modifier.background(Color(0xE6F2B33D), RoundedCornerShape(10.dp)).padding(horizontal = 22.dp, vertical = 10.dp),
