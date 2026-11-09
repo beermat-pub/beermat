@@ -28,6 +28,7 @@ The seven SI base units are `m`, `kg`, `s`, `A`, `K`, `mol` and `cd`. Every othe
 | `min` | `60 s` |
 | `sec` | `s` |
 | `hr` | `60 min` |
+| `h` | `hr` |
 | `mph` | `mi/hr` |
 | `kph` | `km/hr` |
 | `day` | `24 hr` |
@@ -121,9 +122,11 @@ Angles are dimensionless, unless a sheet makes them a dimension (`angle: dimensi
 | `joule` | `J` |
 | `kJ` | `1000 J` |
 | `MJ` | `1e6 J` |
+| `GJ` | `1e9 J` |
 | `W` | `J/s` |
 | `kW` | `1000 W` |
 | `MW` | `1e6 W` |
+| `GW` | `1e9 W` |
 | `BTU` | `1055.05585262 J` |
 | `hp` | `550 ft*lbf/s` |
 

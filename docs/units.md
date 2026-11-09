@@ -44,8 +44,8 @@ The unit placeholder is **sticky**: it is stored in the file (`= ? kN*m`), so it
 Starts with the built-in set that `.xmcd` files use. The table lives in [engine/src/commonMain/resources/pub/beermat/engine/units.bbm](../engine/src/commonMain/resources/pub/beermat/engine/units.bbm) and covers:
 
 - **SI base and derived:** m, kg, s, A, K, mol, cd, N, Pa, J, W, C, V, Ω (`ohm`), F, H, T, Wb, Hz, S, lm, lx, Gy, Sv, Bq, kat.
-- **Prefixed forms:** generated from prefixes (`k`, `M`, `G`, `m`, `μ`/`u`, `n`, `c`, `d`, …), but **only for a curated list** (mm, cm, km, kN, MN, GN, kPa, MPa, GPa, kJ, MJ, kW, MW, mA, μm, ns, …), so that every identifier doesn't become a unit and names don't collide with user variables.
-- **Time:** min, sec, hr, day, week, yr. `min` and `sec` are also functions (`min(a, b)`, the secant `sec(x)`): a call means the function, unless the sheet redefined the name.
+- **Prefixed forms:** generated from prefixes (`k`, `M`, `G`, `m`, `μ`/`u`, `n`, `c`, `d`, …), but **only for a curated list** (mm, cm, km, kN, MN, GN, kPa, MPa, GPa, kJ, MJ, GJ, kW, MW, GW, mA, μm, ns, …), so that every identifier doesn't become a unit and names don't collide with user variables.
+- **Time:** min, sec, hr (also `h`, issue #9, 2026-11-09; a sheet's own `h := 2.4 m` still wins, as with any unit), day, week, yr. `min` and `sec` are also functions (`min(a, b)`, the secant `sec(x)`): a call means the function, unless the sheet redefined the name.
 - **Angles:** rad, deg, `°`, rev, gon.
 - **USCS:** in, ft, yd, mi, mph, lbf, kip, lb (`lbm`), ton (the short ton, 2000 lb), psi, ksi, ft·lbf, BTU, hp, gal, °F/R.
 - **Other:** kph, L (litre), mL, bar, atm, t (tonne), `\rm g` (gram), mg, kgf, g (standard gravity).

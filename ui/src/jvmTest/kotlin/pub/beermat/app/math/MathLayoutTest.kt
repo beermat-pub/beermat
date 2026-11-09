@@ -120,11 +120,11 @@ class MathLayoutTest {
 
     @Test
     fun `a sheet's errors carry their names to the view`() {
-        val sheet = WorksheetText.read("```calc\ng := h + 1\ny := \\bf g\nz := g*2\n```\n")
+        val sheet = WorksheetText.read("```calc\ng := w + 1\ny := \\bf g\nz := g*2\n```\n")
         val errors = SheetItems.of(sheet, layout).filterIsInstance<SheetItem.Math>().map { texts(it.errorBox!!) }
-        assertEquals(listOf(i("h"), " is not defined"), errors[0])
+        assertEquals(listOf(i("w"), " is not defined"), errors[0])
         assertEquals(listOf(MathAlphabet.bold("g"), " is not defined"), errors[1])
-        assertEquals(listOf(i("g"), " has an error: ", i("h"), " is not defined"), errors[2])
+        assertEquals(listOf(i("g"), " has an error: ", i("w"), " is not defined"), errors[2])
     }
 
     @Test

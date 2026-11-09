@@ -27,11 +27,22 @@ class UpdatesTest {
         assertFalse(Updates.newer("1.0.0", "1.1.0-dev"))
     }
 
+    private fun release(tag: String, pre: Boolean) =
+        """{"html_url":"https://github.com/beermat-pub/beermat/releases/tag/$tag","author":{"html_url":"x"},"tag_name":"$tag","prerelease":$pre,"assets":[{"name":"a.zip"}]}"""
+
     @Test
-    fun `the release is read from GitHub's JSON`() {
-        val json = """{"url":"x","html_url":"https://github.com/beermat-pub/beermat/releases/tag/v1.2.0","id":1,"tag_name":"v1.2.0","name":"1.2.0"}"""
-        assertEquals(Updates.Release("1.2.0", "https://github.com/beermat-pub/beermat/releases/tag/v1.2.0"), Updates.release(json))
-        assertNull(Updates.release("""{"message":"Not Found"}"""))
+    fun `the newest release is read from GitHub's list`() {
+        val json = "[" + listOf(release("v1.0.0-dev2", true), release("v1.0.0-dev3", true), release("v1.0.0-dev1", true)).joinToString(",") + "]"
+        assertEquals(Updates.Release("1.0.0-dev3", "https://github.com/beermat-pub/beermat/releases/tag/v1.0.0-dev3"), Updates.newest(json, "1.0.0-dev2"))
+        assertNull(Updates.newest("""{"message":"Not Found"}""", "1.0.0-dev3"))
+        assertNull(Updates.newest("[]", "1.0.0"))
+    }
+
+    @Test
+    fun `pre-releases are offered only to someone running one`() {
+        val json = "[" + listOf(release("v1.1.0-beta.1", true), release("v1.0.0", false)).joinToString(",") + "]"
+        assertEquals("1.0.0", Updates.newest(json, "1.0.0")?.version)
+        assertEquals("1.1.0-beta.1", Updates.newest(json, "1.0.0-dev3")?.version)
     }
 
     @Test

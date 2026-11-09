@@ -11,7 +11,11 @@ import java.util.prefs.Preferences
  * and any failure (offline, private repository, rate limit) is silent.
  */
 object Updates {
-    const val LATEST = "https://api.github.com/repos/beermat-pub/beermat/releases/latest"
+    /**
+     * The releases, newest first. Not `releases/latest`, which skips pre-releases and so answered 404
+     * while every release was a preview (issue #8).
+     */
+    const val LATEST = "https://api.github.com/repos/beermat-pub/beermat/releases?per_page=30"
 
     data class Release(val version: String, val url: String)
 
@@ -51,17 +55,27 @@ object Updates {
         try {
             check(connection.responseCode == 200) { "GitHub answered ${connection.responseCode}" }
             val body = connection.inputStream.bufferedReader().readText()
-            return (if (store) storeRelease(body, storeId) else release(body)) ?: error("no release in GitHub's answer")
+            return (if (store) storeRelease(body, storeId) else newest(body, Version.current)) ?: error("no release in GitHub's answer")
         } finally {
             connection.disconnect()
         }
     }
 
-    /** The version (tag without its `v`) and page of a GitHub release, from its JSON. */
-    fun release(json: String): Release? {
-        fun field(name: String) = Regex("\"$name\"\\s*:\\s*\"([^\"]*)\"").find(json)?.groupValues?.get(1)
-        val tag = field("tag_name") ?: return null
-        return Release(tag.removePrefix("v"), field("html_url") ?: "https://github.com/beermat-pub/beermat/releases/latest")
+    /**
+     * The newest release in GitHub's JSON (a list of releases, or one), by version, linking to its page.
+     * Pre-releases count only when [current] is one itself: someone trying a preview hears of the next
+     * preview, and someone on a final version only of final versions.
+     */
+    fun newest(json: String, current: String): Release? {
+        val includePre = '-' in current
+        // Each release has one tag_name and one prerelease field, in that order (its assets have neither).
+        val tags = Regex("\"tag_name\"\\s*:\\s*\"([^\"]*)\"").findAll(json).map { it.groupValues[1] }.toList()
+        val pre = Regex("\"prerelease\"\\s*:\\s*(true|false)").findAll(json).map { it.groupValues[1] == "true" }.toList()
+        return tags.withIndex()
+            .filter { (i, tag) -> includePre || (!pre.getOrElse(i) { false } && '-' !in tag) }
+            .map { it.value }
+            .maxWithOrNull { a, b -> compare(a, b) }
+            ?.let { Release(it.removePrefix("v"), "https://github.com/beermat-pub/beermat/releases/tag/$it") }
     }
 
     /** The version in [STORE_LATEST] (its first line that isn't a `#` comment), linking to the Store page. */

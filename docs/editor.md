@@ -22,7 +22,7 @@ The editor works on the expression tree, never on text: keystrokes insert or wra
 | `+` `-` `*` `/` `^` | the operator, applied to the selection (on its right side: the selection is the left operand) | `a + ?` |
 | `:` | definition (only at the top of a statement) | `x := ?` |
 | `~` | global definition | `x ::= ?` |
-| `=` | evaluation; after a definition's value, definition and evaluation | `x = ?` |
+| `=` | evaluation; after a definition's value, definition and evaluation; after a lone name that means nothing on the sheet (not defined anywhere, not a unit or built-in), a definition, as `:` would (as in Mathcad; issue #11, 2026-11-09) | `x = ?` |
 | `<` `>`, then `=` | ≤ and ≥; `!` then `=` gives ≠ | `<=` |
 | `Ctrl+=` `Ctrl+3` `Ctrl+9` `Ctrl+0` | ==, ≠, ≤, ≥ | |
 | `Ctrl+8` | cross product | |

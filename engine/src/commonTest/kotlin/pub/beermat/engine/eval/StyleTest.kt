@@ -47,7 +47,7 @@ class StyleTest {
     fun `errors list the names they quote`() {
         fun names(vararg statements: String) = assertIs<Outcome.Failed>(run(*statements).last()).error.names
         assertEquals(listOf(Id("F", style = Id.Style.BOLD)), names("\\bf F = ?"))
-        assertEquals(listOf(Id("g"), Id("h")), names("g := h + 1", "g*2 = ?"))
+        assertEquals(listOf(Id("g"), Id("w")), names("g := w + 1", "g*2 = ?"))
         assertEquals(listOf(Id("i")), names("i := 0..2", "y := i^2"))
         assertEquals(listOf(Id("f")), names("f(x) := x", "f(1, 2) = ?"))
     }

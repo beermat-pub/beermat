@@ -44,6 +44,9 @@ class UnitTableTest {
         assertUnit(745.69987158227, "hp", 1e-10)
         assertUnit(PI / 180, "deg")
         assertUnit(3600.0, "hr")
+        assertUnit(3600.0, "h") // issue #9
+        assertUnit(1e9, "GW")
+        assertUnit(1e9, "GJ")
     }
 
     @Test

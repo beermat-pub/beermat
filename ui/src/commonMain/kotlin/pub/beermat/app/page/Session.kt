@@ -387,7 +387,25 @@ class Session(text: String, private val math: MathLayout) {
             }
             if (k is Key.Type && k.c == ' ') return false
         }
+        // `x=` with an x that means nothing here is a definition being started: `x :=` (as in Mathcad; issue #11).
+        if (k == Key.Type('=') && e != null && e.state.statement is ExprStatement) {
+            val name = (Editor.key(e.state, k)?.statement as? Evaluate)?.expr as? Id
+            if (name != null && !known(name)) return edit(typing = true) { Editor.key(it, Key.Type(':')) }
+        }
         return edit(typing = k is Key.Type) { Editor.key(it, k) }
+    }
+
+    /**
+     * Whether [id] means something on this sheet: a built-in, a unit, or a name the sheet defines
+     * anywhere (a statement or a named table's column). Anywhere, not only above: a name defined
+     * further down is better told "not defined here" than quietly defined twice.
+     */
+    private fun known(id: Id): Boolean {
+        val calc = layout.calculation
+        val (scope, units) = pub.beermat.engine.eval.Builtins.forSheet(calc.settings.units)
+        if (scope[id] != null || id in units || id.name == "TOL" || id.name == "ORIGIN") return true
+        if (calc.lines.any { (it.parsed as? Define)?.names?.contains(id) == true }) return true
+        return calc.tables.any { id in it.defines }
     }
 
     /**

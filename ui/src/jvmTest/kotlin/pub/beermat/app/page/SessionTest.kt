@@ -284,6 +284,25 @@ class SessionTest {
     }
 
     @Test
+    fun `= after a name that means nothing here starts its definition`() {
+        val s = Session("", math)
+        s.type("y=5")
+        s.enter()
+        assertTrue("y := 5\n" in s.save(), s.save())
+        // A defined name, a unit and a built-in constant are evaluated.
+        s.type("y=")
+        s.enter()
+        s.type("mm=")
+        s.enter()
+        s.type("π=")
+        s.enter()
+        val saved = s.save()
+        assertTrue("y = ?" in saved, saved)
+        assertTrue("mm = ?" in saved, saved)
+        assertTrue("π = ?" in saved, saved)
+    }
+
+    @Test
     fun `a word and a space in a new region make it text`() {
         val s = Session("", math)
         s.type("the")

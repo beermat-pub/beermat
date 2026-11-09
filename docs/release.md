@@ -91,8 +91,8 @@ Asked for by Dan on 2026-10-28. Compose has no MSIX target, so `packaging/window
 
 The app checks for a new version when it starts (Dan, 2026-10-28):
 
-- one request, in the background, to GitHub's API for the latest release (`https://api.github.com/repos/beermat-pub/beermat/releases/latest`), so publishing a release is all it takes; no file on the website to keep up to date;
-- when the release is newer than the running version (semantic versioning; pre-releases aren't offered, since GitHub's "latest" skips them), the status bar shows **"Beermat 1.2.0 is out"** in amber, linking to the release page. No dialog, no download in the background;
+- one request, in the background, to GitHub's API for the releases (`https://api.github.com/repos/beermat-pub/beermat/releases?per_page=30`), so publishing a release is all it takes; no file on the website to keep up to date. Not `releases/latest`: it skips pre-releases, so it answered 404 while every release was a preview, and the check said it couldn't reach GitHub (issue #8, fixed 2026-11-09);
+- the newest release by semantic versioning is taken; pre-releases count only when the running version is one (someone on a preview hears of the next preview, someone on 1.0 only of final versions). When it is newer than the running version, the status bar shows **"Beermat 1.2.0 is out"** in amber, linking to the release page. No dialog, no download in the background;
 - Help → **Check for updates now** says so either way ("up to date", or "couldn't reach GitHub"); Help → **Check for updates at startup** turns the automatic check off, remembered between runs (Java preferences, node `pub/beermat`);
 - nothing is sent but the request itself (a `User-Agent: Beermat/<version>` header); failures (offline, rate limit of 60 an hour per address, the repository still private) are silent;
 - `BEERMAT_UPDATE_URL` points the check at another URL, for trying it before a release exists.
