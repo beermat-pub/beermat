@@ -59,7 +59,7 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path app\build\compose\binaries\main\app\Beermat -DestinationPath build\installers\Beermat-windows-portable.zip
       - uses: actions/upload-artifact@v4
-        with: { name: windows, path: "build/installers/Beermat-windows-setup.exe\nbuild/installers/Beermat-windows-portable.zip\nbuild/installers/beermat-cli-windows.zip" }
+        with: { name: windows, path: "build/installers/Beermat-windows-setup.exe\nbuild/installers/Beermat-windows-portable.zip\nbuild/installers/beermat-cli-windows.zip", retention-days: 3 }
       # For the Microsoft Store, uploaded by hand to Partner Center; not on the GitHub release (unsigned,
       # it doesn't install from a download). The identity is msix.ps1's; the Store ID, the Actions variable MSIX_STORE_ID.
       - name: Store package (MSIX)
@@ -68,7 +68,7 @@ jobs:
           $id = @{ Version = "${{ env.V }}"; StoreId = "${{ vars.MSIX_STORE_ID }}" }
           packaging\windows\msix.ps1 @id
       - uses: actions/upload-artifact@v4
-        with: { name: microsoft-store, path: build/installers/Beermat-windows.msix }
+        with: { name: microsoft-store, path: build/installers/Beermat-windows.msix, retention-days: 30 }
 
   macos:
     if: ${{ !inputs.only || inputs.only == 'macos' }}
@@ -96,7 +96,7 @@ jobs:
           hdiutil detach /tmp/dmg
           unzip -q beermat-cli-macos.zip -d cli-check && cli-check/beermat-*/bin/beermat eval examples/symbolic.bbm
       - uses: actions/upload-artifact@v4
-        with: { name: macos, path: "Beermat-macos.dmg\nbeermat-cli-macos.zip" }
+        with: { name: macos, path: "Beermat-macos.dmg\nbeermat-cli-macos.zip", retention-days: 3 }
 
   linux:
     if: ${{ !inputs.only || inputs.only == 'linux' }}
@@ -122,7 +122,7 @@ jobs:
           deb-check/opt/beermat/bin/beermat eval examples/symbolic.bbm
           unzip -q beermat-cli-linux.zip -d cli-check && cli-check/beermat-*/bin/beermat eval examples/symbolic.bbm
       - uses: actions/upload-artifact@v4
-        with: { name: linux, path: "beermat-linux.*\nbeermat-cli-linux.zip" }
+        with: { name: linux, path: "beermat-linux.*\nbeermat-cli-linux.zip", retention-days: 3 }
 
   # The web version (docs/web.md): the page's files, zipped for the release and published to beermat.pub/try;
   # and the VS Code extension made from it.
@@ -142,6 +142,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: web
+          retention-days: 3
           path: |
             beermat-web.zip
             beermat-*.vsix
@@ -157,7 +158,7 @@ jobs:
       - run: cd manual && npm ci && npm run build
       - run: cd manual/dist && zip -qr "$GITHUB_WORKSPACE/beermat-manual.zip" .
       - uses: actions/upload-artifact@v4
-        with: { name: manual, path: beermat-manual.zip }
+        with: { name: manual, path: beermat-manual.zip, retention-days: 3 }
 
   publish:
     if: github.ref_type == 'tag'

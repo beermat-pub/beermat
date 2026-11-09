@@ -26,7 +26,7 @@
 4. For a full release, upload the `.msix` to Partner Center as a new submission. Once the Store has published it, set `packaging/windows/store-version.txt` to that version and push, so Store users get the update notice.
 5. Set `gradle.properties` to the next `-dev` version.
 
-To try the installers without publishing: Actions → Release → Run workflow (the artifacts appear on the run's page). The trial is stamped `1.0.0-trial` (macOS packages need a first number of at least 1); `only` builds one system (`windows`, `macos` or `linux`), to save minutes.
+To try the installers without publishing: Actions → Release → Run workflow (the artifacts appear on the run's page). The trial is stamped `1.0.0-trial` (macOS packages need a first number of at least 1); `only` builds one system (`windows`, `macos` or `linux`), to save minutes. Artifacts are kept 3 days (30 for the `microsoft-store` package, downloaded by hand): the free plan stores 0.5 GB, and each run's builds come to about 0.8 GB; a release keeps its files on the release page, which doesn't count (2026-11-09).
 
 **CI** (`.github/workflows/ci.yml`) builds and tests every push to `main`, on Linux only while the repository is private (GitHub bills macOS minutes at 10× and Windows at 2× for private repositories; public ones are free).
 
