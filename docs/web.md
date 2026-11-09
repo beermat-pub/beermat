@@ -86,6 +86,10 @@ Asked for by Dan on 2026-10-29: whatever the browser can't do still shows, greye
 | `.xmcd` import, the command line | Desktop only (JDK XML, files) | Greyed out in the File menu, with the note |
 | Files on disk | The browser's own storage instead; Open and Save as upload and download | — |
 
+## The video page
+
+The feature videos are recorded from the web version, off screen (2026-11-09). `/try?video` (`VideoApp`) is the toolbar and an empty sheet at 175 % (`?video=125` for another zoom), with a badge for the key just pressed and a caption, both set through `window.beermatVideo`. `tools/record-video.mjs` plays a script on it in headless Edge (keys, clicks, hovers, captions; it draws a mouse pointer), records Chrome's screencast and encodes a WebM in the browser (MediaRecorder, VP9), so it needs no ffmpeg. Headless Edge stops drawing after about 10 s unless focus is emulated and `--disable-frame-rate-limit` is set; the page also changes one pixel every frame so still moments are recorded.
+
 ## Effort and order
 
 About as large as a milestone: step 1 is the bulk (mechanical but wide), steps 2 and 3 are moderate. It is **part of 1.0** (Dan, 2026-10-29): the 1.0.0 release ships the desktop versions and the web version together. Brought forward to the **1.0.0-dev1** preview (Dan, 2026-11-01), so the web version can be tried before 1.0. The website also shows a short video of each key feature.

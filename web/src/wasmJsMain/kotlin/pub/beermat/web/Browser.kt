@@ -126,3 +126,14 @@ internal fun openParameter(): String? = js(
 internal fun fetchText(path: String, onText: (String) -> Unit): Unit = js(
     """{ fetch(path).then(r => r.ok ? r.text() : null).then(t => { if (t !== null) onText(t); }).catch(() => {}); }""",
 )
+
+/** Whether the page is the one the feature videos are recorded from (`?video`; docs/web.md#the-video-page). */
+internal fun inVideo(): Boolean = js("new URLSearchParams(window.location.search).has('video')")
+
+/** The zoom the video asks for (`?video=125`), or 0 for the usual 175 %. */
+internal fun videoZoom(): Int = js("parseInt(new URLSearchParams(window.location.search).get('video')) || 0")
+
+/** Lets the video recorder show a key and a caption: `window.beermatVideo.key('Ctrl+G')`, `.caption('…')`; an empty text hides it. */
+internal fun exposeVideo(key: (String) -> Unit, caption: (String) -> Unit): Unit = js(
+    """{ window.beermatVideo = { key: k => key(String(k || '')), caption: c => caption(String(c || '')) }; }""",
+)

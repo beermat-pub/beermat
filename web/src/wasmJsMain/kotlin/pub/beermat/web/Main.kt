@@ -58,7 +58,7 @@ private val TEXT_FONTS = listOf("LiberationSans-Regular", "LiberationSans-Bold",
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     // The same build runs in VS Code's web view (docs/vscode.md), as the extension's editor of .bbm files.
-    ComposeViewport(document.body!!) { if (inVsCode()) VsCodeApp() else WebApp() }
+    ComposeViewport(document.body!!) { if (inVsCode()) VsCodeApp() else if (inVideo()) VideoApp() else WebApp() }
 }
 
 /**
