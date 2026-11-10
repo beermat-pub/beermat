@@ -116,7 +116,7 @@ class ManualReferenceTest {
             "Backspace, Delete" to "Delete before or after the cursor. On the page, take out the blank line above or below the crosshair.",
             "Enter" to "Leave the math region. On the page, move the crosshair down a line, moving the regions below with it.",
             "Escape" to "Leave the region.",
-            "Ctrl+Z, Ctrl+Y" to "Undo and redo.",
+            "Ctrl+Z; Ctrl+Y or Ctrl+Shift+Z" to "Undo; redo.",
             "Ctrl+C, Ctrl+V" to "Copy and paste; a picture pasted from another program becomes a picture region.",
             "Ctrl+Shift+S" to "Separate regions: move each region that overlaps one above it down below it.",
             "Ctrl+N, Ctrl+O, Ctrl+S" to "New, open and save a worksheet.",
@@ -130,7 +130,8 @@ class ManualReferenceTest {
         }
         return page(
             "Keys and toolbar", "Every key and toolbar button of the editor.",
-            "Each toolbar button does exactly what its keys do, and its tooltip shows them.\n\n## Moving and editing\n\n| Keys | What they do |\n|---|---|\n$general\n\n$palettes",
+            "Each toolbar button does exactly what its keys do, and its tooltip shows them. " +
+                "On a Mac, ⌘ works wherever Ctrl is written (⌘Z, ⌘S, ⌘C, ⌘-click), and Ctrl works too; redo is also ⌘⇧Z.\n\n## Moving and editing\n\n| Keys | What they do |\n|---|---|\n$general\n\n$palettes",
         )
     }
 

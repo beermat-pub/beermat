@@ -17,3 +17,6 @@ internal expect fun WithTip(tip: @androidx.compose.runtime.Composable () -> Unit
 
 /** Whether a typed character comes with its key-down event (the browser) rather than as an event of its own (the desktop). */
 internal expect val typedOnKeyDown: Boolean
+
+/** Whether this runs on a Mac (or in a browser on one), where ⌘ is the command key that Ctrl is elsewhere. */
+expect val macOs: Boolean

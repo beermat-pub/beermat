@@ -49,13 +49,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerInput
@@ -141,7 +139,7 @@ fun SheetView(
                                 if (e.type != PointerEventType.Scroll) continue
                                 val change = e.changes.first()
                                 val dy = change.scrollDelta.y
-                                if (e.keyboardModifiers.isCtrlPressed) {
+                                if (e.keyboardModifiers.isCommandPressed) {
                                     if (dy != 0f) onZoom(if (dy < 0) 1 else -1)
                                     e.changes.forEach { it.consume() }
                                     continue
@@ -229,7 +227,7 @@ fun SheetView(
                                         }
                                         continue
                                     }
-                                    val ctrl = down.keyboardModifiers.isCtrlPressed
+                                    val ctrl = down.keyboardModifiers.isCommandPressed
                                     val hit = runCatching { session.layout.hit(px, py)?.first }.getOrNull()
                                     // A marker (an area's line, a page break) is dragged only as part of a selection: a click on it folds the area.
                                     val grabbed = hit?.takeIf { it !is pub.beermat.app.page.MarkerView || it.index in session.selected }
@@ -498,7 +496,7 @@ private fun TextEditor(session: Session, index: Int, statement: Int?, scale: Flo
             .focusRequester(focus)
             .onFocusChanged { if (focused && !it.isFocused) done(); focused = it.isFocused }
             .onPreviewKeyEvent { e ->
-                if (e.type == KeyEventType.KeyDown && (e.key == K.Escape || (e.key == K.Enter && e.isCtrlPressed))) {
+                if (e.type == KeyEventType.KeyDown && (e.key == K.Escape || (e.key == K.Enter && e.isCommandPressed))) {
                     done()
                     true
                 } else {

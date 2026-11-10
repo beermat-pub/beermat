@@ -166,9 +166,9 @@ fun main(args: Array<String>) {
         Window(onCloseRequest = ::quit, title = title.also { revision }, icon = icon, state = rememberWindowState(position = fittingPlacement(), size = fittingSize())) {
             MenuBar {
                 Menu("File") {
-                    Item("New", shortcut = KeyShortcut(K.N, ctrl = true), onClick = { open(null) })
-                    Item("Open…", shortcut = KeyShortcut(K.O, ctrl = true), onClick = { chooseFile(save = false)?.let(::open) })
-                    Item("Save    Ctrl+S", onClick = ::saveNow)
+                    Item("New", shortcut = KeyShortcut(K.N, ctrl = !macOs, meta = macOs), onClick = { open(null) })
+                    Item("Open…", shortcut = KeyShortcut(K.O, ctrl = !macOs, meta = macOs), onClick = { chooseFile(save = false)?.let(::open) })
+                    Item(shortcutText("Save    Ctrl+S"), onClick = ::saveNow)
                     Item("Save As…", onClick = { saveAs(null) })
                     Item("Reload from disk", enabled = file != null, onClick = { file?.let { session.load(it.readText()) }; revision++ })
                     Separator()
@@ -197,15 +197,15 @@ fun main(args: Array<String>) {
                         session.guard(Unit) { session.setFrontmatter("single_page_width", if (on) "true" else null) }
                         revision++
                     })
-                    Item("Print…", shortcut = KeyShortcut(K.P, ctrl = true), onClick = {
+                    Item("Print…", shortcut = KeyShortcut(K.P, ctrl = !macOs, meta = macOs), onClick = {
                         session.guard(Unit) { Printing.print(session.layout, file?.name ?: "Untitled") }
                     })
                     Separator()
                     Item("Quit", onClick = ::quit)
                 }
                 Menu("Edit") {
-                    Item("Undo    Ctrl+Z", onClick = { session.guard(Unit) { session.undo() }; revision++ })
-                    Item("Redo    Ctrl+Y", onClick = { session.guard(Unit) { session.redo() }; revision++ })
+                    Item(shortcutText("Undo    Ctrl+Z"), onClick = { session.guard(Unit) { session.undo() }; revision++ })
+                    Item(shortcutText(if (macOs) "Redo    Ctrl+Shift+Z" else "Redo    Ctrl+Y"), onClick = { session.guard(Unit) { session.redo() }; revision++ })
                     Item("Copy as LaTeX", onClick = { session.copyMath(mathMl = false)?.let(DesktopHost::copyText) })
                     Item("Copy as MathML (pastes into Word as an equation)", onClick = { session.copyMath(mathMl = true)?.let(DesktopHost::copyText) })
                 }
@@ -213,7 +213,7 @@ fun main(args: Array<String>) {
                     Item("X-Y plot    @", onClick = { session.guard(Unit) { session.insertPlot() }; revision++ })
                     Item("Table", onClick = { session.guard(Unit) { session.insertTable() }; revision++ })
                     Item("Picture…", onClick = { choosePicture(file)?.let { p -> session.guard(Unit) { insertPicture(session, p) } }; revision++ })
-                    Item("Page break    Ctrl+Enter", onClick = { session.guard(Unit) { session.pageBreak() }; revision++ })
+                    Item(shortcutText("Page break    Ctrl+Enter"), onClick = { session.guard(Unit) { session.pageBreak() }; revision++ })
                     Item("Area", onClick = { session.guard(Unit) { session.insertArea() }; revision++ })
                 }
                 Menu("View") {
@@ -242,7 +242,7 @@ fun main(args: Array<String>) {
                         }
                         revision++
                     })
-                    Item("Separate regions    Ctrl+Shift+S", onClick = { session.guard(Unit) { session.separate() }; revision++ })
+                    Item(shortcutText("Separate regions    Ctrl+Shift+S"), onClick = { session.guard(Unit) { session.separate() }; revision++ })
                     // How `*` is drawn in this sheet; right-click on one operator to change just that one.
                     Menu("Multiplication") {
                         RadioButtonItem("Dot   a·b", session.multiplication == Multiplication.DOT, onClick = { session.guard(Unit) { session.setMultiplication(Multiplication.DOT) }; revision++ })

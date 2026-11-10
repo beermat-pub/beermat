@@ -5,7 +5,7 @@ description: Every key and toolbar button of the editor.
 
 <!-- Written from the code by ManualReferenceTest (app module): change the code, not this page. -->
 
-Each toolbar button does exactly what its keys do, and its tooltip shows them.
+Each toolbar button does exactly what its keys do, and its tooltip shows them. On a Mac, ⌘ works wherever Ctrl is written (⌘Z, ⌘S, ⌘C, ⌘-click), and Ctrl works too; redo is also ⌘⇧Z.
 
 ## Moving and editing
 
@@ -18,7 +18,7 @@ Each toolbar button does exactly what its keys do, and its tooltip shows them.
 | Backspace, Delete | Delete before or after the cursor. On the page, take out the blank line above or below the crosshair. |
 | Enter | Leave the math region. On the page, move the crosshair down a line, moving the regions below with it. |
 | Escape | Leave the region. |
-| Ctrl+Z, Ctrl+Y | Undo and redo. |
+| Ctrl+Z; Ctrl+Y or Ctrl+Shift+Z | Undo; redo. |
 | Ctrl+C, Ctrl+V | Copy and paste; a picture pasted from another program becomes a picture region. |
 | Ctrl+Shift+S | Separate regions: move each region that overlaps one above it down below it. |
 | Ctrl+N, Ctrl+O, Ctrl+S | New, open and save a worksheet. |

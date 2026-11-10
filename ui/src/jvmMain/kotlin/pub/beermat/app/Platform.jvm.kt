@@ -22,3 +22,5 @@ internal actual fun WithTip(tip: @androidx.compose.runtime.Composable () -> Unit
     androidx.compose.foundation.TooltipArea(tooltip = tip, delayMillis = 350) { content() }
 
 internal actual val typedOnKeyDown: Boolean = false
+
+actual val macOs: Boolean = System.getProperty("os.name").orEmpty().lowercase().startsWith("mac")

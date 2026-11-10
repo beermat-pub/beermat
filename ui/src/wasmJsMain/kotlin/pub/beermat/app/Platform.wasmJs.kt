@@ -56,3 +56,7 @@ internal actual fun WithTip(tip: @Composable () -> Unit, content: @Composable ()
 }
 
 internal actual val typedOnKeyDown: Boolean = true
+
+private fun userAgent(): String = js("(typeof navigator === 'undefined') ? '' : (navigator.platform + ' ' + navigator.userAgent)")
+
+actual val macOs: Boolean = "Mac" in userAgent()

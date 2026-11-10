@@ -4,6 +4,10 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isAltPressed
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.pointer.PointerKeyboardModifiers
+import androidx.compose.ui.input.pointer.isCtrlPressed
+import androidx.compose.ui.input.pointer.isMetaPressed
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
@@ -14,11 +18,23 @@ import pub.beermat.app.page.Session
 import pub.beermat.app.page.TableEditor
 import androidx.compose.ui.input.key.Key as K
 
+/** The command key held: Ctrl, or on a Mac also ⌘ (issue #10), so Ctrl+Z is ⌘Z there and Ctrl+G still works. */
+val KeyEvent.isCommandPressed: Boolean get() = command(isCtrlPressed, isMetaPressed)
+
+/** The command key held during a click or a turn of the wheel: Ctrl, or on a Mac ⌘ (Ctrl+click is a right-click there). */
+val PointerKeyboardModifiers.isCommandPressed: Boolean get() = command(isCtrlPressed, isMetaPressed)
+
+/** Whether Ctrl or ⌘ held makes the command key: Ctrl everywhere, ⌘ on a Mac. */
+internal fun command(ctrl: Boolean, meta: Boolean, mac: Boolean = macOs): Boolean = ctrl || (mac && meta)
+
+/** A shortcut's name as the system writes it: `Ctrl+S`, or `⌘S` on a Mac. */
+fun shortcutText(text: String, mac: Boolean = macOs): String = if (mac) text.replace("Ctrl+Shift+", "⇧⌘").replace("Ctrl+", "⌘") else text
+
 /** The editor's keystrokes (docs/editor.md), from Compose key events. */
 object Keys {
 
     fun handle(e: KeyEvent, session: Session, host: Host, onSave: () -> Unit): Boolean {
-        val ctrl = e.isCtrlPressed && !e.isAltPressed
+        val ctrl = e.isCommandPressed && !e.isAltPressed
         val shift = e.isShiftPressed
         if (session.table != null) table(e, ctrl, shift, session, host)?.let { return it }
         // Characters arrive as typed events, after the keyboard layout (AltGr included).
@@ -67,7 +83,7 @@ object Keys {
     /** In the browser, the character a key-down event types: printable, without Ctrl. */
     /** The character a key event types, if any: a typed event on the desktop, the key-down in the browser. */
     fun character(e: KeyEvent): Char? =
-        if (e.type == KeyEventType.Unknown || (typedOnKeyDown && e.type == KeyEventType.KeyDown) && !e.isCtrlPressed) typed(e) else null
+        if (e.type == KeyEventType.Unknown || (typedOnKeyDown && e.type == KeyEventType.KeyDown) && !e.isCommandPressed) typed(e) else null
 
     private fun typed(e: KeyEvent): Char? {
         val code = e.utf16CodePoint
@@ -131,6 +147,8 @@ object Keys {
             c == 's' && shift -> session.separate().let { true }
             c == 's' -> onSave().let { true }
             // Unhandled, they reach the host, as in VS Code (Host.undoesItself).
+            // Ctrl+Shift+Z is redo too: ⌘⇧Z is how a Mac writes it.
+            c == 'z' && shift -> host.undoesItself && session.redo().let { true }
             c == 'z' -> host.undoesItself && session.undo().let { true }
             c == 'y' -> host.undoesItself && session.redo().let { true }
             c == 'm' -> matrixCommand(session, host)

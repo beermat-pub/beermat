@@ -118,7 +118,8 @@ Built on 2026-10-29.
 - **Saving** writes the tree back to the file (`Ctrl+S`); results are cached as usual.
 - **Changes on disk** (Claude through MCP, or another editor) reload the sheet when there are no unsaved changes; otherwise the app asks.
 - **Copy and paste.** A region copies as its linear text, so it can go to Claude or a chat and back; pasting linear text makes a region.
-- **Undo** (`Ctrl+Z`, `Ctrl+Y`) per keystroke, grouping consecutive characters of one name.
+- **Undo** (`Ctrl+Z`, `Ctrl+Y` or `Ctrl+Shift+Z`) per keystroke, grouping consecutive characters of one name.
+- **On a Mac**, ⌘ is the command key: it works wherever Ctrl is written (⌘Z, ⌘S, ⌘C, ⌘-click to add to a selection), in the app and in a browser, and the menus show it. Ctrl works too, for chords the system keeps for itself (⌘H, ⌘M, ⌘Q).
 - **Bugs cost one action, never the sheet.** Every edit is checked before it is applied (the statement must still be a valid tree that can be written, with the cursor on one of its nodes; otherwise the key does nothing). And every key, click and command runs guarded: if one throws, the sheet goes back to just before it, the status bar says so in red, and the details go to `~/.beermat/errors.log`. A test (`FuzzTest`) types random keys, clicks and commands on real sheets and checks that nothing throws and the sheet still draws; `BEERMAT_FUZZ_RUNS=3000` runs a longer hunt.
 
 ## Steps
