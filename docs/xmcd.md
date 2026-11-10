@@ -53,6 +53,14 @@ Kept on purpose (2026-10-29), found by comparing imported sheets with the result
 
 - **Sheets that reference another worksheet** (Insert Reference; Later, if ever: Dan, 2026-10-30). The import warns and leaves the reference out.
 
+## Known gaps at 1.0
+
+Left for 1.x (Dan, 2026-11-10: 1.0 goes ahead with them; about 98% of the results compared over his sheets agree):
+
+- **Excel components' formulas** run only when they use their own row's cells or whole columns; the rest keep the value Excel last calculated, with a warning naming the cell, so changed inputs don't reach them.
+- **Names defined in another order**: where a sheet's regions evaluate in an order that differs from the one Beermat reads them in (page position), a name used before its definition shows as not defined.
+- **Some components and buttons aren't read** (file readers and controls beyond those listed above): their placeholder names the variables they define, which the sheet below then lacks.
+
 ## Still needed
 
 - A sample that **uses units**, to see how units and the unit placeholder are stored.

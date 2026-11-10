@@ -2,9 +2,15 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
-## 1.0.0-dev4 (not released yet)
+## 1.0.0-beta.1 (beta)
+
+The first beta of 1.0: everything 1.0 will have, to try on Windows, macOS and Linux. Please report what you find in [issues](https://github.com/beermat-pub/beermat/issues).
 
 - **The manual's examples are drawn by Beermat**, worked out as you'd see them on the page, with **Open this example** to try each one in the browser, and the sheet to download.
+- **On a Mac, ⌘ is the command key**: ⌘Z, ⌘S, ⌘C, ⌘V and every other shortcut written with Ctrl work with ⌘ (Ctrl still works too); ⌘⇧Z redoes, ⌘-click adds a region to the selection, and the menus show ⌘. Ctrl+Shift+Z redoes on every system ([#10](https://github.com/beermat-pub/beermat/issues/10)).
+- **`=` after a name that means nothing yet starts its definition**: typing `x=5` makes `x := 5` ([#11](https://github.com/beermat-pub/beermat/issues/11)).
+- **New units**: `h` for the hour, `GW` and `GJ` ([#9](https://github.com/beermat-pub/beermat/issues/9)).
+- **Fixed**: the update check found no new version while every release was a preview ([#8](https://github.com/beermat-pub/beermat/issues/8)); a preview now hears of the next preview, and a final version only of final versions.
 - **Fixed**: a result that couldn't be shown dropped the unit asked for; `σ = ? kN` with the wrong unit now shows `σ = ■ kN` above its error.
 
 ## 1.0.0-dev3 (developer preview)
