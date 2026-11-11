@@ -48,6 +48,7 @@ object Commands {
                 cmd("|x|", "Absolute value", "|", type('|')),
                 cmd("( )", "Parentheses", "'", type('\'')),
                 cmd("n!", "Factorial", "!", type('!')),
+                cmd("TeX", "Type or show the math as LaTeX", "Ctrl+L", { s -> s.startLatex() }),
             ),
         ),
         Palette(

@@ -2,6 +2,11 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
+## 1.0.0-beta.2 (not released yet)
+
+- **Type math in LaTeX**: Ctrl+L (⌘L on a Mac, or **TeX** on the toolbar) opens a box where you type LaTeX, such as `M = \frac{q L^2}{8}`, and Enter turns it into math. On a statement, Ctrl+L shows it as LaTeX to change. Pasting LaTeX in `$…$` makes math too. Fractions, powers, subscripts, roots, Greek letters, functions, matrices, sums, integrals, derivatives and units are read.
+- **Fixed**: in a text region, the same character typed twice quickly could arrive only once; Esc now hands the keyboard back to the page.
+
 ## 1.0.0-beta.1 (beta)
 
 The first beta of 1.0: everything 1.0 will have, to try on Windows, macOS and Linux. Please report what you find in [issues](https://github.com/beermat-pub/beermat/issues).

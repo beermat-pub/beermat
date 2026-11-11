@@ -414,6 +414,14 @@ class Session(text: String, private val math: MathLayout) {
      */
     /** Characters typed while a text region's field was opening, before it had the keyboard; the field takes them. */
     var pendingText = ""
+        set(value) {
+            field = value
+            pendingCount++
+        }
+
+    /** Counts changes to [pendingText], so that the same character twice still reaches the field. */
+    var pendingCount = 0
+        private set
 
     private fun wordToText(): Boolean {
         val e = editing ?: return false
@@ -999,9 +1007,129 @@ class Session(text: String, private val math: MathLayout) {
         return if (mathMl) pub.beermat.export.MathMl(units, style).math(st, result) else "$$" + pub.beermat.export.Latex(units, style).statement(st, result) + "$$"
     }
 
-    /** Pastes linear text: a new region at the crosshair, one statement per line. */
+    // LaTeX (docs/editor.md#latex).
+
+    /** The statement shown as LaTeX in the text box ([textEditing]), if it is; [latexShown] is the LaTeX it started with. */
+    private var latexAt: Pair<Int, Int?>? = null
+    private var latexShown = ""
+
+    /** Whether the text box holds LaTeX. */
+    val latex: Boolean get() = latexAt != null && latexAt == textEditing
+
+    /** Why the LaTeX in the box can't be read, shown under it; null while it can. */
+    var latexError: String? = null
+        private set
+
+    private fun sheetUnits() = pub.beermat.export.Units.of(layout.calculation.lines.mapNotNull { it.parsed })
+
+    /**
+     * `Ctrl+L`: the statement being edited, or the one math region selected, shown as LaTeX to change;
+     * at the crosshair, an empty box for a new one. False (a beep) where there is nothing to show, or
+     * for a program, which LaTeX can't bring back.
+     */
+    fun startLatex(): Boolean {
+        val e = editing
+        if (e != null) {
+            // Written back in place (not left), so the region keeps its index.
+            commitEditing()
+            editing = null
+            relayout()
+            return openLatex(e.region, e.statement)
+        }
+        val one = selected.singleOrNull()
+        if (one != null && regions.getOrNull(one) is MathRegion) {
+            selected = emptySet()
+            return openLatex(one, 0)
+        }
+        val c = crosshair ?: return false
+        snapshot()
+        val r = MathRegion(Attributes.NONE, listOf(CalcLine("?"))).movedTo(c.first, c.second)
+        regions = regions + r
+        sortRegions()
+        changed()
+        val index = regions.indexOfFirst { it === r }
+        latexShown = ""
+        latexError = null
+        textEditing = index to 0
+        latexAt = textEditing
+        crosshair = null
+        return true
+    }
+
+    private fun openLatex(region: Int, statement: Int): Boolean {
+        val st = (layout.views.getOrNull(region) as? MathView)?.statements?.getOrNull(statement)?.parsed ?: return false
+        if (st is Unparsed || Printer.print(st).contains('\n')) return false
+        latexShown = pub.beermat.export.Latex(sheetUnits(), multiplication).statement(st)
+        latexError = null
+        textEditing = region to statement
+        latexAt = textEditing
+        crosshair = null
+        return true
+    }
+
+    /** The LaTeX the box starts with. */
+    fun latexText(): String = latexShown
+
+    /**
+     * The LaTeX in the box read back into the statement; false, with [latexError] saying why, when it
+     * can't be read. LaTeX left as it was shown changes nothing, and a statement's requested unit
+     * survives the trip (LaTeX shows the empty result without it).
+     */
+    fun setLatex(text: String): Boolean {
+        val (region, statement) = latexAt ?: return false
+        val k = statement ?: 0
+        if (text.isBlank()) {
+            latexAt = null
+            setText(region, k, "")
+            return true
+        }
+        if (text.trim() == latexShown.trim()) {
+            closeLatex()
+            return true
+        }
+        val read = try {
+            pub.beermat.export.LatexInput(sheetUnits()).statement(text)
+        } catch (e: pub.beermat.export.LatexInput.Error) {
+            latexError = e.message
+            return false
+        }
+        val old = (layout.views.getOrNull(region) as? MathView)?.statements?.getOrNull(k)?.parsed
+        val kept = when {
+            read is Evaluate && old is Evaluate && read.result.unit == null -> read.copy(result = old.result)
+            read is Define && old is Define && read.result == null && old.result != null -> read.copy(result = old.result)
+            else -> read
+        }
+        latexAt = null
+        latexError = null
+        setText(region, k, Printer.print(kept))
+        // A new region (setText keeps its place in the list): the crosshair goes below it, to carry on typing, as after a paste.
+        if (latexShown.isEmpty()) layout.views.getOrNull(region)?.let { v -> crosshair = v.x to (v.y + v.height + SheetLayout.FLOW_GAP).snap() }
+        return true
+    }
+
+    /** Escape: the statement as it was, and a new one that was never written taken out. */
+    fun cancelLatex() {
+        val (region, statement) = latexAt ?: return
+        if (latexShown.isEmpty()) {
+            latexAt = null
+            setText(region, statement ?: 0, "")
+        } else closeLatex()
+    }
+
+    private fun closeLatex() {
+        latexAt = null
+        latexError = null
+        textEditing = null
+        relayout()
+    }
+
+    /** Pastes linear text: a new region at the crosshair, one statement per line. LaTeX in `$…$`, `\(…\)` or `\[…\]` is read as LaTeX. */
     fun paste(text: String) {
         val c = crosshair ?: return
+        if (LATEX_PASTED.matches(text.trim())) {
+            val read = runCatching { pub.beermat.export.LatexInput(sheetUnits()).statement(text) }.getOrNull()
+            if (read != null) return paste(Printer.print(read))
+        }
         val lines = text.trimEnd().lines().filter { it.isNotBlank() }
         if (lines.isEmpty()) return
         snapshot()
@@ -1131,6 +1259,9 @@ class Session(text: String, private val math: MathLayout) {
 
     companion object {
         const val GRID = 6f
+
+        /** Pasted text that is LaTeX: in `$…$`, `$$…$$`, `\(…\)` or `\[…\]`. */
+        private val LATEX_PASTED = Regex("""(?s)^(\$\$.+\$\$|\$.+\$|\\\(.+\\\)|\\\[.+\\\])$""")
 
         /** How far Enter moves the crosshair down when there is no region to go below: a line of text. */
         const val LINE = 3 * GRID

@@ -18,6 +18,8 @@ Conventions:
 - Literal subscripts are upright: `M_{\mathrm{max}}`. Array indices are not: `v_{i}`.
 - The structure follows the 2D view ([layout.md](layout.md)): fractions, radicals, `\sum` with limits, `bmatrix` (square brackets), `\mathsf{T}` for the transpose, `\overrightarrow` for `vec`, and programs as a left-barred `array` with bold keywords.
 
+<a id="latex-input"></a>**LaTeX input** goes the other way (2026-11-11, [editor.md](editor.md#latex)): `LatexInput` reads LaTeX math into a statement. It turns the LaTeX into the linear syntax and parses that; braces that only group go through a marker function taken out afterwards, so `\frac{a+b}{2}` adds no parentheses of its own, and `Printer.canonical` adds those the structure needs. Its test: every statement in a list of 50 (definitions, units, matrices, indices, sums, integrals, derivatives, symbolic keywords, styles) goes out through `Latex` and comes back as the same tree. What doesn't come back: programs (an error); an index by one name (`v_{i}` reads as the name `v_i`, as most LaTeX means it); a bare `x = y` constraint (read as a definition); and redundant parentheses that the export leaves out (`e^{-x}` for `e^(-x)`).
+
 ## A whole worksheet: Markdown and LaTeX
 
 Printing and PDF are in the app (File → Print, Export to PDF; [editor.md](editor.md#printing)).

@@ -43,6 +43,7 @@ Each toolbar button does exactly what its keys do, and its tooltip shows them. O
 | \|x\| | Absolute value | \| |
 | ( ) | Parentheses | ' |
 | n! | Factorial | ! |
+| TeX | Type or show the math as LaTeX | Ctrl+L |
 
 ## Comparisons
 

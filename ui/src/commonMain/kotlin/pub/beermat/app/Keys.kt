@@ -152,6 +152,8 @@ object Keys {
             c == 'z' -> host.undoesItself && session.undo().let { true }
             c == 'y' -> host.undoesItself && session.redo().let { true }
             c == 'm' -> matrixCommand(session, host)
+            // The statement as LaTeX, or a new one typed in LaTeX (docs/editor.md#latex).
+            c == 'l' && !shift -> session.startLatex()
             c == 'c' -> session.copyText()?.let { host.copyText(it); true } ?: false
             // A picture copied from another program becomes an image region; text, a math region.
             c == 'v' -> when (val pasted = host.paste()) {

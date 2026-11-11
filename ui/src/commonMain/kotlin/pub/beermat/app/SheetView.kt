@@ -60,6 +60,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -287,7 +288,7 @@ fun SheetView(
                         c.restore()
                     }
                 }
-                session.textEditing?.let { (index, statement) -> TextEditor(session, index, statement, scale, left, density, onChange) }
+                session.textEditing?.let { (index, statement) -> TextEditor(session, index, statement, scale, left, density, onChange, session.pendingCount, onClosed = { focus.requestFocus() }) }
                 mulMenu?.takeIf { it.second.op == Op.DIV }?.let { (at, div) ->
                     DivisionMenu(at, div, onDismiss = { mulMenu = null }) { style ->
                         mulMenu = null
@@ -473,42 +474,77 @@ private fun DivisionMenu(at: Offset, div: Apply, onDismiss: () -> Unit, onPick: 
 
 /** A text region, a plot's YAML, or a statement that doesn't parse, edited as plain text over its place on the page. */
 @Composable
-private fun TextEditor(session: Session, index: Int, statement: Int?, scale: Float, left: Float, density: Float, onChange: () -> Unit) {
+private fun TextEditor(session: Session, index: Int, statement: Int?, scale: Float, left: Float, density: Float, onChange: () -> Unit, pending: Int, onClosed: () -> Unit) {
     val layout = session.layout
     val view = layout.views.getOrNull(index) ?: return
     val piece = layout.pieces[index].firstOrNull() ?: return
     val (ox, oy) = layout.origin(view, piece)
     val y = oy + if (view is MathView && statement != null) view.statements.getOrNull(statement)?.top ?: 0f else 0f
     // The caret at the end, where typing goes on (a word typed as math that became text, docs/editor.md).
-    var text by remember(index, statement) { mutableStateOf(session.textOf(index, statement).let { TextFieldValue(it, TextRange(it.length)) }) }
+    // A statement shown as LaTeX (Ctrl+L, docs/editor.md#latex): Enter reads it back, Escape leaves it as it was.
+    val latex = session.latex
+    var text by remember(index, statement, latex) { mutableStateOf((if (latex) session.latexText() else session.textOf(index, statement)).let { TextFieldValue(it, TextRange(it.length)) }) }
     val focus = remember { FocusRequester() }
     var focused by remember { mutableStateOf(false) }
+    // Once the LaTeX is read back or cancelled, the field closing (and losing the focus) does nothing more.
+    var finished by remember(index, statement, latex) { mutableStateOf(false) }
     fun done() {
+        finished = true
         session.guard(Unit) { session.setText(index, statement, text.text) }
         onChange()
     }
-    BasicTextField(
-        text,
-        { text = it },
+    fun latexDone(leaving: Boolean) {
+        session.guard(Unit) {
+            // Characters still on their way to the field (typed just before Enter) go with it.
+            if (session.pendingText.isNotEmpty()) {
+                val t = text.text + session.pendingText
+                session.pendingText = ""
+                text = TextFieldValue(t, TextRange(t.length))
+            }
+            val read = session.setLatex(text.text)
+            if (!read && leaving) session.cancelLatex()
+            if (read || leaving) finished = true
+        }
+        onChange()
+    }
+    val fontSize = (11f * scale / density).sp
+    Column(
         Modifier.offset { IntOffset(((ox + left) * scale).roundToInt(), (y * scale).roundToInt()) }
-            .width(((if (view is MathView) maxOf(view.width, 240f) else view.width) * scale / density).dp)
-            .background(Color(0xFFFFFDF0))
-            .focusRequester(focus)
-            .onFocusChanged { if (focused && !it.isFocused) done(); focused = it.isFocused }
-            .onPreviewKeyEvent { e ->
-                if (e.type == KeyEventType.KeyDown && (e.key == K.Escape || (e.key == K.Enter && e.isCommandPressed))) {
-                    done()
-                    true
-                } else {
-                    false
-                }
-            },
-        textStyle = TextStyle(fontSize = (11f * scale / density).sp),
-    )
+            .width(((if (view is MathView) maxOf(view.width, if (latex) 360f else 240f) else view.width) * scale / density).dp),
+    ) {
+        BasicTextField(
+            text,
+            { text = it },
+            Modifier.fillMaxWidth()
+                .background(if (latex) Color(0xFFF0F6FF) else Color(0xFFFFFDF0))
+                .focusRequester(focus)
+                .onFocusChanged { if (focused && !it.isFocused && !finished) { if (latex) latexDone(leaving = true) else done() }; focused = it.isFocused }
+                .onPreviewKeyEvent { e ->
+                    if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    when {
+                        latex && e.key == K.Escape -> { finished = true; session.guard(Unit) { session.cancelLatex() }; onChange(); onClosed(); true }
+                        latex && (e.key == K.Enter || e.key == K.NumPadEnter || (e.key == K.L && e.isCommandPressed)) -> { latexDone(leaving = false); if (finished) onClosed(); true }
+                        !latex && (e.key == K.Escape || (e.key == K.Enter && e.isCommandPressed)) -> { done(); onClosed(); true }
+                        else -> false
+                    }
+                },
+            textStyle = TextStyle(fontSize = fontSize, fontFamily = if (latex) FontFamily.Monospace else FontFamily.Default),
+            singleLine = latex,
+        )
+        if (latex) {
+            val error = session.latexError
+            BasicText(
+                error ?: "LaTeX: Enter to make it math, Esc to cancel",
+                Modifier.background(Color(0xFFF0F6FF)).padding(horizontal = 2.dp),
+                style = TextStyle(fontSize = (9f * scale / density).sp, color = if (error != null) Color(0xFFB00020) else Color(0xFF667788)),
+            )
+        }
+    }
     LaunchedEffect(index, statement) { focus.requestFocus() }
     // What was typed while the field was opening goes on its end.
     SideEffect {
-        if (session.pendingText.isNotEmpty()) {
+        // [pending] is a parameter so that each character kept for the field recomposes it.
+        if (pending > 0 && session.pendingText.isNotEmpty()) {
             val t = text.text + session.pendingText
             session.pendingText = ""
             text = TextFieldValue(t, TextRange(t.length))

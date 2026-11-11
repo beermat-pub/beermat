@@ -59,6 +59,15 @@ The editor works on the expression tree, never on text: keystrokes insert or wra
 
 **Programs start anywhere a value can:** `]`, `}`, `{` (after a name) and the program keywords also work outside a program, in a definition's value or on an empty spot. Since a program is always a definition's value, on an empty spot they make `■ := program`, with the name to fill in (an empty name is allowed while editing: `? := …` defines nothing and says "this definition needs a name"). The toolbar's keyword buttons do the same; on a program line that already says something, they add their line below it.
 
+### LaTeX
+
+Asked for by a friend of Dan's who types LaTeX (2026-11-11). Math can be typed, or changed, as LaTeX:
+
+- **`Ctrl+L`** (⌘L on a Mac; the toolbar's **TeX** button) at the crosshair opens a LaTeX box for a new region; on the statement being edited, or a selected math region, it shows that statement as LaTeX (as Copy as LaTeX writes it) to change. **Enter** (or `Ctrl+L` again) turns the box into math; **Esc** leaves it as it was. LaTeX left unchanged changes nothing, and an evaluation keeps the unit it asks for (`= ? kN`), which LaTeX can't show. LaTeX that can't be read stays in the box, with the reason under it. `$` is not the key, since it already types a sum (Σ).
+- **Pasting** text wrapped in `$…$`, `$$…$$`, `\(…\)` or `\[…\]` reads it as LaTeX.
+- **What is read** (`LatexInput`, in the export module; [export.md](export.md#latex-input)): everything the LaTeX export writes, except programs, which give an error; and LaTeX as people type it: `\frac`, `^`, `_`, `\sqrt[n]{}`, Greek letters, `\sin x`, `\left( \right)`, `\cdot` and `\times`, matrices (`bmatrix`, `pmatrix`), `\sum_{i=1}^{n}`, `\int_a^b … \,dx`, `\frac{d}{dx}`, comparisons, `\to` for a symbolic result, `\mathrm{kN}` and a unit after a number (`12\,\mathrm{kN}`, or just `12 kN`).
+- **How it is read, following how LaTeX draws:** letters side by side are a product (`qL` is q·L), unless together they name a unit or a built-in function (`kN`, `max`); `\mathit{width}` is one name, `\mathrm{P}` an upright one, `\mathbf{F}` a bold one. A subscript of letters and digits is part of the name (`M_{max}`, `x_1`), one with an expression is an index (`v_{i+1}`, `M_{i,j}`), and `v_{[i]}` indexes by one name. With a name (or `f(x)`) on its left, `=` defines it (`x = 5` is `x := 5`); `x =` alone evaluates; `a + b = 10` is a constraint (`==`). `:=`, `\coloneqq` and `\equiv` (global) are read too.
+
 
 ## Toolbar
 

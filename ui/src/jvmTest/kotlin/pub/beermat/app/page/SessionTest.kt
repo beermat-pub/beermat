@@ -303,6 +303,57 @@ class SessionTest {
     }
 
     @Test
+    fun `Ctrl+L at the crosshair takes LaTeX for a new region`() {
+        val s = Session("", math)
+        assertTrue(s.startLatex())
+        assertTrue(s.latex)
+        assertEquals("", s.latexText())
+        // What can't be read stays in the box, saying why.
+        assertTrue(!s.setLatex("\\frac{a}{"))
+        assertNotNull(s.latexError)
+        assertTrue(s.latex)
+        assertTrue(s.setLatex("M = \\frac{q L^2}{8}"))
+        assertTrue(!s.latex)
+        assertNull(s.textEditing)
+        assertTrue("M := q L^2/8" in s.save(), s.save())
+    }
+
+    @Test
+    fun `Escape on a new LaTeX box leaves nothing behind`() {
+        val s = Session("", math)
+        assertTrue(s.startLatex())
+        s.cancelLatex()
+        assertTrue(s.regions.isEmpty())
+        assertNull(s.textEditing)
+    }
+
+    @Test
+    fun `Ctrl+L on a statement shows it as LaTeX, and its unit survives the trip`() {
+        val s = Session("```calc {#r1 x=0 y=0}\nF := 12 kN\nF = ? N\n```\n", math)
+        s.toggle(0)
+        assertTrue(s.startLatex())
+        assertEquals("F := 12\\,\\mathrm{kN}", s.latexText())
+        // Read back unchanged: the statement as it was.
+        assertTrue(s.setLatex(s.latexText()))
+        assertTrue("F := 12 kN\n" in s.save(), s.save())
+
+        // An evaluation, changed: its requested unit (N) is kept.
+        val second = Session("```calc {#r1 x=0 y=0}\nw = ? mm\n```\n", math)
+        second.toggle(0)
+        assertTrue(second.startLatex())
+        assertEquals("w = \\blacksquare", second.latexText())
+        assertTrue(second.setLatex("2 w = \\blacksquare"))
+        assertTrue("2 w = ? mm" in second.save(), second.save())
+    }
+
+    @Test
+    fun `pasted LaTeX in dollars becomes math`() {
+        val s = Session("", math)
+        s.paste("\$\\sigma = \\frac{M}{W}\$")
+        assertTrue("σ := M/W" in s.save(), s.save())
+    }
+
+    @Test
     fun `a word and a space in a new region make it text`() {
         val s = Session("", math)
         s.type("the")
