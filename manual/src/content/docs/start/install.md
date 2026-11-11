@@ -7,14 +7,21 @@ Beermat is free. Download it from the [releases page](https://beermat.pub/downlo
 
 ## Windows
 
+- **[Microsoft Store](ms-windows-store://pdp/?productid=9P3WZTXD6PJP)** ([in the browser](https://apps.microsoft.com/detail/9P3WZTXD6PJP)): the Store installs Beermat and keeps it up to date, with no warning to get past.
 - **Installer** (`Beermat-windows-setup.exe`): run it and follow the steps. It can install for you alone (no administrator needed) or for everyone on the computer, open `.bbm` files with Beermat, and put the `beermat` command on the PATH.
 - **Portable** (`Beermat-windows-portable.zip`): unzip it anywhere and run `Beermat.exe`. Nothing is installed.
 
-The installers aren't signed yet, so Windows may warn that it doesn't recognise the app: choose **More info**, then **Run anyway**.
+The installer isn't signed yet, so Windows may say it protected your PC: choose **More info**, then **Run anyway**.
 
 ## macOS
 
-Open `Beermat-macos.dmg` and drag Beermat to Applications. The app isn't signed yet: the first time, right-click it in Applications, choose **Open**, then **Open** again.
+Open `Beermat-macos.dmg` and drag Beermat to Applications. The app isn't signed yet, so macOS stops it the first time:
+
+1. Open Beermat from Applications. macOS says it can't check it for malicious software; choose **Done** (or **OK**).
+2. Open **System Settings → Privacy & Security**. Under **Security**, next to the message about Beermat, choose **Open Anyway**, and enter your password if asked.
+3. Open Beermat again and choose **Open**.
+
+You do this only once; after that it opens as any app does.
 
 ## Linux
 
@@ -26,13 +33,7 @@ Install `beermat-linux.deb` (Debian, Ubuntu) or `beermat-linux.rpm` (Fedora, ope
 
 ## In VS Code
 
-The Beermat extension opens `.bbm` files on their page inside VS Code, with the toolbar and the same keys. Download `beermat-….vsix` from the [latest release](https://github.com/beermat-pub/beermat/releases), then in a terminal:
-
-```text
-code --install-extension beermat-1.0.0.vsix
-```
-
-(or **Extensions → ⋯ → Install from VSIX…**). The page edits the file's text, so saving, undo and git work as for any file; **Open as Text** at the top right shows the Markdown beside the page. With the desktop app installed, symbolic algebra works on the page too: the extension uses its `beermat` command. Data files beside the sheet are read too, and Python functions run after you say the file may (in a trusted folder). Excel files are read the same way, and **Beermat: Import .xmcd Worksheet…** converts an `.xmcd` file.
+The Beermat extension opens `.bbm` files on their page inside VS Code, with the toolbar and the same keys. In VS Code, open **Extensions**, search for **Beermat** and choose **Install** (it's on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=beermat-pub.beermat) and on [Open VSX](https://open-vsx.org/extension/beermat-pub/beermat), for VSCodium and others). Or download `beermat-….vsix` from the [latest release](https://github.com/beermat-pub/beermat/releases) and use **Extensions → ⋯ → Install from VSIX…**. The page edits the file's text, so saving, undo and git work as for any file; **Open as Text** at the top right shows the Markdown beside the page. With the desktop app installed, symbolic algebra works on the page too: the extension uses its `beermat` command. Data files beside the sheet are read too, and Python functions run after you say the file may (in a trusted folder). Excel files are read the same way, and **Beermat: Import .xmcd Worksheet…** converts an `.xmcd` file.
 
 ## The `beermat` command
 
