@@ -36,6 +36,7 @@ export default defineConfig({
             'guides/results',
             'guides/pages',
             'guides/text-and-pictures',
+            'guides/latex',
             'guides/tables',
             'guides/solve',
             'guides/data',

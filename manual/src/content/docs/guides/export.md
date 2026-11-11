@@ -9,6 +9,7 @@ While editing a statement, **Edit → Copy as LaTeX** or **Edit → Copy as Math
 
 - **LaTeX**, wrapped in `$$…$$`, for LaTeX documents and Markdown that shows math (`M_{\mathrm{max}} := \frac{q \cdot L^{2}}{8} = 54\ \mathrm{kN} \cdot \mathrm{m}`).
 - **MathML**: paste it into Word with **Ctrl+V** as plain text (or Paste Special → Unformatted text) and Word turns it into an equation you can edit.
+- To go the other way, typing or pasting LaTeX to make math, see [Type math in LaTeX](../latex/).
 
 **Ctrl+C** while editing a statement copies its text form, the [linear syntax](../../reference/syntax/) (`M_max := q*L^2/8 = ? kN*m`), to paste into a chat or an email. Pasted at the crosshair with **Ctrl+V**, text in the linear syntax becomes math again.
 

@@ -27,6 +27,19 @@ class UpdatesTest {
         assertFalse(Updates.newer("1.0.0", "1.1.0-dev"))
     }
 
+    @Test
+    fun `the previews come in order, dev then beta then rc`() {
+        assertTrue(Updates.newer("1.0.0-beta.1", "1.0.0-dev3"))
+        assertTrue(Updates.newer("1.0.0-rc.1", "1.0.0-beta.9"))
+        assertFalse(Updates.newer("1.0.0-dev3", "1.0.0-beta.1"))
+        // GitHub's list as it was on 2026-11-11: beta.1 is the newest, and is news to someone on dev3 only.
+        val json = "[" + listOf("v1.0.0-beta.1", "v1.0.0-dev3", "v1.0.0-dev2").joinToString(",") { release(it, true) } + "]"
+        assertEquals("1.0.0-beta.1", Updates.newest(json, "1.0.0-beta.1")?.version)
+        assertFalse(Updates.newer(Updates.newest(json, "1.0.0-beta.1")!!.version, "1.0.0-beta.1"))
+        assertTrue(Updates.newer(Updates.newest(json, "1.0.0-dev3")!!.version, "1.0.0-dev3"))
+        assertTrue(Updates.newer("1.0.0-dev10", "1.0.0-dev3"))
+    }
+
     private fun release(tag: String, pre: Boolean) =
         """{"html_url":"https://github.com/beermat-pub/beermat/releases/tag/$tag","author":{"html_url":"x"},"tag_name":"$tag","prerelease":$pre,"assets":[{"name":"a.zip"}]}"""
 

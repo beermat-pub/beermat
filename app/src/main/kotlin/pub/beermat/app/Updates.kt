@@ -106,12 +106,29 @@ object Updates {
                 nx != null && ny != null -> nx.compareTo(ny)
                 nx != null -> -1
                 ny != null -> 1
+                // Our previews' words in the order they come, dev before beta (plain text would put beta first).
+                // `dev3` carries its number: dev3 before dev10, by the number after the word.
+                stage(x) >= 0 && stage(y) >= 0 -> stage(x).compareTo(stage(y)).takeIf { it != 0 } ?: run {
+                    val rx = x.removePrefix(STAGES[stage(x)])
+                    val ry = y.removePrefix(STAGES[stage(y)])
+                    val (ix, iy) = rx.toIntOrNull() to ry.toIntOrNull()
+                    if (ix != null && iy != null) ix.compareTo(iy) else rx.compareTo(ry)
+                }
                 else -> x.compareTo(y)
             }
             if (c != 0) return c
         }
         return idsA.size.compareTo(idsB.size)
     }
+
+    /**
+     * The pre-release stages, earliest first. Semantic versioning compares these words as text, which
+     * would put `beta` before `dev`: a beta would hear of an older developer preview as news.
+     */
+    private val STAGES = listOf("dev", "alpha", "beta", "rc")
+
+    /** Which stage a pre-release word starts with (`dev3` is dev), or -1. */
+    private fun stage(word: String) = STAGES.indexOfFirst { word.startsWith(it) && word.drop(it.length).all(Char::isDigit) }
 
     private fun split(version: String): Pair<List<Int>, String?> {
         val v = version.removePrefix("v").substringBefore('+')
