@@ -11,8 +11,8 @@ q := 12 kN/m
 M := q·L²/8 = 54 kN·m
 ```
 
-:::note[A preview]
-This is a preview of Beermat, and its manual grows with each version. The examples that come with Beermat (in the browser: **Examples**) show more of what it can do.
+:::note[More examples]
+The examples that come with Beermat (in the browser: **Examples**) show more of what it can do. Something missing or unclear? [Tell us](https://github.com/beermat-pub/beermat/issues).
 :::
 
 ## Start here

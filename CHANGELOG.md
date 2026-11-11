@@ -2,7 +2,11 @@
 
 Each version's section here becomes the notes of its release on GitHub ([docs/release.md](docs/release.md)).
 
-## 1.0.0-beta.2 (not released yet)
+## 1.0.0
+
+The first public version of Beermat: an engineering worksheet where you write math on the page as you would on paper, with real units, and it works out the results. The worksheet, the editor, units, plots, symbolic algebra, printing, PDF and Word export, `.xmcd` import, the `beermat` command, AI assistants through MCP, [Beermat in the browser](https://beermat.pub/try), the VS Code extension, Python functions in a sheet, and the [manual](https://beermat.pub/docs/). The previews' notes, below, tell how it got here.
+
+New since 1.0.0-beta.1:
 
 - **Type math in LaTeX**: Ctrl+L (⌘L on a Mac, or **TeX** on the toolbar) opens a box where you type LaTeX, such as `M = \frac{q L^2}{8}`, and Enter turns it into math. On a statement, Ctrl+L shows it as LaTeX to change. Pasting LaTeX in `$…$` makes math too. Fractions, powers, subscripts, roots, Greek letters, functions, matrices, sums, integrals, derivatives and units are read.
 - **Fixed**: the update check told someone on 1.0.0-beta.1 that 1.0.0-dev3 was out; previews now come in order (dev, beta, rc).
